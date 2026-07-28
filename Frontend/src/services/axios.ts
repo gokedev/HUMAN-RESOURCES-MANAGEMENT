@@ -77,6 +77,12 @@ apiClient.interceptors.response.use(
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Skip refresh logic for auth endpoints — a 401 there means bad credentials, not an expired session.
+      const isAuthEndpoint = originalRequest.url?.includes('/api/auth/');
+      if (isAuthEndpoint) {
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
 
       try {
