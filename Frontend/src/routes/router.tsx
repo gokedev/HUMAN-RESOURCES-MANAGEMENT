@@ -3,7 +3,7 @@ import { ProtectedRoute, RoleGuard } from './guards';
 import { AppLayout } from '../layouts/AppLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { AttendancePage } from '../features/admin/AttendancePage';
-import { DashboardPage } from '../features/shared/DashboardPage';
+import { DashboardPage } from '../features/DashboardPage';
 import { DepartmentsPage } from '../features/admin/DepartmentsPage';
 import { EmployeeDetailsPage } from '../features/admin/EmployeeDetailsPage';
 import { EmployeesPage } from '../features/admin/EmployeesPage';
@@ -13,11 +13,11 @@ import { LoginPage } from '../features/auth/LoginPage';
 import { MyAttendancePage } from '../features/employee/MyAttendancePage';
 import { MyLeaveRequestsPage } from '../features/employee/MyLeaveRequestsPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
-import { ProfilePage } from '../features/shared/ProfilePage';
+import { ProfilePage } from '../features/ProfilePage';
 import { RegisterCompanyPage } from '../features/auth/RegisterCompanyPage';
 import { ResetPasswordPage } from '../features/auth/ResetPasswordPage';
 import { AcceptInvitationPage } from '../features/auth/AcceptInvitationPage';
-import { SettingsPage } from '../features/shared/SettingsPage';
+import { SettingsPage } from '../features/SettingsPage';
 import { UnauthorizedPage } from '../pages/UnauthorizedPage';
 
 // The router is the app's navigation map. It keeps public auth pages separate from protected dashboard pages.
