@@ -28,12 +28,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setSession(tokenStorage.get());
   }, []);
 
-  // Clears all token storage and sends the user back to the login page.
+  // Clears all token storage and resets session state.
+  // ProtectedRoute in guards.tsx handles the redirect to /login.
   const logout = useCallback(() => {
     tokenStorage.clear();
     appQueryClient.clear();
     setSession(null);
-    window.location.assign('/login');
   }, []);
 
   // Lets Axios trigger logout when refresh token rotation fails.
