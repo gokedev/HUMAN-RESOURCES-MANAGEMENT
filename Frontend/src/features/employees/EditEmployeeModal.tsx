@@ -61,6 +61,7 @@ export function EditEmployeeModal({ employee, onClose }: EditEmployeeModalProps)
     setIsSubmitting(true);
     try {
       const payload: Record<string, unknown> = {
+        email: employee.email,
         firstName: values.firstName,
         lastName: values.lastName,
       };
