@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ShieldOff } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 export function UnauthorizedPage() {
@@ -6,7 +7,7 @@ export function UnauthorizedPage() {
 
   return (
     <main className="status-page">
-      <span className="status-icon bi bi-shield-lock" aria-hidden="true" />
+      <ShieldOff size={32} className="status-icon" />
       <h1>Access restricted</h1>
       <p>Your role does not include permission for this area.</p>
       <Link className="btn btn-primary" to="/">Return to dashboard</Link>
