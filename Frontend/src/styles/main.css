@@ -122,12 +122,20 @@ a:hover {
   border-radius: 0.5rem;
   color: var(--app-muted);
   font-weight: 700;
+  transition: background 0.15s, color 0.15s;
 }
 
 .sidebar-link:hover,
 .sidebar-link.active {
   color: var(--app-primary);
   background: rgba(37, 99, 235, 0.1);
+}
+
+.sidebar-divider {
+  display: block;
+  height: 1px;
+  margin: 0.5rem 0;
+  background: var(--app-border);
 }
 
 .app-main {
@@ -287,6 +295,20 @@ a:hover {
   gap: 1rem;
   min-height: 120px;
   padding: 1.25rem;
+  border-left: 4px solid var(--app-primary);
+  position: relative;
+}
+
+.metric-card:nth-child(2) {
+  border-left-color: #f59e0b;
+}
+
+.metric-card:nth-child(3) {
+  border-left-color: #10b981;
+}
+
+.metric-card:nth-child(4) {
+  border-left-color: #8b5cf6;
 }
 
 .metric-icon {
@@ -298,6 +320,34 @@ a:hover {
   color: var(--app-primary);
   background: rgba(37, 99, 235, 0.1);
   font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.metric-card:nth-child(2) .metric-icon {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.metric-card:nth-child(3) .metric-icon {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.metric-card:nth-child(4) .metric-icon {
+  color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.theme-dark .metric-card:nth-child(2) .metric-icon {
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.theme-dark .metric-card:nth-child(3) .metric-icon {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.theme-dark .metric-card:nth-child(4) .metric-icon {
+  background: rgba(139, 92, 246, 0.15);
 }
 
 .metric-card span {
@@ -325,14 +375,95 @@ a:hover {
   padding: 1.25rem;
 }
 
+.insight-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.insight-icon {
+  color: var(--app-primary);
+  flex-shrink: 0;
+}
+
 .insight-panel h2,
 .table-shell h2,
 .profile-panel h2,
 .settings-panel h2,
 .empty-state h2 {
-  margin: 0 0 0.35rem;
+  margin: 0;
   font-size: 1.05rem;
   font-weight: 800;
+}
+
+.insight-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  color: var(--app-muted);
+}
+
+.insight-empty p {
+  margin: 0;
+}
+
+.checkin-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.checkin-time {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.checkin-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--app-muted);
+}
+
+.checkin-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--app-text);
+  margin-right: 0.5rem;
+}
+
+.checkin-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.checkin-status .badge {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.75rem;
+}
+
+.metric-skeleton {
+  display: block;
+  width: 120px;
+  height: 1.2rem;
+  border-radius: 0.25rem;
+  background: var(--app-border);
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
 }
 
 .insight-panel p,
@@ -366,7 +497,11 @@ a:hover {
   text-align: center;
 }
 
-.empty-state-icon,
+.empty-state-icon {
+  color: var(--app-primary);
+  font-size: 2rem;
+}
+
 .status-icon,
 .error-icon {
   color: var(--app-primary);
@@ -491,7 +626,7 @@ a:hover {
 .toast-stack {
   position: fixed;
   right: 1rem;
-  bottom: 1rem;
+  top: 1rem;
   z-index: 1080;
   display: grid;
   gap: 0.75rem;
