@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, Pencil, UserX, UserCheck } from 'lucide-react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { CardSkeleton } from '../../components/ui/LoadingSkeleton';
 import { StatusBadge } from '../../components/ui/Badge';
@@ -81,18 +82,18 @@ export function EmployeeDetailsPage() {
         actions={
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <Link className="btn btn-outline-secondary" to="/employees">
-              <span className="bi bi-arrow-left" aria-hidden="true" /> Back
+              <ArrowLeft size={16} style={{ marginRight: '0.35rem' }} /> Back
             </Link>
             <button className="btn btn-outline-secondary" type="button" onClick={() => setShowEdit(true)}>
-              <span className="bi bi-pencil" aria-hidden="true" /> Edit
+              <Pencil size={16} style={{ marginRight: '0.35rem' }} /> Edit
             </button>
             {employee.status === 'ACTIVE' ? (
               <button className="btn btn-outline-danger" type="button" onClick={() => setDeactivateTarget(true)}>
-                <span className="bi bi-person-x" aria-hidden="true" /> Deactivate
+                <UserX size={16} style={{ marginRight: '0.35rem' }} /> Deactivate
               </button>
             ) : employee.status === 'SUSPENDED' ? (
               <button className="btn btn-outline-success" type="button" onClick={() => setReactivateTarget(true)}>
-                <span className="bi bi-person-check" aria-hidden="true" /> Reactivate
+                <UserCheck size={16} style={{ marginRight: '0.35rem' }} /> Reactivate
               </button>
             ) : null}
           </div>
