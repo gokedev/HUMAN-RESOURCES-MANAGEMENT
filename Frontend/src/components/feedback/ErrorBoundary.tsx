@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type PropsWithChildren, type ReactNode } from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -20,7 +21,7 @@ export class ErrorBoundary extends Component<PropsWithChildren, ErrorBoundarySta
       return (
         <main className="error-screen">
           <section className="error-panel">
-            <span className="error-icon bi bi-exclamation-triangle" aria-hidden="true" />
+            <AlertTriangle size={32} className="error-icon" />
             <h1>We hit an unexpected issue.</h1>
             <p>Refresh the page or sign in again if your session has expired.</p>
             <button className="btn btn-primary" type="button" onClick={() => window.location.reload()}>
