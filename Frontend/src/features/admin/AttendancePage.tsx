@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { ClipboardCheck } from 'lucide-react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { DataTableShell } from '../../components/tables/DataTableShell';
 import { TableSkeleton } from '../../components/ui/LoadingSkeleton';
@@ -8,6 +9,7 @@ import { StatusBadge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/feedback/EmptyState';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { attendanceService } from '../../services/attendance.service';
+import { employeeService } from '../../services/employee.service';
 import { queryKeys } from '../../constants/queryKeys';
 
 export function AttendancePage() {
@@ -19,6 +21,19 @@ export function AttendancePage() {
     queryKey: queryKeys.attendance.company({ page, size: pageSize }),
     queryFn: () => attendanceService.listCompany({ page, size: pageSize }),
   });
+
+  const { data: employeesData } = useQuery({
+    queryKey: queryKeys.employees.all,
+    queryFn: () => employeeService.list({ page: 0, size: 200 }),
+  });
+
+  const employeeMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    employeesData?.content?.forEach((emp) => {
+      map[emp.id] = `${emp.firstName} ${emp.lastName}`;
+    });
+    return map;
+  }, [employeesData]);
 
   const records = data?.content ?? [];
 
@@ -37,7 +52,7 @@ export function AttendancePage() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Employee ID</th>
+                    <th>Employee</th>
                     <th>Date</th>
                     <th>Check In</th>
                     <th>Check Out</th>
@@ -47,7 +62,7 @@ export function AttendancePage() {
                 <tbody>
                   {records.map((rec) => (
                     <tr key={rec.id}>
-                      <td>{rec.employeeId.slice(0, 8)}...</td>
+                      <td><strong>{employeeMap[rec.employeeId] ?? `${rec.employeeId.slice(0, 8)}...`}</strong></td>
                       <td>{rec.workDate}</td>
                       <td>{rec.checkIn ? new Date(rec.checkIn).toLocaleTimeString() : '—'}</td>
                       <td>{rec.checkOut ? new Date(rec.checkOut).toLocaleTimeString() : '—'}</td>
@@ -68,7 +83,7 @@ export function AttendancePage() {
           </>
         ) : (
           <EmptyState
-            icon="bi-calendar2-check"
+            icon={ClipboardCheck}
             title="No attendance records"
             description="Company attendance records will appear here."
           />
