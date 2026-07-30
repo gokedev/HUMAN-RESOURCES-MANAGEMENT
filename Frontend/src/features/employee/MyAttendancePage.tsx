@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Play, Square, Clock3 } from 'lucide-react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { DataTableShell } from '../../components/tables/DataTableShell';
 import { TableSkeleton } from '../../components/ui/LoadingSkeleton';
@@ -71,8 +72,8 @@ export function MyAttendancePage() {
                 onClick={() => checkInMutation.mutate()}
                 disabled={checkInMutation.isPending}
               >
-                {checkInMutation.isPending ? <span className="spinner-border spinner-border-sm" aria-hidden="true" /> : null}
-                <span className="bi bi-play-circle" aria-hidden="true" /> Check in
+                {checkInMutation.isPending ? <span className="spinner-border spinner-border-sm" aria-hidden="true" /> : <Play size={16} style={{ marginRight: '0.35rem' }} />}
+                Check in
               </button>
             ) : !hasCheckedOut ? (
               <button
@@ -81,8 +82,8 @@ export function MyAttendancePage() {
                 onClick={() => checkOutMutation.mutate()}
                 disabled={checkOutMutation.isPending}
               >
-                {checkOutMutation.isPending ? <span className="spinner-border spinner-border-sm" aria-hidden="true" /> : null}
-                <span className="bi bi-stop-circle" aria-hidden="true" /> Check out
+                {checkOutMutation.isPending ? <span className="spinner-border spinner-border-sm" aria-hidden="true" /> : <Square size={16} style={{ marginRight: '0.35rem' }} />}
+                Check out
               </button>
             ) : (
               <span className="badge badge-success">Checked in & out today</span>
@@ -128,7 +129,7 @@ export function MyAttendancePage() {
           </>
         ) : (
           <EmptyState
-            icon="bi-clock-history"
+            icon={Clock3}
             title="No attendance records"
             description="Your attendance history will appear here once you check in."
           />
