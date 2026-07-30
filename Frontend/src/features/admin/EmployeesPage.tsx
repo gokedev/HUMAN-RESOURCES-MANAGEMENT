@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { Plus, Eye, Pencil, UserX, UserCheck, Users } from 'lucide-react';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { DataTableShell } from '../../components/tables/DataTableShell';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -72,7 +73,7 @@ export function EmployeesPage() {
         description="Manage workforce records, invitations, reporting lines, and account status."
         actions={
           <button className="btn btn-primary" type="button" onClick={() => setShowCreate(true)}>
-            <span className="bi bi-plus-lg" aria-hidden="true" /> Add employee
+            <Plus size={16} style={{ marginRight: '0.35rem' }} /> Add employee
           </button>
         }
       />
@@ -119,18 +120,18 @@ export function EmployeesPage() {
                       <td>{emp.dateOfHire ? new Date(emp.dateOfHire).toLocaleDateString() : '—'}</td>
                       <td className="table-actions">
                         <Link className="btn btn-outline-secondary btn-sm" to={`/employees/${emp.id}`}>
-                          <span className="bi bi-eye" aria-hidden="true" /> View
+                          <Eye size={14} style={{ marginRight: '0.3rem' }} /> View
                         </Link>
                         <button className="btn btn-outline-secondary btn-sm" type="button" onClick={() => setEditTarget(emp)}>
-                          <span className="bi bi-pencil" aria-hidden="true" /> Edit
+                          <Pencil size={14} style={{ marginRight: '0.3rem' }} /> Edit
                         </button>
                         {emp.status === 'ACTIVE' ? (
                           <button className="btn btn-outline-danger btn-sm" type="button" onClick={() => setDeactivateTarget(emp)}>
-                            <span className="bi bi-person-x" aria-hidden="true" /> Deactivate
+                            <UserX size={14} style={{ marginRight: '0.3rem' }} /> Deactivate
                           </button>
                         ) : emp.status === 'SUSPENDED' ? (
                           <button className="btn btn-outline-success btn-sm" type="button" onClick={() => setReactivateTarget(emp)}>
-                            <span className="bi bi-person-check" aria-hidden="true" /> Reactivate
+                            <UserCheck size={14} style={{ marginRight: '0.3rem' }} /> Reactivate
                           </button>
                         ) : null}
                       </td>
@@ -150,7 +151,7 @@ export function EmployeesPage() {
           </>
         ) : (
           <EmptyState
-            icon="bi-person-lines-fill"
+            icon={Users}
             title="No employees found"
             description={search ? 'Try a different search term.' : 'Add your first employee to get started.'}
           />
