@@ -1,13 +1,15 @@
+import type { ComponentType } from 'react';
+
 interface EmptyStateProps {
-  icon: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
   title: string;
   description: string;
 }
 
-export function EmptyState({ icon, title, description }: EmptyStateProps) {
+export function EmptyState({ icon: Icon, title, description }: EmptyStateProps) {
   return (
     <div className="empty-state">
-      <span className={`empty-state-icon bi ${icon}`} aria-hidden="true" />
+      <Icon size={24} className="empty-state-icon" />
       <h2>{title}</h2>
       <p>{description}</p>
     </div>
