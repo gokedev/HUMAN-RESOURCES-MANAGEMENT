@@ -42,6 +42,9 @@ spring:
           writetimeout: 5000
 
 app:
+  brevo:
+    api-key: ${BREVO_API_KEY}
+    api-url: ${BREVO_API_URL:https://api.brevo.com/v3/smtp/email}
   jwt:
     secret: ${JWT_SECRET}
     access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:3600000}
