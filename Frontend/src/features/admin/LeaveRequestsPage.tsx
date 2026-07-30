@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Check, X, Inbox } from 'lucide-react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { DataTableShell } from '../../components/tables/DataTableShell';
 import { TableSkeleton } from '../../components/ui/LoadingSkeleton';
@@ -8,6 +9,7 @@ import { StatusBadge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/feedback/EmptyState';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { leaveService } from '../../services/leave.service';
+import { employeeService } from '../../services/employee.service';
 import { queryKeys } from '../../constants/queryKeys';
 import { ReviewLeaveModal } from '../../features/leave/ReviewLeaveModal';
 import type { LeaveRequest } from '../../types/api';
@@ -22,6 +24,19 @@ export function LeaveRequestsPage() {
     queryKey: queryKeys.leave.company({ page, size: pageSize }),
     queryFn: () => leaveService.listCompany({ page, size: pageSize }),
   });
+
+  const { data: employeesData } = useQuery({
+    queryKey: queryKeys.employees.all,
+    queryFn: () => employeeService.list({ page: 0, size: 200 }),
+  });
+
+  const employeeMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    employeesData?.content?.forEach((emp) => {
+      map[emp.id] = `${emp.firstName} ${emp.lastName}`;
+    });
+    return map;
+  }, [employeesData]);
 
   const requests = data?.content ?? [];
 
@@ -52,7 +67,7 @@ export function LeaveRequestsPage() {
                 <tbody>
                   {requests.map((req) => (
                     <tr key={req.id}>
-                      <td>{req.employeeId.slice(0, 8)}...</td>
+                      <td><strong>{employeeMap[req.employeeId] ?? `${req.employeeId.slice(0, 8)}...`}</strong></td>
                       <td>{req.leaveType.replace(/_/g, ' ')}</td>
                       <td>{req.startDate}</td>
                       <td>{req.endDate}</td>
@@ -66,14 +81,14 @@ export function LeaveRequestsPage() {
                               type="button"
                               onClick={() => setReviewTarget({ request: req, action: 'approve' })}
                             >
-                              <span className="bi bi-check-lg" aria-hidden="true" /> Approve
+                              <Check size={14} style={{ marginRight: '0.3rem' }} /> Approve
                             </button>
                             <button
                               className="btn btn-outline-danger btn-sm"
                               type="button"
                               onClick={() => setReviewTarget({ request: req, action: 'reject' })}
                             >
-                              <span className="bi bi-x-lg" aria-hidden="true" /> Reject
+                              <X size={14} style={{ marginRight: '0.3rem' }} /> Reject
                             </button>
                           </>
                         )}
@@ -94,7 +109,7 @@ export function LeaveRequestsPage() {
           </>
         ) : (
           <EmptyState
-            icon="bi-inboxes"
+            icon={Inbox}
             title="No leave requests"
             description="Leave requests from employees will appear here."
           />
