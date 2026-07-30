@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, XCircle, CalendarDays } from 'lucide-react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { DataTableShell } from '../../components/tables/DataTableShell';
 import { TableSkeleton } from '../../components/ui/LoadingSkeleton';
@@ -48,7 +49,7 @@ export function MyLeaveRequestsPage() {
         description="Request time off, cancel pending requests, and review your leave history."
         actions={
           <button className="btn btn-primary" type="button" onClick={() => setShowCreate(true)}>
-            <span className="bi bi-plus-lg" aria-hidden="true" /> Request leave
+            <Plus size={16} style={{ marginRight: '0.35rem' }} /> Request leave
           </button>
         }
       />
@@ -84,7 +85,7 @@ export function MyLeaveRequestsPage() {
                             type="button"
                             onClick={() => setCancelTarget(req)}
                           >
-                            <span className="bi bi-x-circle" aria-hidden="true" /> Cancel
+                            <XCircle size={14} style={{ marginRight: '0.3rem' }} /> Cancel
                           </button>
                         )}
                       </td>
@@ -104,7 +105,7 @@ export function MyLeaveRequestsPage() {
           </>
         ) : (
           <EmptyState
-            icon="bi-calendar-heart"
+            icon={CalendarDays}
             title="No leave requests"
             description="Submit your first leave request to get started."
           />
