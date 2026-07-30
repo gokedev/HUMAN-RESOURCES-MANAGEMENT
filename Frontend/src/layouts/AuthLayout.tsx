@@ -1,11 +1,14 @@
 import { Link, Outlet } from 'react-router-dom';
+import { FileEdit } from 'lucide-react';
 
 export function AuthLayout() {
   return (
     <main className="auth-layout">
       <section className="auth-brand-panel">
         <Link to="/login" className="brand-mark">
-          <span className="brand-icon bi bi-command" aria-hidden="true" />
+          <span className="brand-icon">
+            <FileEdit size={20} />
+          </span>
           <span>HRMS</span>
         </Link>
         <div className="auth-brand-copy">
