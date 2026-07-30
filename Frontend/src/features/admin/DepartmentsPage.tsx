@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, Trash2, Building2 } from 'lucide-react';
 import { EmptyState } from '../../components/feedback/EmptyState';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { DataTableShell } from '../../components/tables/DataTableShell';
@@ -54,7 +55,7 @@ export function DepartmentsPage() {
         description="Organize people into company teams and reporting areas."
         actions={
           <button className="btn btn-primary" type="button" onClick={() => setShowCreate(true)}>
-            <span className="bi bi-plus-lg" aria-hidden="true" /> New department
+            <Plus size={16} style={{ marginRight: '0.35rem' }} /> New department
           </button>
         }
       />
@@ -84,7 +85,7 @@ export function DepartmentsPage() {
                         type="button"
                         onClick={() => setDeleteTarget({ id: dept.id, name: dept.name })}
                       >
-                        <span className="bi bi-trash" aria-hidden="true" /> Delete
+                        <Trash2 size={14} style={{ marginRight: '0.35rem' }} /> Delete
                       </button>
                     </td>
                   </tr>
@@ -94,7 +95,7 @@ export function DepartmentsPage() {
           </div>
         ) : (
           <EmptyState
-            icon="bi-diagram-3"
+            icon={Building2}
             title="No departments yet"
             description="Create your first department to start organizing your team."
           />
