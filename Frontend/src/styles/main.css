@@ -179,6 +179,16 @@ a:hover {
   gap: 0.75rem;
 }
 
+.topbar-context-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.menu-toggle {
+  display: none;
+}
+
 .icon-button {
   display: inline-grid;
   width: 2.5rem;
@@ -188,6 +198,18 @@ a:hover {
   border-radius: 0.5rem;
   color: var(--app-text);
   background: var(--app-surface);
+}
+
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--app-primary);
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
 }
 
 .profile-chip {
@@ -280,7 +302,6 @@ a:hover {
 .insight-panel,
 .table-shell,
 .profile-panel,
-.settings-panel,
 .auth-card,
 .error-panel {
   border: 1px solid var(--app-border);
@@ -370,8 +391,7 @@ a:hover {
 }
 
 .insight-panel,
-.profile-panel,
-.settings-panel {
+.profile-panel {
   padding: 1.25rem;
 }
 
@@ -390,7 +410,6 @@ a:hover {
 .insight-panel h2,
 .table-shell h2,
 .profile-panel h2,
-.settings-panel h2,
 .empty-state h2 {
   margin: 0;
   font-size: 1.05rem;
@@ -469,7 +488,6 @@ a:hover {
 .insight-panel p,
 .table-shell p,
 .profile-panel p,
-.settings-panel p,
 .empty-state p {
   margin: 0;
   color: var(--app-muted);
@@ -508,8 +526,7 @@ a:hover {
   font-size: 2rem;
 }
 
-.profile-panel,
-.settings-panel {
+.profile-panel {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -831,6 +848,54 @@ a:hover {
   overflow-x: auto;
 }
 
+/* Profile tabs */
+.tabbed-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.tabbed-page .nav-tabs {
+  border-bottom: 1px solid var(--app-border);
+}
+
+.tabbed-page .nav-tabs .nav-link {
+  color: var(--app-muted);
+  font-weight: 700;
+}
+
+.tabbed-page .nav-tabs .nav-link.active {
+  color: var(--app-primary);
+  background: var(--app-surface);
+  border-color: var(--app-border);
+  border-bottom-color: var(--app-surface);
+}
+
+.profile-tabs {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.profile-tabs .nav-pills {
+  border: 1px solid var(--app-border);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  background: var(--app-surface);
+}
+
+.profile-tabs .nav-pills .nav-link {
+  display: flex;
+  align-items: center;
+  border-radius: 0.5rem;
+  color: var(--app-text);
+}
+
+.profile-tabs .nav-pills .nav-link.active {
+  background: var(--app-primary);
+  color: #fff;
+}
+
 /* Pagination */
 .pagination-bar {
   display: flex;
@@ -925,21 +990,39 @@ a:hover {
 }
 
 @media (max-width: 1100px) {
-  /* Tablet layout collapses the shell while preserving usable navigation. */
+  /* Tablet and mobile collapse the shell; the sidebar becomes an off-canvas drawer. */
   .app-shell,
   .auth-layout {
     grid-template-columns: 1fr;
   }
 
-  .sidebar {
-    position: static;
-    height: auto;
-    border-right: 0;
-    border-bottom: 1px solid var(--app-border);
+  .menu-toggle {
+    display: inline-grid;
   }
 
-  .sidebar-nav {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 280px;
+    height: 100vh;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    border-right: 1px solid var(--app-border);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 0 0 48px rgba(15, 23, 42, 0.28);
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1030;
+    background: rgba(15, 23, 42, 0.45);
   }
 
   .metric-grid,
@@ -954,18 +1037,58 @@ a:hover {
 
 @media (max-width: 720px) {
   /* Mobile layout stacks controls and cards to prevent text or buttons from overlapping. */
-  .topbar,
   .page-header,
   .profile-panel,
-  .settings-panel,
   .table-shell-header {
     align-items: stretch;
     flex-direction: column;
   }
 
+  .topbar {
+    min-height: 64px;
+    padding: 0 0.75rem;
+  }
+
   .topbar-actions,
   .form-row {
     flex-wrap: wrap;
+  }
+
+  .topbar-actions {
+    gap: 0.5rem;
+  }
+
+  .breadcrumb-label {
+    max-width: 42vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .profile-chip-text,
+  .logout-label {
+    display: none;
+  }
+
+  .profile-chip {
+    padding: 0.25rem;
+  }
+
+  .logout-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+  }
+
+  .page-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .page-actions .btn {
+    width: 100%;
   }
 
   .content-area,
@@ -978,6 +1101,35 @@ a:hover {
   .dashboard-grid,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .metric-card {
+    min-height: 96px;
+    padding: 1rem;
+  }
+
+  .metric-card strong {
+    font-size: 1.5rem;
+  }
+
+  .checkin-body,
+  .checkin-time,
+  .checkin-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .checkin-value {
+    font-size: 1rem;
+  }
+
+  .profile-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-tabs .nav-pills {
+    flex-direction: row;
+    overflow-x: auto;
   }
 
   .skeleton-row {
@@ -993,12 +1145,32 @@ a:hover {
     text-align: center;
   }
 
+  .pagination-controls {
+    width: 100%;
+  }
+
+  .pagination-controls .btn {
+    flex: 1;
+  }
+
+  .table-actions {
+    flex-wrap: wrap;
+  }
+
+  .data-table tbody td {
+    padding: 0.6rem 0.75rem;
+  }
+
   .table-shell-header {
     flex-direction: column;
   }
 
   .search-input {
     max-width: 100%;
+  }
+
+  .auth-brand-panel {
+    display: none;
   }
 
   .auth-brand-copy h1 {
@@ -1009,5 +1181,37 @@ a:hover {
   .auth-card h2,
   .status-page h1 {
     font-size: 1.6rem;
+  }
+
+  .app-modal {
+    width: calc(100% - 1rem);
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+  }
+
+  .toast-stack {
+    left: 1rem;
+    right: 1rem;
+  }
+
+  .app-toast {
+    min-width: 0;
+    width: 100%;
   }
 }
