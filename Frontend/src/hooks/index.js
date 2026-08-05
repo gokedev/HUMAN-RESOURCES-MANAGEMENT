@@ -24,7 +24,7 @@ export function useOnlineStatus() {
 
 export function usePageTitle(title) {
   useEffect(() => {
-    document.title = title ? `${title} | HRMS` : "HRMS";
+    document.title = title ? `${title} | CoralHR` : "CoralHR";
   }, [title]);
 }
 
