@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import {
-  FileEdit,
   LayoutDashboard,
   Users,
   Building2,
@@ -20,6 +19,7 @@ import { useAuth, useTheme } from "../contexts.jsx";
 import { navigationItems } from "../router.jsx";
 import { OfflineBanner } from "../components/feedback.jsx";
 import { ConfirmDialog } from "../components/common/ui.jsx";
+import { LogoMark } from "../components/common/Brand.jsx";
 
 const iconMap = {
   LayoutDashboard,
@@ -82,9 +82,9 @@ export function AppLayout() {
           onClick={() => setSidebarOpen(false)}
         >
           <span className="brand-icon">
-            <FileEdit size={20} />
+            <LogoMark size={20} />
           </span>
-          <span>HRMS</span>
+          <span>CoralHR</span>
         </Link>
         <nav className="sidebar-nav" aria-label="Primary navigation">
           {allowedItems.map((item, idx) => {
@@ -189,9 +189,9 @@ export function AuthLayout() {
       <section className="auth-brand-panel">
         <Link to="/login" className="brand-mark">
           <span className="brand-icon">
-            <FileEdit size={20} />
+            <LogoMark size={20} />
           </span>
-          <span>HRMS</span>
+          <span>CoralHR</span>
         </Link>
         <div className="auth-brand-copy">
           <span className="page-eyebrow">Enterprise HR platform</span>
