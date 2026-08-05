@@ -8,6 +8,6 @@ import { App } from './app.jsx';
 createRoot(document.getElementById('root')).render(
 // StrictMode helps reveal accidental side effects while developing React components.
 <StrictMode>
-    {/* App contains the global providers, router, and error boundary for the HRMS UI. */}
+    {/* App contains the global providers, router, and error boundary for the CoralHR UI. */}
     <App />
   </StrictMode>);
