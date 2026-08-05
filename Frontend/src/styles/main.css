@@ -1215,3 +1215,322 @@ a:hover {
     width: 100%;
   }
 }
+
+/* Search input wrapper */
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input-wrap .search-input {
+  max-width: none;
+  padding-left: 2rem;
+}
+
+.search-input-icon {
+  position: absolute;
+  left: 0.6rem;
+  color: var(--app-muted);
+  pointer-events: none;
+}
+
+/* Auth helper text */
+.auth-hint {
+  color: var(--app-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Form footer actions */
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+/* Detail page hero/profile panel */
+.detail-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--app-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.back-link:hover {
+  color: var(--bs-primary);
+}
+
+/* Table toolbar (search + filters) */
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--app-border);
+  flex-wrap: wrap;
+}
+
+.table-toolbar .search-input {
+  max-width: 320px;
+  min-width: 220px;
+}
+
+.table-toolbar select.form-control {
+  width: auto;
+  min-width: 150px;
+  margin-top: 0;
+}
+
+/* Identity cell */
+.cell-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cell-identity > div {
+  display: grid;
+  line-height: 1.25;
+}
+
+.cell-identity span {
+  color: var(--app-muted);
+  font-size: 0.85rem;
+}
+
+/* Row actions */
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.row-actions .icon-button {
+  color: var(--app-muted);
+}
+
+.row-actions .icon-button:hover {
+  color: var(--app-primary);
+}
+
+/* Truncate long cell content */
+.table-truncate {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Check-in / check-out card */
+.checkin-card {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--app-border);
+  border-left: 4px solid #10b981;
+  border-radius: 0.5rem;
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow);
+}
+
+.checkin-card .metric-value {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--app-text);
+}
+
+/* Bar chart */
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 0 0.25rem;
+}
+
+.bar-chart-item {
+  display: grid;
+  grid-template-columns: 1fr 2.5rem 4.5rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bar-chart-track {
+  background: var(--app-surface-muted);
+  border-radius: 999px;
+  height: 0.7rem;
+  overflow: hidden;
+}
+
+.bar-chart-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--bs-primary);
+  transition: width 0.3s ease;
+}
+
+.bar-chart-bar-success { background: var(--bs-success); }
+.bar-chart-bar-danger { background: var(--bs-danger); }
+.bar-chart-bar-warning { background: var(--bs-warning); }
+.bar-chart-bar-info { background: var(--bs-info); }
+.bar-chart-bar-secondary { background: var(--app-muted); }
+
+.bar-chart-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.bar-chart-label {
+  font-size: 0.8rem;
+  color: var(--app-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-empty {
+  color: var(--app-muted);
+  padding: 1rem 0;
+  margin: 0;
+  text-align: center;
+}
+
+/* Attendance calendar */
+.attendance-calendar {
+  padding: 1rem;
+}
+
+.calendar-month-label {
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.calendar-weekday {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--app-muted);
+  padding: 0.25rem 0;
+}
+
+.calendar-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+  background: var(--app-surface-muted);
+  color: var(--app-text);
+}
+
+.calendar-cell-empty {
+  background: transparent;
+}
+
+.calendar-cell-today {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 1px;
+}
+
+.calendar-cell-present { background: var(--bs-success); color: #fff; }
+.calendar-cell-half { background: var(--bs-warning); color: #fff; }
+.calendar-cell-leave { background: var(--bs-info); color: #fff; }
+.calendar-cell-absent { background: var(--bs-danger); color: #fff; }
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--app-muted);
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  margin-right: 0.25rem;
+  vertical-align: middle;
+}
+
+.legend-present { background: var(--bs-success); }
+.legend-half { background: var(--bs-warning); }
+.legend-leave { background: var(--bs-info); }
+.legend-absent { background: var(--bs-danger); }
+
+/* Dashboard quick actions */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem;
+}
+
+.quick-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  text-align: left;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 1rem;
+  color: var(--app-text);
+  text-decoration: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.quick-action:hover {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.12);
+  color: var(--app-text);
+}
+
+.quick-action .quick-action-icon {
+  color: var(--bs-primary);
+}
+
+.quick-action strong {
+  font-size: 0.9rem;
+}
+
+.quick-action span {
+  color: var(--app-muted);
+  font-size: 0.8rem;
+}
