@@ -1,7 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Modal } from "../../components/common/ui.jsx";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/dialog.jsx";
+import { Button } from "../../components/ui/button.jsx";
+import { Input } from "../../components/ui/input.jsx";
+import { Label } from "../../components/ui/label.jsx";
 
 const createDepartmentSchema = z.object({
   name: z.string().min(1, "Department name is required."),
@@ -17,53 +20,52 @@ export function CreateDepartmentModal({ onCreate, isSubmitting = false, onClose 
     defaultValues: { name: "" },
   });
   return (
-    <Modal
-      title="New department"
-      onClose={onClose}
-      footer={
-        <>
-          <button
-            className="btn btn-outline-secondary"
+    <Dialog open onOpenChange={(open) => !open && onClose?.()}>
+      <DialogContent onClose={onClose}>
+        <DialogHeader>
+          <DialogTitle>New department</DialogTitle>
+        </DialogHeader>
+        <form
+          id="create-dept-form"
+          className="space-y-4"
+          onSubmit={handleSubmit(onCreate)}
+          noValidate
+        >
+          <div className="space-y-2">
+            <Label>Department name</Label>
+            <Input
+              type="text"
+              {...register("name")}
+              placeholder="e.g. Engineering"
+              className={errors.name ? "border-destructive" : ""}
+            />
+            {errors.name ? (
+              <p className="text-xs text-destructive">{errors.name.message}</p>
+            ) : null}
+          </div>
+        </form>
+        <DialogFooter>
+          <Button
+            variant="outline"
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
           >
             Cancel
-          </button>
-          <button
-            className="btn btn-primary"
+          </Button>
+          <Button
             type="submit"
             form="create-dept-form"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
-              <span className="spinner-border spinner-border-sm" aria-hidden="true" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
             ) : (
               "Create"
             )}
-          </button>
-        </>
-      }
-    >
-      <form
-        id="create-dept-form"
-        className="stacked-form"
-        onSubmit={handleSubmit(onCreate)}
-        noValidate
-      >
-        <label className="form-label">
-          Department name
-          <input
-            className={`form-control ${errors.name ? "is-invalid" : ""}`}
-            type="text"
-            {...register("name")}
-            placeholder="e.g. Engineering"
-          />
-          {errors.name ? (
-            <span className="invalid-feedback">{errors.name.message}</span>
-          ) : null}
-        </label>
-      </form>
-    </Modal>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
