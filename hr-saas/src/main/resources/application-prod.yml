@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+logging:
+  level:
+    com.hrsaas: INFO
+    org.springframework.security: WARN
+
+server:
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
