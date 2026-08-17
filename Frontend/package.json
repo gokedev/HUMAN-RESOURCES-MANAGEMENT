@@ -10,15 +10,19 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
+    "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query": "^5.101.4",
     "axios": "^1.19.0",
-    "bootstrap": "^5.3.7",
-    "bootstrap-icons": "^1.13.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "lucide-react": "^1.27.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.61.1",
     "react-router-dom": "^7.7.0",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.3",
     "zod": "^4.0.5"
   },
   "devDependencies": {
