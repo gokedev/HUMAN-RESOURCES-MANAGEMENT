@@ -21,6 +21,8 @@ import com.hrsaas.repository.PasswordResetTokenRepository;
 import com.hrsaas.repository.RefreshTokenRepository;
 import com.hrsaas.repository.UserRepository;
 import com.hrsaas.security.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,8 @@ import java.util.regex.Pattern;
 
 @Service
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
@@ -72,6 +76,7 @@ public class AuthService {
 
     @Transactional
     public AuthResponse registerCompany(RegisterCompanyRequest request) {
+        log.info("Registering new company: name={}", request.getCompanyName());
         String baseSlug = generateSlug(request.getCompanyName());
         String slug = ensureUniqueSlug(baseSlug);
 
@@ -97,34 +102,50 @@ public class AuthService {
 
         mailService.sendCompanyWelcomeEmail(admin.getEmail(), company.getName(), company.getSlug());
 
+        log.info("Company registered successfully: id={}, slug={}", company.getId(), slug);
         return buildAuthResponse(admin, company.getSlug());
     }
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        Company company = companyRepository.findBySlug(request.getCompanySlug().toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> ApiException.unauthorized("Invalid company, email or password"));
+        String email = request.getEmail();
+        String companySlug = request.getCompanySlug().toLowerCase(Locale.ROOT);
+        log.info("Login attempt: email={}, companySlug={}", email, companySlug);
+
+        Company company = companyRepository.findBySlug(companySlug)
+                .orElseThrow(() -> {
+                    log.warn("Login failed: company not found for slug={}", companySlug);
+                    return ApiException.unauthorized("Invalid company, email or password");
+                });
 
         if (!company.isActive()) {
+            log.warn("Login failed: company={} is deactivated", companySlug);
             throw ApiException.forbidden("This company workspace is deactivated");
         }
 
-        User user = userRepository.findByCompanyIdAndEmailIgnoreCase(company.getId(), request.getEmail())
-                .orElseThrow(() -> ApiException.unauthorized("Invalid company, email or password"));
+        User user = userRepository.findByCompanyIdAndEmailIgnoreCase(company.getId(), email)
+                .orElseThrow(() -> {
+                    log.warn("Login failed: user not found for email={} in company={}", email, companySlug);
+                    return ApiException.unauthorized("Invalid company, email or password");
+                });
 
         if (user.getStatus() != UserStatus.ACTIVE || user.getPasswordHash() == null) {
+            log.warn("Login failed: user={} is not active", user.getId());
             throw ApiException.unauthorized("Account is not active. Check your invitation email.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            log.warn("Login failed: invalid password for user={}", user.getId());
             throw ApiException.unauthorized("Invalid company, email or password");
         }
 
+        log.info("Login successful: userId={}, company={}", user.getId(), companySlug);
         return buildAuthResponse(user, company.getSlug());
     }
 
     @Transactional
     public void acceptInvitation(AcceptInvitationRequest request) {
+        log.info("Accepting invitation with token");
         Invitation invitation = invitationRepository.findByToken(request.getToken())
                 .orElseThrow(() -> ApiException.badRequest("Invalid or expired invitation"));
 
@@ -145,14 +166,18 @@ public class AuthService {
 
         invitation.setAcceptedAt(LocalDateTime.now());
         invitationRepository.save(invitation);
+
+        log.info("Invitation accepted: userId={}", user.getId());
     }
 
     @Transactional
     public AuthResponse refreshToken(RefreshTokenRequest request) {
+        log.info("Token refresh attempt");
         RefreshToken existing = refreshTokenRepository.findByToken(request.getRefreshToken())
                 .orElseThrow(() -> ApiException.unauthorized("Invalid refresh token"));
 
         if (existing.isRevoked() || existing.getExpiresAt().isBefore(LocalDateTime.now())) {
+            log.warn("Refresh token expired or revoked: token={}", existing.getId());
             throw ApiException.unauthorized("Refresh token is expired or revoked");
         }
 
@@ -169,12 +194,16 @@ public class AuthService {
         existing.setRevoked(true);
         refreshTokenRepository.save(existing);
 
+        log.info("Token refreshed successfully: userId={}", user.getId());
         return buildAuthResponse(user, company.getSlug());
     }
 
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
-        Company company = companyRepository.findBySlug(request.getCompanySlug().toLowerCase(Locale.ROOT))
+        String companySlug = request.getCompanySlug().toLowerCase(Locale.ROOT);
+        log.info("Password reset requested for email={} in company={}", request.getEmail(), companySlug);
+
+        Company company = companyRepository.findBySlug(companySlug)
                 .orElse(null);
 
         if (company == null) {
@@ -198,10 +227,13 @@ public class AuthService {
 
         String resetLink = frontendBaseUrl + "/reset-password?token=" + token;
         mailService.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), resetLink);
+
+        log.info("Password reset token created: userId={}", user.getId());
     }
 
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
+        log.info("Password reset attempt with token");
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getToken())
                 .orElseThrow(() -> ApiException.badRequest("Invalid or expired reset link"));
 
@@ -223,6 +255,8 @@ public class AuthService {
         passwordResetTokenRepository.save(resetToken);
 
         refreshTokenRepository.deleteByUserId(user.getId());
+
+        log.info("Password reset completed: userId={}", user.getId());
     }
 
     private AuthResponse buildAuthResponse(User user, String companySlug) {
@@ -269,3 +303,4 @@ public class AuthService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 }
+
