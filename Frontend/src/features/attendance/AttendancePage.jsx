@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ClipboardCheck, Eye } from "lucide-react";
 import { PageHeader, Pagination, StatusBadge } from "../../components/common/ui.jsx";
+import { Button } from "../../components/ui/button.jsx";
 import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feedback.jsx";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { useEmployeeNameMap, usePageTitle } from "../../hooks.js";
 import { attendanceService } from "../../api.js";
 import { queryKeys } from "../../constants.js";
@@ -49,45 +51,45 @@ export function AttendancePage() {
           />
         ) : (
           <>
-            <div className="table-responsive">
-              <table className="table app-table">
-                <thead>
-                  <tr>
-                    <th>Employee</th>
-                    <th>Date</th>
-                    <th>Check-in</th>
-                    <th>Check-out</th>
-                    <th>Status</th>
-                    <th className="text-end">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map((record) => (
-                    <tr key={record.id}>
-                      <td>{nameMap[record.employeeId] ?? "Unknown employee"}</td>
-                      <td>{new Date(record.workDate).toLocaleDateString()}</td>
-                      <td>{record.checkIn ? formatTime(record.checkIn) : "—"}</td>
-                      <td>{record.checkOut ? formatTime(record.checkOut) : "—"}</td>
-                      <td>
-                        <StatusBadge status={record.status} />
-                      </td>
-                      <td className="text-end">
-                        <div className="row-actions">
-                          <button
-                            className="icon-button"
-                            type="button"
-                            title="View details"
-                            onClick={() => setSelected(record)}
-                          >
-                            <Eye size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Check-in</TableHead>
+                  <TableHead>Check-out</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {records.map((record) => (
+                  <TableRow key={record.id}>
+                    <TableCell>{nameMap[record.employeeId] ?? "Unknown employee"}</TableCell>
+                    <TableCell>{new Date(record.workDate).toLocaleDateString()}</TableCell>
+                    <TableCell>{record.checkIn ? formatTime(record.checkIn) : "—"}</TableCell>
+                    <TableCell>{record.checkOut ? formatTime(record.checkOut) : "—"}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={record.status} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="inline-flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          type="button"
+                          title="View details"
+                          onClick={() => setSelected(record)}
+                        >
+                          <Eye size={16} />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
             {pagination ? (
               <Pagination
                 currentPage={currentPage}
