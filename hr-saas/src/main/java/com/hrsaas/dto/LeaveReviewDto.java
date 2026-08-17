@@ -1,6 +1,6 @@
 package com.hrsaas.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,8 +8,8 @@ import lombok.Setter;
 @Setter
 public class LeaveReviewDto {
 
-    @NotNull
     private boolean approve;
 
+    @Size(max = 500)
     private String note;
 }
