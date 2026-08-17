@@ -17,8 +17,7 @@ export function ThemeProvider({ children }) {
   });
 
   useEffect(() => {
-    document.documentElement.dataset.bsTheme = theme;
-    document.body.classList.toggle("theme-dark", theme === "dark");
+    document.documentElement.classList.toggle("theme-dark", theme === "dark");
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
