@@ -6,6 +6,10 @@ import { useAuth, useToast } from "../../contexts.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { loginSchema } from "./schemas.js";
 import { getErrorMessage, tokenStorage } from "../../utils.js";
+import { Button } from "@/components/ui/button.jsx";
+import { Input } from "@/components/ui/input.jsx";
+import { Label } from "@/components/ui/label.jsx";
+import { Checkbox } from "@/components/ui/checkbox.jsx";
 
 export function LoginPage() {
   usePageTitle("Login");
@@ -14,33 +18,26 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state;
-  // Already signed in? Go straight to the dashboard (or the page they tried to open).
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate(state?.from?.pathname ?? "/dashboard", { replace: true });
     }
   }, [isAuthenticated, navigate, state]);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      companySlug: "",
-      rememberMe: true,
-    },
+    defaultValues: { email: "", password: "", companySlug: "", rememberMe: true },
   });
+
   async function onSubmit(values) {
     try {
       await login(
-        {
-          email: values.email,
-          password: values.password,
-          companySlug: values.companySlug,
-        },
+        { email: values.email, password: values.password, companySlug: values.companySlug },
         values.rememberMe,
       );
       navigate("/dashboard", { replace: true });
@@ -49,62 +46,38 @@ export function LoginPage() {
       notify(getErrorMessage(error), "danger");
     }
   }
+
   return (
-    <div className="auth-card">
-      <span className="page-eyebrow">Secure access</span>
-      <h2>Sign in to your workspace</h2>
-      <form className="stacked-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <label className="form-label">
-          Email
-          <input
-            className={`form-control ${errors.email ? "is-invalid" : ""}`}
-            type="email"
-            {...register("email")}
-          />
-          {errors.email ? (
-            <span className="invalid-feedback">{errors.email.message}</span>
-          ) : null}
-        </label>
-        <label className="form-label">
-          Password
-          <input
-            className={`form-control ${errors.password ? "is-invalid" : ""}`}
-            type="password"
-            {...register("password")}
-          />
-          {errors.password ? (
-            <span className="invalid-feedback">{errors.password.message}</span>
-          ) : null}
-        </label>
-        <label className="form-label">
-          Company slug
-          <input
-            className={`form-control ${errors.companySlug ? "is-invalid" : ""}`}
-            type="text"
-            {...register("companySlug")}
-            placeholder="e.g. acme-inc"
-          />
-          {errors.companySlug ? (
-            <span className="invalid-feedback">{errors.companySlug.message}</span>
-          ) : null}
-        </label>
-        <div className="form-row">
-          <label className="form-check">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              {...register("rememberMe")}
-            />
-            <span className="form-check-label">Remember me</span>
-          </label>
-          <Link to="/forgot-password">Forgot password?</Link>
+    <div className="w-full max-w-[440px]">
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">Secure access</span>
+      <h2 className="mt-1 mb-6 text-2xl font-extrabold text-foreground">Sign in to your workspace</h2>
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" {...register("email")} className={errors.email ? "border-destructive" : ""} />
+          {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
         </div>
-        <button className="btn btn-primary w-100" type="submit">
-          Sign in
-        </button>
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input id="password" type="password" {...register("password")} className={errors.password ? "border-destructive" : ""} />
+          {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="companySlug">Company slug</Label>
+          <Input id="companySlug" type="text" {...register("companySlug")} placeholder="e.g. acme-inc" className={errors.companySlug ? "border-destructive" : ""} />
+          {errors.companySlug && <p className="text-xs text-destructive">{errors.companySlug.message}</p>}
+        </div>
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" {...register("rememberMe")} className="accent-primary" />
+            Remember me
+          </label>
+          <Link to="/forgot-password" className="text-sm text-primary hover:underline">Forgot password?</Link>
+        </div>
+        <Button type="submit" className="w-full">Sign in</Button>
       </form>
-      <p className="auth-link">
-        New company? <Link to="/register-company">Create workspace</Link>
+      <p className="mt-4 text-center text-sm text-muted-foreground">
+        New company? <Link to="/register-company" className="text-primary hover:underline font-medium">Create workspace</Link>
       </p>
     </div>
   );
