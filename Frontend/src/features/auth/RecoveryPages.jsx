@@ -11,6 +11,9 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
 } from "./schemas.js";
+import { Button } from "@/components/ui/button.jsx";
+import { Input } from "@/components/ui/input.jsx";
+import { Label } from "@/components/ui/label.jsx";
 
 export function ForgotPasswordPage() {
   usePageTitle("Forgot Password");
@@ -42,56 +45,43 @@ export function ForgotPasswordPage() {
   }
   if (sent) {
     return (
-      <div className="auth-card">
-        <span className="page-eyebrow">Check your inbox</span>
-        <h2>Reset link sent</h2>
-        <p className="auth-hint">
+      <div className="w-full max-w-[440px]">
+        <span className="text-xs font-bold uppercase tracking-wider text-primary">Check your inbox</span>
+        <h2 className="mt-1 mb-6 text-2xl font-extrabold text-foreground">Reset link sent</h2>
+        <p className="mb-6 text-sm text-muted-foreground">
           If an account exists for that email, a password reset link has been
           sent. It expires in one hour.
         </p>
-        <Link className="btn btn-primary w-100" to="/login">
-          Back to sign in
-        </Link>
+        <Button asChild className="w-full">
+          <Link to="/login">Back to sign in</Link>
+        </Button>
       </div>
     );
   }
   return (
-    <div className="auth-card">
-      <span className="page-eyebrow">Account recovery</span>
-      <h2>Reset your password</h2>
-      <form className="stacked-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <label className="form-label">
-          Email
-          <input
-            className={`form-control ${errors.email ? "is-invalid" : ""}`}
-            type="email"
-            {...register("email")}
-          />
-          {errors.email ? (
-            <span className="invalid-feedback">{errors.email.message}</span>
-          ) : null}
-        </label>
-        <label className="form-label">
-          Company slug
-          <input
-            className={`form-control ${errors.companySlug ? "is-invalid" : ""}`}
-            type="text"
-            {...register("companySlug")}
-            placeholder="e.g. acme-inc"
-          />
-          {errors.companySlug ? (
-            <span className="invalid-feedback">{errors.companySlug.message}</span>
-          ) : null}
-        </label>
-        <button className="btn btn-primary w-100" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <span className="spinner-border spinner-border-sm" aria-hidden="true" />
-          ) : null}
+    <div className="w-full max-w-[440px]">
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">Account recovery</span>
+      <h2 className="mt-1 mb-6 text-2xl font-extrabold text-foreground">Reset your password</h2>
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" {...register("email")} className={errors.email ? "border-destructive" : ""} />
+          {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="companySlug">Company slug</Label>
+          <Input id="companySlug" type="text" {...register("companySlug")} placeholder="e.g. acme-inc" className={errors.companySlug ? "border-destructive" : ""} />
+          {errors.companySlug && <p className="text-xs text-destructive">{errors.companySlug.message}</p>}
+        </div>
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting && (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+          )}
           Send reset link
-        </button>
+        </Button>
       </form>
-      <p className="auth-link">
-        Remembered it? <Link to="/login">Sign in</Link>
+      <p className="mt-4 text-center text-sm text-muted-foreground">
+        Remembered it? <Link to="/login" className="text-sm text-primary hover:underline font-medium">Sign in</Link>
       </p>
     </div>
   );
@@ -134,41 +124,29 @@ export function ResetPasswordPage() {
     }
   }
   return (
-    <div className="auth-card">
-      <span className="page-eyebrow">New credentials</span>
-      <h2>Choose a new password</h2>
-      <form className="stacked-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <label className="form-label">
-          Reset token
-          <input
-            className={`form-control ${errors.token ? "is-invalid" : ""}`}
-            type="text"
-            {...register("token")}
-          />
-          {errors.token ? (
-            <span className="invalid-feedback">{errors.token.message}</span>
-          ) : null}
-        </label>
-        <label className="form-label">
-          New password
-          <input
-            className={`form-control ${errors.newPassword ? "is-invalid" : ""}`}
-            type="password"
-            {...register("newPassword")}
-          />
-          {errors.newPassword ? (
-            <span className="invalid-feedback">{errors.newPassword.message}</span>
-          ) : null}
-        </label>
-        <button className="btn btn-primary w-100" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <span className="spinner-border spinner-border-sm" aria-hidden="true" />
-          ) : null}
+    <div className="w-full max-w-[440px]">
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">New credentials</span>
+      <h2 className="mt-1 mb-6 text-2xl font-extrabold text-foreground">Choose a new password</h2>
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="space-y-2">
+          <Label htmlFor="token">Reset token</Label>
+          <Input id="token" type="text" {...register("token")} className={errors.token ? "border-destructive" : ""} />
+          {errors.token && <p className="text-xs text-destructive">{errors.token.message}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="newPassword">New password</Label>
+          <Input id="newPassword" type="password" {...register("newPassword")} className={errors.newPassword ? "border-destructive" : ""} />
+          {errors.newPassword && <p className="text-xs text-destructive">{errors.newPassword.message}</p>}
+        </div>
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting && (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+          )}
           Update password
-        </button>
+        </Button>
       </form>
-      <p className="auth-link">
-        Back to <Link to="/login">sign in</Link>
+      <p className="mt-4 text-center text-sm text-muted-foreground">
+        Back to <Link to="/login" className="text-sm text-primary hover:underline font-medium">sign in</Link>
       </p>
     </div>
   );
@@ -211,41 +189,29 @@ export function AcceptInvitationPage() {
     }
   }
   return (
-    <div className="auth-card">
-      <span className="page-eyebrow">Accept invitation</span>
-      <h2>Set your password</h2>
-      <form className="stacked-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <label className="form-label">
-          Invitation token
-          <input
-            className={`form-control ${errors.token ? "is-invalid" : ""}`}
-            type="text"
-            {...register("token")}
-          />
-          {errors.token ? (
-            <span className="invalid-feedback">{errors.token.message}</span>
-          ) : null}
-        </label>
-        <label className="form-label">
-          Password
-          <input
-            className={`form-control ${errors.password ? "is-invalid" : ""}`}
-            type="password"
-            {...register("password")}
-          />
-          {errors.password ? (
-            <span className="invalid-feedback">{errors.password.message}</span>
-          ) : null}
-        </label>
-        <button className="btn btn-primary w-100" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <span className="spinner-border spinner-border-sm" aria-hidden="true" />
-          ) : null}
+    <div className="w-full max-w-[440px]">
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">Accept invitation</span>
+      <h2 className="mt-1 mb-6 text-2xl font-extrabold text-foreground">Set your password</h2>
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="space-y-2">
+          <Label htmlFor="token">Invitation token</Label>
+          <Input id="token" type="text" {...register("token")} className={errors.token ? "border-destructive" : ""} />
+          {errors.token && <p className="text-xs text-destructive">{errors.token.message}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input id="password" type="password" {...register("password")} className={errors.password ? "border-destructive" : ""} />
+          {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+        </div>
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting && (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+          )}
           Set password
-        </button>
+        </Button>
       </form>
-      <p className="auth-link">
-        Already have an account? <Link to="/login">Sign in</Link>
+      <p className="mt-4 text-center text-sm text-muted-foreground">
+        Already have an account? <Link to="/login" className="text-sm text-primary hover:underline font-medium">Sign in</Link>
       </p>
     </div>
   );
