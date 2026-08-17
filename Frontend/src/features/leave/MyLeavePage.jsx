@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, Inbox, Plus, X } from "lucide-react";
 import { ConfirmDialog, PageHeader, Pagination, StatusBadge } from "../../components/common/ui.jsx";
+import { Button } from "../../components/ui/button.jsx";
 import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feedback.jsx";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useToast } from "../../contexts.jsx";
 import { leaveService } from "../../api.js";
@@ -52,39 +54,38 @@ export function MyLeavePage() {
         title="My leave"
         description="Request time off, cancel pending requests, and review your leave history."
         actions={
-          <button
-            className="btn btn-primary"
+          <Button
             type="button"
             onClick={() => setShowCreate(true)}
           >
-            <Plus size={16} style={{ marginRight: "0.35rem" }} /> Request leave
-          </button>
+            <Plus size={16} /> Request leave
+          </Button>
         }
       />
-      <section className="metric-grid">
-        <div className="metric-card">
-          <div className="metric-header">
-            <h3>Annual leave balance</h3>
-            <CalendarDays size={18} className="metric-icon" />
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="rounded-xl border bg-card p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg font-semibold text-foreground">Annual leave balance</h3>
+            <CalendarDays size={18} className="text-primary shrink-0" />
           </div>
-          <p className="metric-value">—</p>
-          <p className="metric-sub">Balance endpoint not available yet</p>
+          <p className="text-2xl font-bold text-foreground">—</p>
+          <p className="text-sm text-muted-foreground mt-1 font-medium">Balance endpoint not available yet</p>
         </div>
-        <div className="metric-card">
-          <div className="metric-header">
-            <h3>Days approved</h3>
-            <CalendarDays size={18} className="metric-icon" />
+        <div className="rounded-xl border bg-card p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg font-semibold text-foreground">Days approved</h3>
+            <CalendarDays size={18} className="text-primary shrink-0" />
           </div>
-          <p className="metric-value">—</p>
-          <p className="metric-sub">Computed once balance is available</p>
+          <p className="text-2xl font-bold text-foreground">—</p>
+          <p className="text-sm text-muted-foreground mt-1 font-medium">Computed once balance is available</p>
         </div>
-        <div className="metric-card">
-          <div className="metric-header">
-            <h3>Pending requests</h3>
-            <CalendarDays size={18} className="metric-icon" />
+        <div className="rounded-xl border bg-card p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg font-semibold text-foreground">Pending requests</h3>
+            <CalendarDays size={18} className="text-primary shrink-0" />
           </div>
-          <p className="metric-value">{requests.filter((r) => r.status === "PENDING").length}</p>
-          <p className="metric-sub">On this page</p>
+          <p className="text-2xl font-bold text-foreground">{requests.filter((r) => r.status === "PENDING").length}</p>
+          <p className="text-sm text-muted-foreground mt-1 font-medium">On this page</p>
         </div>
       </section>
 
@@ -105,50 +106,50 @@ export function MyLeavePage() {
           />
         ) : (
           <>
-            <div className="table-responsive">
-              <table className="table app-table">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Dates</th>
-                    <th>Reason</th>
-                    <th>Status</th>
-                    <th className="text-end">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {requests.map((request) => (
-                    <tr key={request.id}>
-                      <td>{request.leaveType.replace(/_/g, " ")}</td>
-                      <td>
-                        {new Date(request.startDate).toLocaleDateString()} →{" "}
-                        {new Date(request.endDate).toLocaleDateString()}
-                      </td>
-                      <td className="table-truncate" title={request.reason}>
-                        {request.reason ?? "—"}
-                      </td>
-                      <td>
-                        <StatusBadge status={request.status} />
-                      </td>
-                      <td className="text-end">
-                        <div className="row-actions">
-                          {request.status === "PENDING" && (
-                            <button
-                              className="icon-button"
-                              type="button"
-                              title="Cancel request"
-                              onClick={() => setCancelTarget(request)}
-                            >
-                              <X size={16} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Dates</TableHead>
+                  <TableHead>Reason</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {requests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell>{request.leaveType.replace(/_/g, " ")}</TableCell>
+                    <TableCell>
+                      {new Date(request.startDate).toLocaleDateString()} →{" "}
+                      {new Date(request.endDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate" title={request.reason}>
+                      {request.reason ?? "—"}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={request.status} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="inline-flex items-center gap-1">
+                        {request.status === "PENDING" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            type="button"
+                            title="Cancel request"
+                            onClick={() => setCancelTarget(request)}
+                          >
+                            <X size={16} />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
             {pagination ? (
               <Pagination
                 currentPage={currentPage}
@@ -175,7 +176,7 @@ export function MyLeavePage() {
             cancelTarget.startDate
           ).toLocaleDateString()} to ${new Date(cancelTarget.endDate).toLocaleDateString()}?`}
           confirmLabel="Cancel request"
-          variant="danger"
+          variant="destructive"
           isProcessing={cancelMutation.isPending}
           onConfirm={() => cancelMutation.mutate(cancelTarget.id)}
           onClose={() => setCancelTarget(null)}
