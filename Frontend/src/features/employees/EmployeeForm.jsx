@@ -2,6 +2,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Button } from "@/components/ui/button.jsx";
+import { Input } from "@/components/ui/input.jsx";
+import { Label } from "@/components/ui/label.jsx";
+import { Select } from "@/components/ui/select.jsx";
 
 const baseSchema = {
   firstName: z.string().min(1, "First name is required."),
@@ -56,77 +60,77 @@ export function EmployeeForm({ departments = [], initialValues, submitLabel, isS
   }, [initialValues, reset]);
 
   return (
-    <form className="stacked-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div className="form-grid">
-        <label className="form-label">
-          First name *
-          <input
-            className={`form-control ${errors.firstName ? "is-invalid" : ""}`}
+    <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label>First name *</Label>
+          <Input
+            className={errors.firstName ? "border-destructive" : ""}
             type="text"
             {...register("firstName")}
           />
-          {errors.firstName ? (
-            <span className="invalid-feedback">{errors.firstName.message}</span>
-          ) : null}
-        </label>
-        <label className="form-label">
-          Last name *
-          <input
-            className={`form-control ${errors.lastName ? "is-invalid" : ""}`}
+          {errors.firstName && (
+            <p className="text-xs text-destructive">{errors.firstName.message}</p>
+          )}
+        </div>
+        <div className="space-y-1.5">
+          <Label>Last name *</Label>
+          <Input
+            className={errors.lastName ? "border-destructive" : ""}
             type="text"
             {...register("lastName")}
           />
-          {errors.lastName ? (
-            <span className="invalid-feedback">{errors.lastName.message}</span>
-          ) : null}
-        </label>
+          {errors.lastName && (
+            <p className="text-xs text-destructive">{errors.lastName.message}</p>
+          )}
+        </div>
       </div>
       {initialValues?.email === undefined && (
-        <label className="form-label">
-          Email *
-          <input
-            className={`form-control ${errors.email ? "is-invalid" : ""}`}
+        <div className="space-y-1.5">
+          <Label>Email *</Label>
+          <Input
+            className={errors.email ? "border-destructive" : ""}
             type="email"
             {...register("email")}
             placeholder="employee@company.com"
           />
-          {errors.email ? (
-            <span className="invalid-feedback">{errors.email.message}</span>
-          ) : null}
-        </label>
+          {errors.email && (
+            <p className="text-xs text-destructive">{errors.email.message}</p>
+          )}
+        </div>
       )}
-      <div className="form-grid">
-        <label className="form-label">
-          Phone
-          <input className="form-control" type="tel" {...register("phone")} />
-        </label>
-        <label className="form-label">
-          Job title
-          <input className="form-control" type="text" {...register("jobTitle")} />
-        </label>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label>Phone</Label>
+          <Input type="tel" {...register("phone")} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Job title</Label>
+          <Input type="text" {...register("jobTitle")} />
+        </div>
       </div>
-      <label className="form-label">
-        Department
-        <select className="form-control" {...register("departmentId")}>
+      <div className="space-y-1.5">
+        <Label>Department</Label>
+        <Select {...register("departmentId")}>
           <option value="">Select department</option>
           {departments.map((dept) => (
             <option key={dept.id} value={dept.id}>
               {dept.name}
             </option>
           ))}
-        </select>
-      </label>
-      <label className="form-label">
-        Date of hire
-        <input className="form-control" type="date" {...register("dateOfHire")} />
-      </label>
-      <div className="form-actions">
-        <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <span className="spinner-border spinner-border-sm" aria-hidden="true" />
-          ) : null}
+        </Select>
+      </div>
+      <div className="space-y-1.5">
+        <Label>Date of hire</Label>
+        <Input type="date" {...register("dateOfHire")} />
+      </div>
+      <div className="flex justify-end gap-2 pt-2">
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting && (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2" aria-hidden="true" />
+          )}
           {submitLabel}
-        </button>
+        </Button>
       </div>
     </form>
   );
