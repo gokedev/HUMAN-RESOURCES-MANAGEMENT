@@ -14,6 +14,8 @@ RUN mvn clean package -DskipTests -B
 # ---------- Run stage ----------
 FROM eclipse-temurin:21-jre-jammy
 
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 RUN groupadd -r spring && useradd -r -g spring spring
