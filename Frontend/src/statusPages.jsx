@@ -1,21 +1,18 @@
 import { Link } from "react-router-dom";
-import {
-  FileQuestion,
-  ShieldOff,
-  Timer,
-  ServerCrash,
-} from "lucide-react";
+import { FileQuestion, ShieldOff, Timer, ServerCrash } from "lucide-react";
 import { usePageTitle } from "./hooks.js";
+import { Button } from "@/components/ui/button.jsx";
 
-// Shared layout for simple full-screen status pages.
 function StatusPage({ icon: Icon, title, message, action }) {
   usePageTitle(title);
   return (
-    <main className="status-page">
-      <Icon size={32} className="status-icon" />
-      <h1>{title}</h1>
-      <p>{message}</p>
-      {action}
+    <main className="flex min-h-[60vh] items-center justify-center p-8 text-center">
+      <div className="space-y-4 max-w-md">
+        <Icon className="h-8 w-8 text-primary mx-auto" />
+        <h1 className="text-xl font-bold text-foreground">{title}</h1>
+        <p className="text-muted-foreground">{message}</p>
+        {action}
+      </div>
     </main>
   );
 }
@@ -26,11 +23,7 @@ export function NotFoundPage() {
       icon={FileQuestion}
       title="Page not found"
       message="The page you opened is not part of this workspace."
-      action={
-        <Link className="btn btn-primary" to="/dashboard">
-          Go home
-        </Link>
-      }
+      action={<Link to="/dashboard"><Button>Go home</Button></Link>}
     />
   );
 }
@@ -41,11 +34,7 @@ export function UnauthorizedPage() {
       icon={ShieldOff}
       title="Access restricted"
       message="Your role does not include permission for this area."
-      action={
-        <Link className="btn btn-primary" to="/dashboard">
-          Return to dashboard
-        </Link>
-      }
+      action={<Link to="/dashboard"><Button>Return to dashboard</Button></Link>}
     />
   );
 }
@@ -56,11 +45,7 @@ export function SessionExpiredPage() {
       icon={Timer}
       title="Session expired"
       message="Your session is no longer valid. Sign in again to continue."
-      action={
-        <Link className="btn btn-primary" to="/login">
-          Sign in
-        </Link>
-      }
+      action={<Link to="/login"><Button>Sign in</Button></Link>}
     />
   );
 }
@@ -71,15 +56,7 @@ export function ServerErrorPage() {
       icon={ServerCrash}
       title="Something went wrong"
       message="The server hit an unexpected error. Please try again in a moment."
-      action={
-        <button
-          className="btn btn-primary"
-          type="button"
-          onClick={() => window.location.reload()}
-        >
-          Try again
-        </button>
-      }
+      action={<Button onClick={() => window.location.reload()}>Try again</Button>}
     />
   );
 }
