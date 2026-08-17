@@ -8,6 +8,7 @@ import { usePageTitle } from "../../hooks.js";
 import { useTheme } from "../../contexts.jsx";
 import { departmentService, profileService } from "../../api.js";
 import { queryKeys } from "../../constants.js";
+import { Button } from "../../components/ui/button.jsx";
 
 const tabs = [
   { id: "personal", label: "Personal Information", icon: UserRound },
@@ -37,19 +38,19 @@ export function ProfilePage() {
         description="Your employee identity, preferences, and account security."
       />
 
-      <section className="profile-panel" style={{ alignItems: "flex-start" }}>
+      <section className="flex items-center justify-between gap-4 p-5 border border-border rounded-xl bg-card shadow-sm" style={{ alignItems: "flex-start" }}>
         {isLoading ? (
           <CardSkeleton />
         ) : (
           <>
-            <span className="profile-avatar profile-avatar-lg">
+            <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#ff7a59] to-[#ff4e6a] text-white text-xl font-bold shrink-0">
               {(profile?.firstName ?? "?").charAt(0).toUpperCase()}
             </span>
             <div>
-              <h2>
+              <h2 className="font-semibold text-foreground">
                 {profile ? `${profile.firstName} ${profile.lastName}` : "Your account"}
               </h2>
-              <p>
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {profile
                   ? `${profile.jobTitle ?? "No job title"} · ${profile.email}`
                   : "Your employee profile could not be loaded."}
@@ -59,31 +60,31 @@ export function ProfilePage() {
         )}
       </section>
 
-      <div className="profile-tabs" style={{ marginTop: "1rem" }}>
-        <nav className="nav nav-pills flex-column" aria-label="Profile sections">
+      <div className="grid grid-cols-[220px_1fr] gap-4 items-start" style={{ marginTop: "1rem" }}>
+        <nav className="border border-border rounded-xl p-1.5 bg-card" aria-label="Profile sections">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              className={`nav-link text-start ${activeTab === id ? "active" : ""}`}
+              className={`flex items-center rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors w-full px-3 py-2 text-start ${activeTab === id ? "bg-primary text-white" : ""}`}
               type="button"
               onClick={() => setActiveTab(id)}
             >
-              <Icon size={16} style={{ marginRight: "0.5rem" }} /> {label}
+              <Icon size={16} className="mr-2" /> {label}
             </button>
           ))}
         </nav>
 
-        <section className="table-shell">
+        <section className="rounded-xl border bg-card shadow-sm overflow-hidden">
           {activeTab === "personal" && (
             <>
-              <div className="table-shell-header">
+              <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
                 <div>
-                  <h2>Account details</h2>
-                  <p>Your personal information and workspace access.</p>
+                  <h2 className="font-semibold text-foreground">Account details</h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">Your personal information and workspace access.</p>
                 </div>
               </div>
-              <div style={{ padding: "1.25rem" }}>
-                <div className="form-grid">
+              <div className="p-5">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <strong>Email</strong>
                     <p>{profile?.email ?? "—"}</p>
@@ -123,19 +124,19 @@ export function ProfilePage() {
 
           {activeTab === "password" && (
             <>
-              <div className="table-shell-header">
+              <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
                 <div>
-                  <h2>Change password</h2>
-                  <p>Keep your account secure by using a strong, unique password.</p>
+                  <h2 className="font-semibold text-foreground">Change password</h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">Keep your account secure by using a strong, unique password.</p>
                 </div>
               </div>
-              <div style={{ padding: "1.25rem" }}>
-                <p style={{ color: "var(--app-muted)" }}>
+              <div className="p-5">
+                <p className="text-muted-foreground">
                   Password resets are sent to your email. Use the reset flow below to set a new
                   password.
                 </p>
-                <Link className="btn btn-outline-primary" to="/forgot-password" style={{ marginTop: "0.5rem" }}>
-                  Reset password
+                <Link className="mt-2 inline-block" to="/forgot-password">
+                  <Button variant="outline">Reset password</Button>
                 </Link>
               </div>
             </>
@@ -143,23 +144,23 @@ export function ProfilePage() {
 
           {activeTab === "appearance" && (
             <>
-              <div className="table-shell-header">
+              <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
                 <div>
-                  <h2>Appearance</h2>
-                  <p>Toggle between light and dark mode to match your preference.</p>
+                  <h2 className="font-semibold text-foreground">Appearance</h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">Toggle between light and dark mode to match your preference.</p>
                 </div>
               </div>
-              <div style={{ padding: "1.25rem" }}>
-                <div className="form-row">
+              <div className="p-5">
+                <div className="flex items-center justify-between">
                   <div>
                     <strong>Theme</strong>
-                    <p style={{ margin: "0.25rem 0 0", color: "var(--app-muted)", fontSize: "0.85rem" }}>
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Current: {theme === "dark" ? "Dark mode" : "Light mode"}
                     </p>
                   </div>
-                  <button className="btn btn-outline-primary" type="button" onClick={toggleTheme}>
+                  <Button variant="outline" type="button" onClick={toggleTheme}>
                     {theme === "dark" ? "Light mode" : "Dark mode"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </>
@@ -167,14 +168,14 @@ export function ProfilePage() {
 
           {activeTab === "security" && (
             <>
-              <div className="table-shell-header">
+              <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
                 <div>
-                  <h2>Security</h2>
-                  <p>Session and workspace information.</p>
+                  <h2 className="font-semibold text-foreground">Security</h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">Session and workspace information.</p>
                 </div>
               </div>
-              <div style={{ padding: "1.25rem" }}>
-                <div className="form-grid">
+              <div className="p-5">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <strong>Signed in as</strong>
                     <p>{profile?.email ?? "—"}</p>
@@ -189,7 +190,7 @@ export function ProfilePage() {
                   </div>
                   <div>
                     <strong>Theme preference</strong>
-                    <p style={{ margin: "0.25rem 0 0", color: "var(--app-muted)", fontSize: "0.85rem" }}>
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Stored locally on this device.
                     </p>
                   </div>
