@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: hr-saas-backend
+    runtime: image
+    image:
+      url: # Leave blank - Render builds from Dockerfile
+    dockerfilePath: ./hr-saas/Dockerfile
+    dockerContext: ./hr-saas
+    envVars:
+      - key: DB_URL
+        fromDatabase:
+          name: hr-saas-db
+          property: connectionString
+      - key: DB_USERNAME
+        fromDatabase:
+          name: hr-saas-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: hr-saas-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_API_URL
+        value: https://api.brevo.com/v3/smtp/email
+      - key: MAIL_FROM_ADDRESS
+        value: no-reply@hrsaas.com
+      - key: FRONTEND_BASE_URL
+        value: https://coral-sooty.vercel.app
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://coral-sooty.vercel.app
+      - key: SERVER_PORT
+        value: 8080
+      - key: JAVA_VERSION
+        value: "20"
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+
+  - type: postgresql
+    name: hr-saas-db
+    plan: free
+    databaseName: hr_saas
+    ipAllowList: []
