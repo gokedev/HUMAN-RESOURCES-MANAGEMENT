@@ -11,20 +11,26 @@ import lombok.Setter;
 public class RegisterCompanyRequest {
 
     @NotBlank
+    @Size(max = 150)
     private String companyName;
 
+    @Size(max = 100)
     private String industry;
 
+    @Size(max = 100)
     private String country;
 
     @NotBlank
+    @Size(max = 100)
     private String adminFirstName;
 
     @NotBlank
+    @Size(max = 100)
     private String adminLastName;
 
     @NotBlank
     @Email
+    @Size(max = 200)
     private String adminEmail;
 
     @NotBlank
