@@ -13,7 +13,10 @@ import {
   Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { PageHeader, StatusBadge } from "../../components/common/ui.jsx";
+import { PageHeader } from "../../components/ui/page-header.jsx";
+import { StatusBadge } from "../../components/ui/badge.jsx";
+import { Button } from "../../components/ui/button.jsx";
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card.jsx";
 import { usePageTitle, useTodayAttendance } from "../../hooks.js";
 import { useAuth } from "../../contexts.jsx";
 import { attendanceService, departmentService, employeeService, leaveService } from "../../api.js";
@@ -97,50 +100,50 @@ function AdminDashboard() {
         title="People operations dashboard"
         description="A focused command center for workforce activity, requests, and company structure."
       />
-      <section className="metric-grid">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard label="Active employees" value={activeEmployees} Icon={Users} />
         <MetricCard label="Pending invitations" value={pendingInvites} Icon={CheckCheck} />
         <MetricCard label="Pending leave" value={pendingLeave} Icon={CalendarDays} />
         <MetricCard label="Departments" value={departments.length} Icon={Building2} />
       </section>
 
-      <section className="dashboard-grid">
-        <article className="insight-panel">
-          <div className="insight-header">
-            <CalendarDays size={18} className="insight-icon" />
+      <section className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4 mt-4">
+        <article className="rounded-xl border bg-card p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <CalendarDays size={18} className="text-primary shrink-0" />
             <h2>Leave requests by type</h2>
           </div>
           {leaveByType.length === 0 ? (
-            <p className="chart-empty">No leave requests yet.</p>
+            <p className="text-center text-muted-foreground py-4 text-sm">No leave requests yet.</p>
           ) : (
             <BarChart data={leaveByType} />
           )}
         </article>
-        <article className="insight-panel">
-          <div className="insight-header">
-            <Clock3 size={18} className="insight-icon" />
+        <article className="rounded-xl border bg-card p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <Clock3 size={18} className="text-primary shrink-0" />
             <h2>Today's attendance</h2>
           </div>
           {attendanceByStatus.length === 0 ? (
-            <p className="chart-empty">No attendance recorded today yet.</p>
+            <p className="text-center text-muted-foreground py-4 text-sm">No attendance recorded today yet.</p>
           ) : (
             <BarChart data={attendanceByStatus} />
           )}
-          <p className="metric-sub" style={{ marginTop: "0.75rem" }}>
+          <p className="text-sm text-muted-foreground mt-1 font-medium" style={{ marginTop: "0.75rem" }}>
             {checkedInToday} employee{checkedInToday === 1 ? "" : "s"} checked in today
           </p>
         </article>
       </section>
 
-      <section className="table-shell" style={{ marginTop: "1rem" }}>
-        <div className="table-shell-header">
+      <section className="rounded-xl border bg-card shadow-sm overflow-hidden mt-4">
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2>Quick actions</h2>
-            <p>Frequent tasks to keep operations moving.</p>
+            <h2 className="font-semibold text-foreground">Quick actions</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Frequent tasks to keep operations moving.</p>
           </div>
         </div>
         <div style={{ padding: "1rem" }}>
-          <div className="quick-actions">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3">
             <QuickAction to="/employees/new" Icon={Plus} label="Add employee" note="Invite someone to your workspace" />
             <QuickAction to="/leave" Icon={Inbox} label="Review leave" note={`${pendingLeave} pending request${pendingLeave === 1 ? "" : "s"}`} />
             <QuickAction to="/attendance" Icon={ClipboardCheck} label="View attendance" note="Check company attendance" />
@@ -171,14 +174,14 @@ function EmployeeDashboard() {
         title="My dashboard"
         description="Your attendance, leave, and personal work activity at a glance."
       />
-      <section className="metric-grid">
-        <article className="metric-card">
-          <span className="metric-icon" aria-hidden="true">
-            <Clock3 size={22} />
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <article className="flex items-center gap-4 p-5 rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+            <Clock3 className="h-5 w-5" />
           </span>
           <div>
-            <span>Today's status</span>
-            <strong>
+            <span className="text-sm text-muted-foreground font-medium">Today's status</span>
+            <strong className="block text-2xl font-bold text-foreground tabular-nums">
               {todayRecord ? (
                 <StatusBadge status={todayRecord.status} />
               ) : (
@@ -187,37 +190,37 @@ function EmployeeDashboard() {
             </strong>
           </div>
         </article>
-        <article className="metric-card">
-          <span className="metric-icon" aria-hidden="true">
-            <CalendarDays size={22} />
+        <article className="flex items-center gap-4 p-5 rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+            <CalendarDays className="h-5 w-5" />
           </span>
           <div>
-            <span>Annual leave balance</span>
-            <strong>—</strong>
+            <span className="text-sm text-muted-foreground font-medium">Annual leave balance</span>
+            <strong className="block text-2xl font-bold text-foreground tabular-nums">—</strong>
           </div>
         </article>
-        <article className="metric-card">
-          <span className="metric-icon" aria-hidden="true">
-            <Inbox size={22} />
+        <article className="flex items-center gap-4 p-5 rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+            <Inbox className="h-5 w-5" />
           </span>
           <div>
-            <span>Pending leave</span>
-            <strong>{pendingMyLeave}</strong>
+            <span className="text-sm text-muted-foreground font-medium">Pending leave</span>
+            <strong className="block text-2xl font-bold text-foreground tabular-nums">{pendingMyLeave}</strong>
           </div>
         </article>
       </section>
 
-      <section className="checkin-card">
-        <div className="insight-header">
-          <Clock3 size={18} className="insight-icon" />
+      <section className="rounded-xl border bg-card p-5 shadow-sm border-l-4 border-l-emerald-500 mb-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Clock3 size={18} className="text-primary shrink-0" />
           <h2>Attendance</h2>
         </div>
-        <p className="metric-value">
+        <p className="text-2xl font-bold text-foreground">
           {todayRecord?.checkIn
             ? new Date(todayRecord.checkIn).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
             : "Not checked in"}
         </p>
-        <p className="metric-sub">
+        <p className="text-sm text-muted-foreground mt-1 font-medium">
           {todayRecord?.checkOut
             ? `Checked out at ${new Date(todayRecord.checkOut).toLocaleTimeString([], {
                 hour: "2-digit",
@@ -227,45 +230,44 @@ function EmployeeDashboard() {
               ? "You are currently checked in."
               : "Start your workday."}
         </p>
-        <div className="quick-actions">
-          <button
-            className="btn btn-primary"
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3">
+          <Button
             type="button"
             disabled={isLoading || hasCheckedIn || isCheckingIn}
             onClick={checkIn}
           >
             {isCheckingIn ? (
-              <span className="spinner-border spinner-border-sm" aria-hidden="true" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
             ) : (
-              <LogIn size={16} style={{ marginRight: "0.35rem" }} />
+              <LogIn size={16} className="mr-1" />
             )}
             Check in
-          </button>
-          <button
-            className="btn btn-outline-secondary"
+          </Button>
+          <Button
+            variant="outline"
             type="button"
             disabled={isLoading || !hasCheckedIn || hasCheckedOut || isCheckingOut}
             onClick={checkOut}
           >
             {isCheckingOut ? (
-              <span className="spinner-border spinner-border-sm" aria-hidden="true" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
             ) : (
-              <LogOut size={16} style={{ marginRight: "0.35rem" }} />
+              <LogOut size={16} className="mr-1" />
             )}
             Check out
-          </button>
+          </Button>
         </div>
       </section>
 
-      <section className="table-shell" style={{ marginTop: "1rem" }}>
-        <div className="table-shell-header">
+      <section className="rounded-xl border bg-card shadow-sm overflow-hidden mt-4">
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2>Quick actions</h2>
-            <p>Manage your time off and attendance.</p>
+            <h2 className="font-semibold text-foreground">Quick actions</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Manage your time off and attendance.</p>
           </div>
         </div>
         <div style={{ padding: "1rem" }}>
-          <div className="quick-actions">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3">
             <QuickAction to="/my-leave" Icon={CalendarDays} label="Request leave" note="Submit time off" />
             <QuickAction to="/my-leave" Icon={Inbox} label="My requests" note={`${pendingMyLeave} pending`} />
             <QuickAction to="/my-attendance" Icon={ClipboardCheck} label="My attendance" note="View your history" />
@@ -279,13 +281,13 @@ function EmployeeDashboard() {
 
 function MetricCard({ label, value, Icon }) {
   return (
-    <article className="metric-card">
-      <span className="metric-icon" aria-hidden="true">
-        <Icon size={22} />
+    <article className="flex items-center gap-4 p-5 rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow">
+      <span className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+        <Icon className="h-5 w-5" />
       </span>
       <div>
-        <span>{label}</span>
-        <strong>{value}</strong>
+        <span className="text-sm text-muted-foreground font-medium">{label}</span>
+        <strong className="block text-2xl font-bold text-foreground tabular-nums">{value}</strong>
       </div>
     </article>
   );
@@ -293,10 +295,10 @@ function MetricCard({ label, value, Icon }) {
 
 function QuickAction({ to, Icon, label, note }) {
   return (
-    <Link className="quick-action" to={to}>
-      <Icon size={20} className="metric-icon" />
-      <strong>{label}</strong>
-      <span style={{ color: "var(--app-muted)", fontSize: "0.85rem" }}>{note}</span>
+    <Link className="flex flex-col items-start gap-2 text-left border bg-card rounded-xl p-4 text-foreground no-underline hover:border-primary hover:shadow-md transition-all" to={to}>
+      <Icon className="h-5 w-5 text-primary" />
+      <strong className="text-sm font-semibold">{label}</strong>
+      <span className="text-sm text-muted-foreground">{note}</span>
     </Link>
   );
 }
