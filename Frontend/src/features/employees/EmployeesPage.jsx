@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye, Pencil, Plus, UserCheck, UserX, Users } from "lucide-react";
+import { Button } from "@/components/ui/button.jsx";
 import {
   ConfirmDialog,
   PageHeader,
@@ -80,25 +81,27 @@ export function EmployeesPage() {
         title="Employees"
         description="Manage workforce records, invitations, reporting lines, and account status."
         actions={
-          <Link className="btn btn-primary" to="/employees/new">
-            <Plus size={16} style={{ marginRight: "0.35rem" }} /> Add employee
-          </Link>
+          <Button variant="default" asChild>
+            <Link to="/employees/new">
+              <Plus size={16} className="mr-1.5" /> Add employee
+            </Link>
+          </Button>
         }
       />
       <DataTableShell
         title="Employee directory"
         description="Search, filter, and manage company users."
         action={
-          <button
-            className="btn btn-outline-secondary"
+          <Button
+            variant="outline"
             type="button"
             onClick={() => setSearch("")}
           >
             Clear filters
-          </button>
+          </Button>
         }
       >
-        <div className="table-toolbar">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border flex-wrap">
           <SearchInput
             value={search}
             onChange={(value) => {
@@ -108,7 +111,7 @@ export function EmployeesPage() {
             placeholder="Search name, email, or job title..."
           />
           <select
-            className="form-control"
+            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
             value={departmentFilter}
             onChange={(e) => {
               setDepartmentFilter(e.target.value);
@@ -123,7 +126,7 @@ export function EmployeesPage() {
             ))}
           </select>
           <select
-            className="form-control"
+            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
@@ -157,82 +160,96 @@ export function EmployeesPage() {
           />
         ) : (
           <>
-            <div className="table-responsive">
-              <table className="table app-table">
-                <thead>
-                  <tr>
-                    <th>Employee</th>
-                    <th>Department</th>
-                    <th>Job Title</th>
-                    <th>Status</th>
-                    <th>Role</th>
-                    <th className="text-end">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pageItems.map((emp) => (
-                    <tr key={emp.id}>
-                      <td>
-                        <div className="cell-identity">
-                          <span className="profile-avatar">
-                            {emp.firstName.charAt(0).toUpperCase()}
-                          </span>
-                          <div>
-                            <strong>
-                              {emp.firstName} {emp.lastName}
-                            </strong>
-                            <span>{emp.email}</span>
+            <table className="w-full text-sm">
+              <thead>
+                <tr>
+                  <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">Employee</th>
+                  <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">Department</th>
+                  <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">Job Title</th>
+                  <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">Status</th>
+                  <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">Role</th>
+                  <th className="h-10 px-4 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.map((emp) => (
+                  <tr key={emp.id} className="border-b hover:bg-muted/50 transition-colors last:border-0">
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-coral to-coral-strong text-white text-xs font-bold shrink-0">
+                          {emp.firstName.charAt(0).toUpperCase()}
+                        </span>
+                        <div>
+                          <div className="font-medium">
+                            {emp.firstName} {emp.lastName}
                           </div>
+                          <div className="text-sm text-muted-foreground">{emp.email}</div>
                         </div>
-                      </td>
-                      <td>{departmentNameMap[emp.departmentId] ?? "—"}</td>
-                      <td>{emp.jobTitle ?? "—"}</td>
-                      <td>
-                        <StatusBadge status={emp.status} />
-                      </td>
-                      <td>{emp.role}</td>
-                      <td className="text-end">
-                        <div className="row-actions">
+                      </div>
+                    </td>
+                    <td className="p-4">{departmentNameMap[emp.departmentId] ?? "—"}</td>
+                    <td className="p-4">{emp.jobTitle ?? "—"}</td>
+                    <td className="p-4">
+                      <StatusBadge status={emp.status} />
+                    </td>
+                    <td className="p-4">{emp.role}</td>
+                    <td className="p-4 text-right">
+                      <div className="inline-flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          asChild
+                        >
                           <Link
-                            className="icon-button"
                             to={`/employees/${emp.id}`}
                             title="View details"
                           >
                             <Eye size={16} />
                           </Link>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          asChild
+                        >
                           <Link
-                            className="icon-button"
                             to={`/employees/${emp.id}/edit`}
                             title="Edit"
                           >
                             <Pencil size={16} />
                           </Link>
-                          {emp.status === "ACTIVE" ? (
-                            <button
-                              className="icon-button"
-                              type="button"
-                              title="Deactivate"
-                              onClick={() => setPendingAction({ id: emp.id, deactivate: true })}
-                            >
-                              <UserX size={16} />
-                            </button>
-                          ) : emp.status === "SUSPENDED" ? (
-                            <button
-                              className="icon-button"
-                              type="button"
-                              title="Reactivate"
-                              onClick={() => setPendingAction({ id: emp.id, deactivate: false })}
-                            >
-                              <UserCheck size={16} />
-                            </button>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        </Button>
+                        {emp.status === "ACTIVE" ? (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            type="button"
+                            title="Deactivate"
+                            onClick={() => setPendingAction({ id: emp.id, deactivate: true })}
+                          >
+                            <UserX size={16} />
+                          </Button>
+                        ) : emp.status === "SUSPENDED" ? (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            type="button"
+                            title="Reactivate"
+                            onClick={() => setPendingAction({ id: emp.id, deactivate: false })}
+                          >
+                            <UserCheck size={16} />
+                          </Button>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
             <Pagination
               currentPage={safePage}
               totalPages={totalPages}
