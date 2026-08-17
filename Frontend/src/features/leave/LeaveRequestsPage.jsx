@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Eye, Inbox, X } from "lucide-react";
 import { PageHeader, Pagination, StatusBadge } from "../../components/common/ui.jsx";
+import { Button } from "../../components/ui/button.jsx";
 import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feedback.jsx";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { useEmployeeNameMap, usePageTitle } from "../../hooks.js";
 import { useToast } from "../../contexts.jsx";
 import { leaveService } from "../../api.js";
@@ -66,70 +68,74 @@ export function LeaveRequestsPage() {
           />
         ) : (
           <>
-            <div className="table-responsive">
-              <table className="table app-table">
-                <thead>
-                  <tr>
-                    <th>Employee</th>
-                    <th>Type</th>
-                    <th>Dates</th>
-                    <th>Reason</th>
-                    <th>Status</th>
-                    <th className="text-end">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {requests.map((request) => (
-                    <tr key={request.id}>
-                      <td>{nameMap[request.employeeId] ?? "Unknown employee"}</td>
-                      <td>{request.leaveType.replace(/_/g, " ")}</td>
-                      <td>
-                        {new Date(request.startDate).toLocaleDateString()} →{" "}
-                        {new Date(request.endDate).toLocaleDateString()}
-                      </td>
-                      <td className="table-truncate" title={request.reason}>
-                        {request.reason ?? "—"}
-                      </td>
-                      <td>
-                        <StatusBadge status={request.status} />
-                      </td>
-                      <td className="text-end">
-                        <div className="row-actions">
-                          {request.status === "PENDING" && (
-                            <>
-                              <button
-                                className="icon-button"
-                                type="button"
-                                title="Approve"
-                                onClick={() => setReviewTarget({ request, approve: true })}
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                className="icon-button"
-                                type="button"
-                                title="Reject"
-                                onClick={() => setReviewTarget({ request, approve: false })}
-                              >
-                                <X size={16} />
-                              </button>
-                            </>
-                          )}
-                          <button
-                            className="icon-button"
-                            type="button"
-                            title="View details"
-                            onClick={() => setSelected(request)}
-                          >
-                            <Eye size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Dates</TableHead>
+                  <TableHead>Reason</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {requests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell>{nameMap[request.employeeId] ?? "Unknown employee"}</TableCell>
+                    <TableCell>{request.leaveType.replace(/_/g, " ")}</TableCell>
+                    <TableCell>
+                      {new Date(request.startDate).toLocaleDateString()} →{" "}
+                      {new Date(request.endDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate" title={request.reason}>
+                      {request.reason ?? "—"}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={request.status} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="inline-flex items-center gap-1">
+                        {request.status === "PENDING" && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              type="button"
+                              title="Approve"
+                              onClick={() => setReviewTarget({ request, approve: true })}
+                            >
+                              <Check size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              type="button"
+                              title="Reject"
+                              onClick={() => setReviewTarget({ request, approve: false })}
+                            >
+                              <X size={16} />
+                            </Button>
+                          </>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          type="button"
+                          title="View details"
+                          onClick={() => setSelected(request)}
+                        >
+                          <Eye size={16} />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
             {pagination ? (
               <Pagination
                 currentPage={currentPage}
