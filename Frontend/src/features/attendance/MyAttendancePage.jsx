@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarRange, ClipboardCheck, Clock, LogIn, LogOut } from "lucide-react";
 import { PageHeader, Pagination, StatusBadge } from "../../components/common/ui.jsx";
+import { Button } from "../../components/ui/button.jsx";
 import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feedback.jsx";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { AttendanceCalendar } from "../../components/common/charts.jsx";
 import { usePageTitle, useTodayAttendance } from "../../hooks.js";
 import { attendanceService } from "../../api.js";
@@ -40,17 +42,17 @@ export function MyAttendancePage() {
         title="My attendance"
         description="Check in, check out, and review your personal attendance history."
       />
-      <section className="checkin-card">
-        <div className="metric-header">
-          <h3>Today</h3>
-          <Clock size={18} className="metric-icon" />
+      <section className="rounded-xl border bg-card p-5 shadow-sm border-l-4 border-l-emerald-500 mb-4">
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="text-lg font-semibold text-foreground">Today</h3>
+          <Clock size={18} className="text-primary shrink-0" />
         </div>
-        <p className="metric-value">
+        <p className="text-2xl font-bold text-foreground">
           {todayRecord?.checkIn
             ? new Date(todayRecord.checkIn).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
             : "Not checked in"}
         </p>
-        <p className="metric-sub">
+        <p className="text-sm text-muted-foreground mt-1 font-medium">
           {todayRecord?.checkOut
             ? `Checked out at ${new Date(todayRecord.checkOut).toLocaleTimeString([], {
                 hour: "2-digit",
@@ -60,45 +62,44 @@ export function MyAttendancePage() {
               ? "You are currently checked in."
               : "Start your workday."}
         </p>
-        <div className="quick-actions">
-          <button
-            className="btn btn-primary"
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3 mt-4">
+          <Button
             type="button"
             disabled={todayLoading || hasCheckedIn || isCheckingIn}
             onClick={checkIn}
           >
             {isCheckingIn ? (
-              <span className="spinner-border spinner-border-sm" aria-hidden="true" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
             ) : (
-              <LogIn size={16} style={{ marginRight: "0.35rem" }} />
+              <LogIn size={16} />
             )}
             Check in
-          </button>
-          <button
-            className="btn btn-outline-secondary"
+          </Button>
+          <Button
+            variant="outline"
             type="button"
             disabled={todayLoading || !hasCheckedIn || hasCheckedOut || isCheckingOut}
             onClick={checkOut}
           >
             {isCheckingOut ? (
-              <span className="spinner-border spinner-border-sm" aria-hidden="true" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
             ) : (
-              <LogOut size={16} style={{ marginRight: "0.35rem" }} />
+              <LogOut size={16} />
             )}
             Check out
-          </button>
+          </Button>
         </div>
       </section>
 
-      <section className="table-shell">
-        <div className="table-shell-header">
+      <section className="rounded-xl border bg-card shadow-sm overflow-hidden mb-4">
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2>This month</h2>
-            <p>Your attendance status day by day.</p>
+            <h2 className="font-semibold text-foreground">This month</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Your attendance status day by day.</p>
           </div>
-          <CalendarRange size={18} className="metric-icon" />
+          <CalendarRange size={18} className="text-primary shrink-0" />
         </div>
-        <div style={{ padding: "1rem" }}>
+        <div className="p-4">
           <AttendanceCalendar records={monthData?.content ?? []} />
         </div>
       </section>
@@ -120,30 +121,28 @@ export function MyAttendancePage() {
           />
         ) : (
           <>
-            <div className="table-responsive">
-              <table className="table app-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Check-in</th>
-                    <th>Check-out</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map((record) => (
-                    <tr key={record.id}>
-                      <td>{new Date(record.workDate).toLocaleDateString()}</td>
-                      <td>{record.checkIn ? formatTime(record.checkIn) : "—"}</td>
-                      <td>{record.checkOut ? formatTime(record.checkOut) : "—"}</td>
-                      <td>
-                        <StatusBadge status={record.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Check-in</TableHead>
+                  <TableHead>Check-out</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {history.map((record) => (
+                  <TableRow key={record.id}>
+                    <TableCell>{new Date(record.workDate).toLocaleDateString()}</TableCell>
+                    <TableCell>{record.checkIn ? formatTime(record.checkIn) : "—"}</TableCell>
+                    <TableCell>{record.checkOut ? formatTime(record.checkOut) : "—"}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={record.status} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
             {pagination ? (
               <Pagination
                 currentPage={currentPage}
