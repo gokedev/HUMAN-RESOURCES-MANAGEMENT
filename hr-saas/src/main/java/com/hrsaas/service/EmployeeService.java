@@ -11,6 +11,8 @@ import com.hrsaas.repository.CompanyRepository;
 import com.hrsaas.repository.InvitationRepository;
 import com.hrsaas.repository.UserRepository;
 import com.hrsaas.tenant.TenantContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,8 @@ import java.util.UUID;
 
 @Service
 public class EmployeeService {
+
+    private static final Logger log = LoggerFactory.getLogger(EmployeeService.class);
 
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
@@ -54,6 +58,7 @@ public class EmployeeService {
     @Transactional
     public User createEmployee(CreateEmployeeRequest request) {
         UUID tenantId = TenantContext.getTenantId();
+        log.info("Creating employee with email={} for company={}", request.getEmail(), tenantId);
 
         if (userRepository.existsByCompanyIdAndEmailIgnoreCase(tenantId, request.getEmail())) {
             throw ApiException.conflict("An employee with this email already exists in your company");
@@ -89,20 +94,27 @@ public class EmployeeService {
         String inviteLink = frontendBaseUrl + "/accept-invite?token=" + token;
         mailService.sendEmployeeInvitation(employee.getEmail(), employee.getFirstName(), company.getName(), inviteLink);
 
+        log.info("Employee created successfully: id={}, email={}", employee.getId(), employee.getEmail());
         return employee;
     }
 
     public Page<User> listEmployees(Pageable pageable) {
-        return userRepository.findByCompanyId(TenantContext.getTenantId(), pageable);
+        UUID tenantId = TenantContext.getTenantId();
+        log.debug("Listing employees for company={}", tenantId);
+        return userRepository.findByCompanyId(tenantId, pageable);
     }
 
     public User getEmployee(UUID employeeId) {
-        return userRepository.findByIdAndCompanyId(employeeId, TenantContext.getTenantId())
+        UUID tenantId = TenantContext.getTenantId();
+        log.debug("Fetching employee={} for company={}", employeeId, tenantId);
+        return userRepository.findByIdAndCompanyId(employeeId, tenantId)
                 .orElseThrow(() -> ApiException.notFound("Employee not found"));
     }
 
     @Transactional
     public User updateEmployee(UUID employeeId, CreateEmployeeRequest request) {
+        UUID tenantId = TenantContext.getTenantId();
+        log.info("Updating employee={} for company={}", employeeId, tenantId);
         User employee = getEmployee(employeeId);
         employee.setFirstName(request.getFirstName());
         employee.setLastName(request.getLastName());
@@ -111,21 +123,29 @@ public class EmployeeService {
         employee.setDepartmentId(request.getDepartmentId());
         employee.setManagerId(request.getManagerId());
         employee.setDateOfHire(request.getDateOfHire());
-        return userRepository.save(employee);
+        User saved = userRepository.save(employee);
+        log.info("Employee updated successfully: id={}", saved.getId());
+        return saved;
     }
 
     @Transactional
     public void deactivateEmployee(UUID employeeId) {
+        UUID tenantId = TenantContext.getTenantId();
+        log.info("Deactivating employee={} for company={}", employeeId, tenantId);
         User employee = getEmployee(employeeId);
         employee.setStatus(UserStatus.SUSPENDED);
         userRepository.save(employee);
+        log.info("Employee deactivated: id={}", employeeId);
     }
 
     @Transactional
     public void reactivateEmployee(UUID employeeId) {
+        UUID tenantId = TenantContext.getTenantId();
+        log.info("Reactivating employee={} for company={}", employeeId, tenantId);
         User employee = getEmployee(employeeId);
         employee.setStatus(UserStatus.ACTIVE);
         userRepository.save(employee);
+        log.info("Employee reactivated: id={}", employeeId);
     }
 
     private String generateSecureToken() {
