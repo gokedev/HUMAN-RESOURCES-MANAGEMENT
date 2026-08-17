@@ -9,6 +9,8 @@ import com.hrsaas.exception.ApiException;
 import com.hrsaas.repository.LeaveRequestRepository;
 import com.hrsaas.repository.UserRepository;
 import com.hrsaas.tenant.TenantContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,8 @@ import java.util.UUID;
 
 @Service
 public class LeaveService {
+
+    private static final Logger log = LoggerFactory.getLogger(LeaveService.class);
 
     private final LeaveRequestRepository leaveRequestRepository;
     private final UserRepository userRepository;
@@ -38,6 +42,7 @@ public class LeaveService {
     public LeaveRequest createLeaveRequest(LeaveRequestCreateDto dto) {
         UUID tenantId = TenantContext.getTenantId();
         UUID employeeId = TenantContext.getUserId();
+        log.info("Creating leave request for employee={} in company={}", employeeId, tenantId);
 
         if (dto.getEndDate().isBefore(dto.getStartDate())) {
             throw ApiException.badRequest("End date cannot be before start date");
@@ -53,22 +58,29 @@ public class LeaveService {
                 .status(LeaveStatus.PENDING)
                 .build();
 
-        return leaveRequestRepository.save(leaveRequest);
+        LeaveRequest saved = leaveRequestRepository.save(leaveRequest);
+        log.info("Leave request created: id={}, type={}, dates={}-{}", saved.getId(), saved.getLeaveType(), saved.getStartDate(), saved.getEndDate());
+        return saved;
     }
 
     public Page<LeaveRequest> listCompanyLeaveRequests(Pageable pageable) {
-        return leaveRequestRepository.findByCompanyId(TenantContext.getTenantId(), pageable);
+        UUID tenantId = TenantContext.getTenantId();
+        log.debug("Listing company leave requests for company={}", tenantId);
+        return leaveRequestRepository.findByCompanyId(tenantId, pageable);
     }
 
     public Page<LeaveRequest> listOwnLeaveRequests(Pageable pageable) {
-        return leaveRequestRepository.findByCompanyIdAndEmployeeId(
-                TenantContext.getTenantId(), TenantContext.getUserId(), pageable
-        );
+        UUID tenantId = TenantContext.getTenantId();
+        UUID employeeId = TenantContext.getUserId();
+        log.debug("Listing leave requests for employee={} in company={}", employeeId, tenantId);
+        return leaveRequestRepository.findByCompanyIdAndEmployeeId(tenantId, employeeId, pageable);
     }
 
     @Transactional
     public LeaveRequest reviewLeaveRequest(UUID leaveRequestId, LeaveReviewDto dto) {
         UUID tenantId = TenantContext.getTenantId();
+        UUID reviewerId = TenantContext.getUserId();
+        log.info("Reviewing leave request={} by user={}", leaveRequestId, reviewerId);
 
         LeaveRequest leaveRequest = leaveRequestRepository.findByIdAndCompanyId(leaveRequestId, tenantId)
                 .orElseThrow(() -> ApiException.notFound("Leave request not found"));
@@ -78,11 +90,12 @@ public class LeaveService {
         }
 
         leaveRequest.setStatus(dto.isApprove() ? LeaveStatus.APPROVED : LeaveStatus.REJECTED);
-        leaveRequest.setReviewedBy(TenantContext.getUserId());
+        leaveRequest.setReviewedBy(reviewerId);
         leaveRequest.setReviewedAt(LocalDateTime.now());
         leaveRequest.setReviewNote(dto.getNote());
 
         LeaveRequest saved = leaveRequestRepository.save(leaveRequest);
+        log.info("Leave request={} reviewed: status={}", leaveRequestId, saved.getStatus());
 
         User employee = userRepository.findById(leaveRequest.getEmployeeId()).orElse(null);
         if (employee != null) {
@@ -101,6 +114,7 @@ public class LeaveService {
     public void cancelLeaveRequest(UUID leaveRequestId) {
         UUID tenantId = TenantContext.getTenantId();
         UUID employeeId = TenantContext.getUserId();
+        log.info("Cancelling leave request={} by employee={}", leaveRequestId, employeeId);
 
         LeaveRequest leaveRequest = leaveRequestRepository.findByIdAndCompanyId(leaveRequestId, tenantId)
                 .orElseThrow(() -> ApiException.notFound("Leave request not found"));
@@ -115,5 +129,6 @@ public class LeaveService {
 
         leaveRequest.setStatus(LeaveStatus.CANCELLED);
         leaveRequestRepository.save(leaveRequest);
+        log.info("Leave request={} cancelled", leaveRequestId);
     }
 }
