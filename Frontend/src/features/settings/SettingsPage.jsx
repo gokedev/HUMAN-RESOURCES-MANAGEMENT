@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { PageHeader } from "../../components/common/ui.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useAuth, useTheme } from "../../contexts.jsx";
+import { Button } from "../../components/ui/button.jsx";
 
 export function SettingsPage() {
   usePageTitle("Settings");
@@ -16,17 +17,17 @@ export function SettingsPage() {
         description="Workspace information and account preferences."
       />
 
-      <section className="table-shell" style={{ marginBottom: "1rem" }}>
-        <div className="table-shell-header">
+      <section className="rounded-xl border bg-card shadow-sm overflow-hidden" style={{ marginBottom: "1rem" }}>
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2>
-              <Building2 size={16} style={{ marginRight: "0.4rem" }} /> Workspace
+            <h2 className="font-semibold text-foreground">
+              <Building2 size={16} className="inline mr-1.5 align-text-bottom" /> Workspace
             </h2>
-            <p>Company-level information for your workspace.</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Company-level information for your workspace.</p>
           </div>
         </div>
-        <div style={{ padding: "1.25rem" }}>
-          <div className="form-grid">
+        <div className="p-5">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <strong>Company slug</strong>
               <p>{session?.companySlug ?? "—"}</p>
@@ -40,57 +41,59 @@ export function SettingsPage() {
               <p>{session?.role ?? "—"}</p>
             </div>
           </div>
-          <p style={{ color: "var(--app-muted)", margin: "1rem 0 0", fontSize: "0.9rem" }}>
+          <p className="text-muted-foreground mt-4 text-sm">
             Company profile editing is not available through the API yet. Manage teams from the
             departments screen.
           </p>
           {session?.role === "ADMIN" ? (
-            <Link className="btn btn-outline-secondary" to="/departments" style={{ marginTop: "0.5rem" }}>
-              <LinkIcon size={16} style={{ marginRight: "0.35rem" }} /> Manage departments
+            <Link className="mt-2 inline-block" to="/departments">
+              <Button variant="outline">
+                <LinkIcon size={16} /> Manage departments
+              </Button>
             </Link>
           ) : null}
         </div>
       </section>
 
-      <section className="table-shell" style={{ marginBottom: "1rem" }}>
-        <div className="table-shell-header">
+      <section className="rounded-xl border bg-card shadow-sm overflow-hidden" style={{ marginBottom: "1rem" }}>
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2>
-              <Palette size={16} style={{ marginRight: "0.4rem" }} /> Appearance
+            <h2 className="font-semibold text-foreground">
+              <Palette size={16} className="inline mr-1.5 align-text-bottom" /> Appearance
             </h2>
-            <p>Toggle between light and dark mode to match your preference.</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Toggle between light and dark mode to match your preference.</p>
           </div>
         </div>
-        <div style={{ padding: "1.25rem" }}>
-          <div className="form-row">
+        <div className="p-5">
+          <div className="flex items-center justify-between">
             <div>
               <strong>Theme</strong>
-              <p style={{ margin: "0.25rem 0 0", color: "var(--app-muted)", fontSize: "0.85rem" }}>
+              <p className="mt-1 text-sm text-muted-foreground">
                 Current: {theme === "dark" ? "Dark mode" : "Light mode"}
               </p>
             </div>
-            <button className="btn btn-outline-primary" type="button" onClick={toggleTheme}>
+            <Button variant="outline" type="button" onClick={toggleTheme}>
               {theme === "dark" ? "Light mode" : "Dark mode"}
-            </button>
+            </Button>
           </div>
         </div>
       </section>
 
-      <section className="table-shell">
-        <div className="table-shell-header">
+      <section className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2>
-              <ShieldCheck size={16} style={{ marginRight: "0.4rem" }} /> Security
+            <h2 className="font-semibold text-foreground">
+              <ShieldCheck size={16} className="inline mr-1.5 align-text-bottom" /> Security
             </h2>
-            <p>Password resets are sent to your email.</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Password resets are sent to your email.</p>
           </div>
         </div>
-        <div style={{ padding: "1.25rem" }}>
-          <p style={{ color: "var(--app-muted)" }}>
+        <div className="p-5">
+          <p className="text-muted-foreground">
             Use the reset flow to set a new password for your account.
           </p>
-          <Link className="btn btn-outline-primary" to="/forgot-password" style={{ marginTop: "0.5rem" }}>
-            Reset password
+          <Link className="mt-2 inline-block" to="/forgot-password">
+            <Button variant="outline">Reset password</Button>
           </Link>
         </div>
       </section>
