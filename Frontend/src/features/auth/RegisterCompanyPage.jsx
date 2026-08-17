@@ -6,6 +6,9 @@ import { useAuth, useToast } from "../../contexts.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { registerCompanySchema } from "./schemas.js";
 import { getErrorMessage } from "../../utils.js";
+import { Button } from "@/components/ui/button.jsx";
+import { Input } from "@/components/ui/input.jsx";
+import { Label } from "@/components/ui/label.jsx";
 
 const optionalText = (value) => (value?.trim() ? value.trim() : undefined);
 
@@ -15,7 +18,6 @@ export function RegisterCompanyPage() {
   const { notify } = useToast();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Already signed in? There is nothing to register.
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/dashboard", { replace: true });
@@ -58,84 +60,74 @@ export function RegisterCompanyPage() {
     }
   }
   return (
-    <div className="auth-card">
-      <span className="page-eyebrow">Company setup</span>
-      <h2>Create your workspace</h2>
-      <form className="stacked-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div className="form-grid">
-          <label className="form-label">
-            Company name *
-            <input
-              className={`form-control ${errors.companyName ? "is-invalid" : ""}`}
+    <div className="w-full max-w-[440px]">
+      <span className="text-xs font-bold uppercase tracking-wider text-primary">Company setup</span>
+      <h2 className="mt-1 mb-6 text-2xl font-extrabold text-foreground">Create your workspace</h2>
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2 col-span-2">
+            <Label>Company name *</Label>
+            <Input
               type="text"
               {...register("companyName")}
+              className={errors.companyName ? "border-destructive" : ""}
             />
-            {errors.companyName ? (
-              <span className="invalid-feedback">{errors.companyName.message}</span>
-            ) : null}
-          </label>
-          <label className="form-label">
-            Industry
-            <input className="form-control" type="text" {...register("industry")} />
-          </label>
-          <label className="form-label">
-            Country
-            <input className="form-control" type="text" {...register("country")} />
-          </label>
-          <label className="form-label">
-            Admin first name *
-            <input
-              className={`form-control ${errors.adminFirstName ? "is-invalid" : ""}`}
+            {errors.companyName && <p className="text-xs text-destructive">{errors.companyName.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label>Industry</Label>
+            <Input type="text" {...register("industry")} />
+          </div>
+          <div className="space-y-2">
+            <Label>Country</Label>
+            <Input type="text" {...register("country")} />
+          </div>
+          <div className="space-y-2">
+            <Label>Admin first name *</Label>
+            <Input
               type="text"
               {...register("adminFirstName")}
+              className={errors.adminFirstName ? "border-destructive" : ""}
             />
-            {errors.adminFirstName ? (
-              <span className="invalid-feedback">{errors.adminFirstName.message}</span>
-            ) : null}
-          </label>
-          <label className="form-label">
-            Admin last name *
-            <input
-              className={`form-control ${errors.adminLastName ? "is-invalid" : ""}`}
+            {errors.adminFirstName && <p className="text-xs text-destructive">{errors.adminFirstName.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label>Admin last name *</Label>
+            <Input
               type="text"
               {...register("adminLastName")}
+              className={errors.adminLastName ? "border-destructive" : ""}
             />
-            {errors.adminLastName ? (
-              <span className="invalid-feedback">{errors.adminLastName.message}</span>
-            ) : null}
-          </label>
-          <label className="form-label">
-            Admin email *
-            <input
-              className={`form-control ${errors.adminEmail ? "is-invalid" : ""}`}
+            {errors.adminLastName && <p className="text-xs text-destructive">{errors.adminLastName.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label>Admin email *</Label>
+            <Input
               type="email"
               {...register("adminEmail")}
+              className={errors.adminEmail ? "border-destructive" : ""}
             />
-            {errors.adminEmail ? (
-              <span className="invalid-feedback">{errors.adminEmail.message}</span>
-            ) : null}
-          </label>
-          <label className="form-label">
-            Admin password *
-            <input
-              className={`form-control ${errors.adminPassword ? "is-invalid" : ""}`}
+            {errors.adminEmail && <p className="text-xs text-destructive">{errors.adminEmail.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label>Admin password *</Label>
+            <Input
               type="password"
               {...register("adminPassword")}
+              className={errors.adminPassword ? "border-destructive" : ""}
             />
-            {errors.adminPassword ? (
-              <span className="invalid-feedback">{errors.adminPassword.message}</span>
-            ) : null}
-          </label>
+            {errors.adminPassword && <p className="text-xs text-destructive">{errors.adminPassword.message}</p>}
+          </div>
         </div>
-        <button className="btn btn-primary w-100" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <span className="spinner-border spinner-border-sm" aria-hidden="true" />
-          ) : null}
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting && (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+          )}
           Create workspace
-        </button>
+        </Button>
       </form>
-      <p className="auth-link">
-        Already registered? <Link to="/login">Sign in</Link>
+      <p className="mt-4 text-center text-sm text-muted-foreground">
+        Already registered? <Link to="/login" className="text-primary hover:underline font-medium">Sign in</Link>
       </p>
     </div>
   );
