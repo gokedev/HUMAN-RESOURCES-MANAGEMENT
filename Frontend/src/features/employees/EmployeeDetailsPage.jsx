@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Pencil, UserX, UserCheck } from "lucide-react";
+import { Button } from "@/components/ui/button.jsx";
 import { ConfirmDialog, PageHeader, StatusBadge } from "../../components/common/ui.jsx";
 import { CardSkeleton, EmptyState } from "../../components/feedback.jsx";
 import { usePageTitle } from "../../hooks.js";
@@ -53,7 +54,7 @@ export function EmployeeDetailsPage() {
   if (isLoading) {
     return (
       <>
-        <Link to="/employees" className="back-link">
+        <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3">
           <ArrowLeft size={15} /> Back to employees
         </Link>
         <PageHeader title="Employee details" description="Loading..." />
@@ -65,7 +66,7 @@ export function EmployeeDetailsPage() {
   if (!employee) {
     return (
       <>
-        <Link to="/employees" className="back-link">
+        <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3">
           <ArrowLeft size={15} /> Back to employees
         </Link>
         <EmptyState
@@ -79,96 +80,99 @@ export function EmployeeDetailsPage() {
 
   return (
     <>
-      <Link to="/employees" className="back-link">
+      <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3">
         <ArrowLeft size={15} /> Back to employees
       </Link>
       <PageHeader
         title={`${employee.firstName} ${employee.lastName}`}
         description={employee.email}
         actions={
-          <div className="detail-actions">
-            <Link className="btn btn-outline-secondary" to={`/employees/${employee.id}/edit`}>
-              <Pencil size={16} style={{ marginRight: "0.35rem" }} /> Edit
-            </Link>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" asChild>
+              <Link to={`/employees/${employee.id}/edit`}>
+                <Pencil size={16} className="mr-1.5" /> Edit
+              </Link>
+            </Button>
             {employee.status === "ACTIVE" ? (
-              <button
-                className="btn btn-outline-danger"
+              <Button
+                variant="destructive"
                 type="button"
                 onClick={() => setShowDeactivate(true)}
               >
-                <UserX size={16} style={{ marginRight: "0.35rem" }} /> Deactivate
-              </button>
+                <UserX size={16} className="mr-1.5" /> Deactivate
+              </Button>
             ) : employee.status === "SUSPENDED" ? (
-              <button
-                className="btn btn-outline-success"
+              <Button
+                variant="default"
                 type="button"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 onClick={() => setShowReactivate(true)}
               >
-                <UserCheck size={16} style={{ marginRight: "0.35rem" }} /> Reactivate
-              </button>
+                <UserCheck size={16} className="mr-1.5" /> Reactivate
+              </Button>
             ) : null}
           </div>
         }
       />
-      <section className="table-shell">
-        <div className="table-shell-header">
+      <section className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2>Employee record</h2>
-            <p>Profile information and workspace access.</p>
+            <h2 className="font-semibold text-foreground">Employee record</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Profile information and workspace access.</p>
           </div>
         </div>
-        <div style={{ padding: "1.25rem" }}>
-          <section className="profile-panel" style={{ alignItems: "flex-start", marginBottom: "1rem" }}>
-            <span className="profile-avatar profile-avatar-lg">
+        <div className="p-5">
+          <section className="flex items-start gap-4 mb-4">
+            <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-coral to-coral-strong text-white text-xl font-bold shrink-0">
               {employee.firstName.charAt(0).toUpperCase()}
             </span>
             <div>
-              <h2>
+              <h2 className="text-xl font-semibold">
                 {employee.firstName} {employee.lastName}
               </h2>
-              <p>
+              <p className="text-muted-foreground">
                 {employee.jobTitle ?? "No job title"} · {employee.email}
               </p>
             </div>
           </section>
-          <div className="form-grid">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <strong>Status</strong>
-              <p>
+              <strong className="text-sm font-medium">Status</strong>
+              <p className="mt-1">
                 <StatusBadge status={employee.status} />
               </p>
             </div>
             <div>
-              <strong>Role</strong>
-              <p>{employee.role}</p>
+              <strong className="text-sm font-medium">Role</strong>
+              <p className="mt-1">{employee.role}</p>
             </div>
             <div>
-              <strong>Job Title</strong>
-              <p>{employee.jobTitle ?? "—"}</p>
+              <strong className="text-sm font-medium">Job Title</strong>
+              <p className="mt-1">{employee.jobTitle ?? "—"}</p>
             </div>
             <div>
-              <strong>Department</strong>
-              <p>{departmentName ?? "—"}</p>
+              <strong className="text-sm font-medium">Department</strong>
+              <p className="mt-1">{departmentName ?? "—"}</p>
             </div>
             <div>
-              <strong>Manager</strong>
-              <p>{managerName ? `${managerName.firstName} ${managerName.lastName}` : "—"}</p>
+              <strong className="text-sm font-medium">Manager</strong>
+              <p className="mt-1">{managerName ? `${managerName.firstName} ${managerName.lastName}` : "—"}</p>
             </div>
             <div>
-              <strong>Phone</strong>
-              <p>{employee.phone ?? "—"}</p>
+              <strong className="text-sm font-medium">Phone</strong>
+              <p className="mt-1">{employee.phone ?? "—"}</p>
             </div>
             <div>
-              <strong>Hire Date</strong>
-              <p>{employee.dateOfHire ? new Date(employee.dateOfHire).toLocaleDateString() : "—"}</p>
+              <strong className="text-sm font-medium">Hire Date</strong>
+              <p className="mt-1">{employee.dateOfHire ? new Date(employee.dateOfHire).toLocaleDateString() : "—"}</p>
             </div>
             <div>
-              <strong>Created</strong>
-              <p>{new Date(employee.createdAt).toLocaleString()}</p>
+              <strong className="text-sm font-medium">Created</strong>
+              <p className="mt-1">{new Date(employee.createdAt).toLocaleString()}</p>
             </div>
             <div>
-              <strong>Last Updated</strong>
-              <p>{new Date(employee.updatedAt).toLocaleString()}</p>
+              <strong className="text-sm font-medium">Last Updated</strong>
+              <p className="mt-1">{new Date(employee.updatedAt).toLocaleString()}</p>
             </div>
           </div>
         </div>
