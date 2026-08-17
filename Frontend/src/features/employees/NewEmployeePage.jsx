@@ -44,21 +44,21 @@ export function NewEmployeePage() {
 
   return (
     <>
-      <Link to="/employees" className="back-link">
+      <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3">
         <ArrowLeft size={15} /> Back to employees
       </Link>
       <PageHeader
         title="Add employee"
         description="Create a new employee record. An invitation email with a set-password link is sent automatically."
       />
-      <section className="table-shell">
-        <div className="table-shell-header">
+      <section className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2>Employee details</h2>
-            <p>Basic profile fields. Email cannot be changed later.</p>
+            <h2 className="font-semibold text-foreground">Employee details</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Basic profile fields. Email cannot be changed later.</p>
           </div>
         </div>
-        <div style={{ padding: "1.5rem" }}>
+        <div className="p-6">
           {isLoading ? (
             <TableSkeleton rows={4} />
           ) : (
