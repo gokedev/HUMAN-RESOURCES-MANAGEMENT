@@ -21,26 +21,16 @@ export function LogoMark({ size = 36, id, ...props }) {
         </linearGradient>
       </defs>
       <rect
-        x="1"
-        y="1"
-        width="46"
-        height="46"
-        rx="12"
+        x="1" y="1" width="46" height="46" rx="12"
         fill={`url(#${gradientId})`}
       />
       <path
         d="M31.8 16.2a11 11 0 1 0 0 15.6"
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="5.5"
-        strokeLinecap="round"
+        fill="none" stroke="#ffffff" strokeWidth="5.5" strokeLinecap="round"
       />
       <path
         d="M15 38c2-2.4 4-2.4 6 0s4 2.4 6 0"
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="3"
-        strokeLinecap="round"
+        fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"
       />
     </svg>
   );
@@ -51,7 +41,7 @@ export function Logo({ size = 36, wordmark = true, className = "", ...props }) {
     return <LogoMark size={size} />;
   }
   return (
-    <span className={`brand-mark ${className}`} {...props}>
+    <span className={`inline-flex items-center gap-3 font-extrabold text-foreground ${className}`} {...props}>
       <LogoMark size={size} />
       <span>CoralHR</span>
     </span>
