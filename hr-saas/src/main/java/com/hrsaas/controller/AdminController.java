@@ -1,16 +1,19 @@
 package com.hrsaas.controller;
 
+import com.hrsaas.dto.AttendanceRecordResponseDto;
 import com.hrsaas.dto.CreateEmployeeRequest;
 import com.hrsaas.dto.DepartmentCreateDto;
+import com.hrsaas.dto.DepartmentResponseDto;
+import com.hrsaas.dto.LeaveRequestResponseDto;
 import com.hrsaas.dto.LeaveReviewDto;
-import com.hrsaas.entity.Department;
-import com.hrsaas.entity.LeaveRequest;
-import com.hrsaas.entity.User;
+import com.hrsaas.dto.UserResponseDto;
 import com.hrsaas.service.AttendanceService;
 import com.hrsaas.service.DepartmentService;
 import com.hrsaas.service.EmployeeService;
 import com.hrsaas.service.LeaveService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
+
+    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
     private final EmployeeService employeeService;
     private final DepartmentService departmentService;
@@ -42,67 +47,81 @@ public class AdminController {
     }
 
     @PostMapping("/employees")
-    public ResponseEntity<User> createEmployee(@Valid @RequestBody CreateEmployeeRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.createEmployee(request));
+    public ResponseEntity<UserResponseDto> createEmployee(@Valid @RequestBody CreateEmployeeRequest request) {
+        log.info("POST /api/admin/employees - Creating employee: {}", request.getEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponseDto.fromEntity(employeeService.createEmployee(request)));
     }
 
     @GetMapping("/employees")
-    public ResponseEntity<Page<User>> listEmployees(Pageable pageable) {
-        return ResponseEntity.ok(employeeService.listEmployees(pageable));
+    public ResponseEntity<Page<UserResponseDto>> listEmployees(Pageable pageable) {
+        log.debug("GET /api/admin/employees - Listing employees, page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
+        return ResponseEntity.ok(employeeService.listEmployees(pageable).map(UserResponseDto::fromEntity));
     }
 
     @GetMapping("/employees/{id}")
-    public ResponseEntity<User> getEmployee(@PathVariable UUID id) {
-        return ResponseEntity.ok(employeeService.getEmployee(id));
+    public ResponseEntity<UserResponseDto> getEmployee(@PathVariable UUID id) {
+        log.debug("GET /api/admin/employees/{} - Fetching employee", id);
+        return ResponseEntity.ok(UserResponseDto.fromEntity(employeeService.getEmployee(id)));
     }
 
     @PutMapping("/employees/{id}")
-    public ResponseEntity<User> updateEmployee(@PathVariable UUID id, @Valid @RequestBody CreateEmployeeRequest request) {
-        return ResponseEntity.ok(employeeService.updateEmployee(id, request));
+    public ResponseEntity<UserResponseDto> updateEmployee(@PathVariable UUID id, @Valid @RequestBody CreateEmployeeRequest request) {
+        log.info("PUT /api/admin/employees/{} - Updating employee", id);
+        return ResponseEntity.ok(UserResponseDto.fromEntity(employeeService.updateEmployee(id, request)));
     }
 
     @PatchMapping("/employees/{id}/deactivate")
     public ResponseEntity<Void> deactivateEmployee(@PathVariable UUID id) {
+        log.info("PATCH /api/admin/employees/{}/deactivate - Deactivating employee", id);
         employeeService.deactivateEmployee(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/employees/{id}/reactivate")
     public ResponseEntity<Void> reactivateEmployee(@PathVariable UUID id) {
+        log.info("PATCH /api/admin/employees/{}/reactivate - Reactivating employee", id);
         employeeService.reactivateEmployee(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/departments")
-    public ResponseEntity<Department> createDepartment(@Valid @RequestBody DepartmentCreateDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(departmentService.createDepartment(dto));
+    public ResponseEntity<DepartmentResponseDto> createDepartment(@Valid @RequestBody DepartmentCreateDto dto) {
+        log.info("POST /api/admin/departments - Creating department: {}", dto.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).body(DepartmentResponseDto.fromEntity(departmentService.createDepartment(dto)));
     }
 
     @GetMapping("/departments")
-    public ResponseEntity<List<Department>> listDepartments() {
-        return ResponseEntity.ok(departmentService.listDepartments());
+    public ResponseEntity<List<DepartmentResponseDto>> listDepartments() {
+        log.debug("GET /api/admin/departments - Listing departments");
+        return ResponseEntity.ok(departmentService.listDepartments().stream()
+                .map(DepartmentResponseDto::fromEntity)
+                .toList());
     }
 
     @DeleteMapping("/departments/{id}")
     public ResponseEntity<Void> deleteDepartment(@PathVariable UUID id) {
+        log.info("DELETE /api/admin/departments/{} - Deleting department", id);
         departmentService.deleteDepartment(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/leave-requests")
-    public ResponseEntity<Page<LeaveRequest>> listLeaveRequests(Pageable pageable) {
-        return ResponseEntity.ok(leaveService.listCompanyLeaveRequests(pageable));
+    public ResponseEntity<Page<LeaveRequestResponseDto>> listLeaveRequests(Pageable pageable) {
+        log.debug("GET /api/admin/leave-requests - Listing leave requests, page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
+        return ResponseEntity.ok(leaveService.listCompanyLeaveRequests(pageable).map(LeaveRequestResponseDto::fromEntity));
     }
 
     @PatchMapping("/leave-requests/{id}/review")
-    public ResponseEntity<LeaveRequest> reviewLeaveRequest(
+    public ResponseEntity<LeaveRequestResponseDto> reviewLeaveRequest(
             @PathVariable UUID id, @Valid @RequestBody LeaveReviewDto dto
     ) {
-        return ResponseEntity.ok(leaveService.reviewLeaveRequest(id, dto));
+        log.info("PATCH /api/admin/leave-requests/{}/review - Reviewing leave request: approve={}", id, dto.isApprove());
+        return ResponseEntity.ok(LeaveRequestResponseDto.fromEntity(leaveService.reviewLeaveRequest(id, dto)));
     }
 
     @GetMapping("/attendance")
-    public ResponseEntity<Page<?>> listAttendance(Pageable pageable) {
-        return ResponseEntity.ok(attendanceService.listCompanyAttendance(pageable));
+    public ResponseEntity<Page<AttendanceRecordResponseDto>> listAttendance(Pageable pageable) {
+        log.debug("GET /api/admin/attendance - Listing attendance, page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
+        return ResponseEntity.ok(attendanceService.listCompanyAttendance(pageable).map(AttendanceRecordResponseDto::fromEntity));
     }
 }
