@@ -49,21 +49,21 @@ export function EditEmployeePage() {
 
   return (
     <>
-      <Link to={`/employees/${id}`} className="back-link">
+      <Link to={`/employees/${id}`} className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3">
         <ArrowLeft size={15} /> Back to employee
       </Link>
       <PageHeader
         title="Edit employee"
         description="Update profile fields. Email cannot be changed on this screen."
       />
-      <section className="table-shell">
-        <div className="table-shell-header">
+      <section className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2>Employee details</h2>
-            <p>Save changes to update this person's record.</p>
+            <h2 className="font-semibold text-foreground">Employee details</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Save changes to update this person's record.</p>
           </div>
         </div>
-        <div style={{ padding: "1.5rem" }}>
+        <div className="p-6">
           {isLoading ? (
             <CardSkeleton />
           ) : isError || !employee ? (
