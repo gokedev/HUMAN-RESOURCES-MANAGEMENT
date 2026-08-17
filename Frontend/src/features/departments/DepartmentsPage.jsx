@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Plus, Trash2 } from "lucide-react";
 import { ConfirmDialog, PageHeader } from "../../components/common/ui.jsx";
+import { Button } from "../../components/ui/button.jsx";
 import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feedback.jsx";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useToast } from "../../contexts.jsx";
 import { departmentService, employeeService } from "../../api.js";
@@ -58,13 +60,12 @@ export function DepartmentsPage() {
         title="Departments"
         description="Organize people into company teams and reporting areas."
         actions={
-          <button
-            className="btn btn-primary"
+          <Button
             type="button"
             onClick={() => setShowCreate(true)}
           >
-            <Plus size={16} style={{ marginRight: "0.35rem" }} /> New department
-          </button>
+            <Plus size={16} /> New department
+          </Button>
         }
       />
       <DataTableShell
@@ -87,50 +88,50 @@ export function DepartmentsPage() {
           />
         ) : (
           <>
-            <div className="table-responsive">
-              <table className="table app-table">
-                <thead>
-                  <tr>
-                    <th>Department</th>
-                    <th>Members</th>
-                    <th>Created</th>
-                    <th className="text-end">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {departments.map((dept) => (
-                    <tr key={dept.id}>
-                      <td>
-                        <div className="cell-identity">
-                          <span className="profile-avatar">
-                            {dept.name.charAt(0).toUpperCase()}
-                          </span>
-                          <div>
-                            <strong>{dept.name}</strong>
-                          </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Members</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {departments.map((dept) => (
+                  <TableRow key={dept.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#ff7a59] to-[#ff4e6a] text-white text-xs font-bold shrink-0">
+                          {dept.name.charAt(0).toUpperCase()}
+                        </span>
+                        <div>
+                          <strong>{dept.name}</strong>
                         </div>
-                      </td>
-                      <td>{employeeCounts[dept.id] ?? 0}</td>
-                      <td>{new Date(dept.createdAt).toLocaleDateString()}</td>
-                      <td className="text-end">
-                        <div className="row-actions">
-                          <button
-                            className="icon-button"
-                            type="button"
-                            title="Delete department"
-                            disabled={deleteMutation.isPending}
-                            onClick={() => setDeleteTarget(dept)}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="pagination-info" style={{ padding: "0.85rem 1rem" }}>
+                      </div>
+                    </TableCell>
+                    <TableCell>{employeeCounts[dept.id] ?? 0}</TableCell>
+                    <TableCell>{new Date(dept.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="inline-flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          type="button"
+                          title="Delete department"
+                          disabled={deleteMutation.isPending}
+                          onClick={() => setDeleteTarget(dept)}
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <p className="text-sm text-muted-foreground px-4 py-3 border-t border-border">
               Members are assigned automatically when employees join a department.
             </p>
           </>
@@ -149,7 +150,7 @@ export function DepartmentsPage() {
           title="Delete department"
           message={`Delete "${deleteTarget.name}"? Current members will keep their profiles but lose their department assignment.`}
           confirmLabel="Delete"
-          variant="danger"
+          variant="destructive"
           isProcessing={deleteMutation.isPending}
           onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
           onClose={() => setDeleteTarget(null)}
