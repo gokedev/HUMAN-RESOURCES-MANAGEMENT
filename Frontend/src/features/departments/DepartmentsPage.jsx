@@ -39,19 +39,19 @@ export function DepartmentsPage() {
     mutationFn: (name) => departmentService.create({ name }),
     onSuccess: async () => {
       await queryInvalidation.afterDepartmentChange(queryClient);
-      notify("Department created.", "success");
+      notify({ title: "Department created", variant: "success" });
       setShowCreate(false);
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Creation failed", message: getErrorMessage(error), variant: "danger" }),
   });
   const deleteMutation = useMutation({
     mutationFn: (id) => departmentService.delete(id),
     onSuccess: async () => {
       await queryInvalidation.afterDepartmentChange(queryClient);
-      notify("Department deleted.", "success");
+      notify({ title: "Department deleted", variant: "success" });
       setDeleteTarget(null);
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Deletion failed", message: getErrorMessage(error), variant: "danger" }),
   });
 
   return (
