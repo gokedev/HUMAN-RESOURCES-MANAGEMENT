@@ -29,6 +29,10 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z.object({
     token: z.string().min(1, 'Reset token is required.'),
     newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, 'Please confirm your password.'),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"], // Path of error
 });
 export const acceptInvitationSchema = z.object({
     token: z.string().min(1, 'Invitation token is required.'),
