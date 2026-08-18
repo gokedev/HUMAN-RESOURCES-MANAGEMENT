@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,13 +30,13 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
 
     @Query("SELECT CONCAT(YEAR(lr.startDate), '-', CASE WHEN MONTH(lr.startDate) < 10 THEN CONCAT('0', MONTH(lr.startDate)) ELSE MONTH(lr.startDate) END) as lrmonth, COUNT(lr) FROM LeaveRequest lr WHERE lr.companyId = :companyId AND lr.startDate >= :startDate AND lr.startDate <= :endDate GROUP BY YEAR(lr.startDate), MONTH(lr.startDate)")
     List<Object[]> countByCompanyIdAndMonthRange(@Param("companyId") UUID companyId,
-                                                 @Param("startDate") LocalDateTime startDate,
-                                                 @Param("endDate") LocalDateTime endDate);
+                                                 @Param("startDate") LocalDate startDate,
+                                                 @Param("endDate") LocalDate endDate);
 
     @Query("SELECT LOWER(lr.status), COUNT(lr) FROM LeaveRequest lr WHERE lr.companyId = :companyId AND LOWER(lr.status) = :status AND lr.startDate >= :startDate AND lr.startDate <= :endDate")
     List<Object[]> countByCompanyIdAndStatusAndDateRange(@Param("companyId") UUID companyId,
                                                          @Param("status") String status,
-                                                         @Param("startDate") LocalDateTime startDate,
-                                                         @Param("endDate") LocalDateTime endDate);
+                                                         @Param("startDate") LocalDate startDate,
+                                                         @Param("endDate") LocalDate endDate);
 
 }
