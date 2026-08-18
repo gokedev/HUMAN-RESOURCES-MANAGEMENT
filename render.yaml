@@ -14,7 +14,7 @@ services:
       - key: DB_PASSWORD
         sync: false
       - key: JWT_SECRET
-        generateValue: true
+        sync: false
       - key: MAIL_USERNAME
         sync: false
       - key: MAIL_PASSWORD
