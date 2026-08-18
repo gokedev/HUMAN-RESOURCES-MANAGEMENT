@@ -36,10 +36,14 @@ export function LeaveRequestsPage() {
       leaveService.review(id, { approve, note: note ?? undefined }),
     onSuccess: async () => {
       await queryInvalidation.afterLeaveChange(queryClient);
-      notify(reviewTarget?.approve ? "Leave approved." : "Leave rejected.", "success");
+      notify({
+        title: reviewTarget?.approve ? "Leave approved" : "Leave rejected",
+        message: `Request from ${reviewTarget?.employeeName ?? "employee"} has been updated.`,
+        variant: "success",
+      });
       setReviewTarget(null);
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Review failed", message: getErrorMessage(error), variant: "danger" }),
   });
 
   return (
