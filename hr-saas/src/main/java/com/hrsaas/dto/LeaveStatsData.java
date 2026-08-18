@@ -3,9 +3,6 @@ package com.hrsaas.dto;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Data transfer object for leave statistics.
- */
 public class LeaveStatsData {
     private List<LeaveTypeStats> leaveByType;
     private List<LeaveStatusStats> leaveByStatus;
@@ -28,7 +25,6 @@ public class LeaveStatsData {
         this.totalRejectedThisMonth = totalRejectedThisMonth;
     }
 
-    // Getters and setters
     public List<LeaveTypeStats> getLeaveByType() {
         return leaveByType;
     }
@@ -75,63 +71,5 @@ public class LeaveStatsData {
 
     public void setTotalRejectedThisMonth(int totalRejectedThisMonth) {
         this.totalRejectedThisMonth = totalRejectedThisMonth;
-    }
-}
-
-/**
- * Stats for leave by type (e.g., Vacation, Sick Leave, etc.)
- */
-public class LeaveTypeStats {
-    private String leaveType;
-    private int count;
-
-    public LeaveTypeStats(String leaveType, int count) {
-        this.leaveType = leaveType;
-        this.count = count;
-    }
-
-    public String getLeaveType() {
-        return leaveType;
-    }
-
-    public void setLeaveType(String leaveType) {
-        this.leaveType = leaveType;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-}
-
-/**
- * Stats for leave by status (e.g., PENDING, APPROVED, REJECTED)
- */
-public class LeaveStatusStats {
-    private String status;
-    private int count;
-
-    public LeaveStatusStats(String status, int count) {
-        this.status = status;
-        this.count = count;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
     }
 }
