@@ -8,8 +8,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -87,6 +89,24 @@ public class MailService {
                 return;
             }
 
+            // Validate inputs
+            if (toEmail == null || toEmail.isBlank()) {
+                log.error("To email is required");
+                return;
+            }
+            if (fromAddress == null || fromAddress.isBlank()) {
+                log.error("From address is not configured");
+                return;
+            }
+            if (subject == null || subject.isBlank()) {
+                log.error("Subject is required");
+                return;
+            }
+            if (htmlBody == null || htmlBody.isBlank()) {
+                log.error("HTML body is required");
+                return;
+            }
+
             String url = "https://api.brevo.com/v3/smtp/email";
 
             HttpHeaders headers = new HttpHeaders();
@@ -101,15 +121,22 @@ public class MailService {
             log.debug("Subject: {}", subject);
             log.debug("HTML Body length: {}", htmlBody != null ? htmlBody.length() : 0);
 
+            // Build request payload
             Map<String, Object> emailData = new HashMap<>();
             emailData.put("sender", Map.of(
                     "name", "HR SaaS",
                     "email", fromAddress
             ));
-            emailData.put("to", new Object[]{Map.of(
-                    "email", toEmail,
-                    "name", "" // Brevo requires name field, but we can leave empty
-            )});
+
+            List<Map<String, String>> toList = new ArrayList<>();
+            Map<String, String> toItem = new HashMap<>();
+            String trimmedEmail = toEmail.trim();
+            toItem.put("email", trimmedEmail);
+            String name = trimmedEmail.isEmpty() ? "User" : trimmedEmail;
+            toItem.put("name", name); // Use email as name - Brevo requires name field
+            toList.add(toItem);
+            emailData.put("to", toList);
+
             emailData.put("subject", subject);
             emailData.put("htmlContent", htmlBody);
 
