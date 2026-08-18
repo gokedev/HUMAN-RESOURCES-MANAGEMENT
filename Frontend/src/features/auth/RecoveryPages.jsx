@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { Label } from "@/components/ui/label.jsx";
+import { X, CheckCircle2, AlertTriangle, Info, XCircle, Eye, EyeOff } from "lucide-react";
 
 export function ForgotPasswordPage() {
   usePageTitle("Forgot Password");
@@ -93,6 +94,8 @@ export function ResetPasswordPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -103,6 +106,7 @@ export function ResetPasswordPage() {
     defaultValues: {
       token: "",
       newPassword: "",
+      confirmPassword: "",
     },
   });
   useEffect(() => {
@@ -135,9 +139,44 @@ export function ResetPasswordPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="newPassword">New password</Label>
-          <Input id="newPassword" type="password" {...register("newPassword")} className={errors.newPassword ? "border-destructive" : ""} />
-          {errors.newPassword && <p className="text-xs text-destructive">{errors.newPassword.message}</p>}
-          {!errors.newPassword && <p className="text-xs text-muted-foreground">Must be 8+ chars with uppercase, lowercase, digit, and special character (@$!%*?&amp;#).</p>}
+          <div className="relative">
+            <Input
+              id="newPassword"
+              type={showNewPassword ? "text" : "password"}
+              {...register("newPassword")}
+              className={errors.newPassword ? "border-destructive" : ""}
+            />
+            {errors.newPassword && <p className="text-xs text-destructive absolute -bottom-2 left-0">{errors.newPassword.message}</p>}
+            {!errors.newPassword && <p className="text-xs text-muted-foreground absolute -bottom-2 left-0">Must be 8+ chars with uppercase, lowercase, digit, and special character (@$!%*?&amp;#).</p>}
+            <button
+              type="button"
+              onClick={() => setShowNewPassword(!showNewPassword)}
+              className="absolute right-0 top-0 h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+              aria-label={showNewPassword ? "Hide password" : "Show password"}
+            >
+              {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Confirm password</Label>
+          <div className="relative">
+            <Input
+              id="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              {...register("confirmPassword")}
+              className={errors.confirmPassword ? "border-destructive" : ""}
+            />
+            {errors.confirmPassword && <p className="text-xs text-destructive absolute -bottom-2 left-0">{errors.confirmPassword.message}</p>}
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-0 top-0 h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+              aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+            >
+              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting && (
