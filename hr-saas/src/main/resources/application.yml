@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: ${SHOW_SQL:false}
     properties:
       hibernate:
@@ -23,7 +23,7 @@ spring:
 
   flyway:
     enabled: true
-    baseline-on-migrate: true
+    baseline-on-migrate: false
     locations: classpath:db/migration
 
 app:
@@ -42,3 +42,8 @@ app:
     from: ${MAIL_FROM_ADDRESS:no-reply@hrsaas.com}
   invite:
     expiration-hours: ${INVITE_EXPIRATION_HOURS:72}
+
+logging:
+  level:
+    org.flywaydb: DEBUG
+    org.springframework.boot.autoconfigure: DEBUG
