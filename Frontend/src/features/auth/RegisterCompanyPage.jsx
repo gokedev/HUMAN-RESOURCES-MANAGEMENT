@@ -51,10 +51,10 @@ export function RegisterCompanyPage() {
         adminEmail: values.adminEmail,
         adminPassword: values.adminPassword,
       });
-      notify("Workspace created successfully.", "success");
+      notify({ title: "Workspace created", message: "Welcome to CoralHR!", variant: "success" });
       navigate("/dashboard", { replace: true });
     } catch (error) {
-      notify(getErrorMessage(error), "danger");
+      notify({ title: "Registration failed", message: getErrorMessage(error), variant: "danger" });
     } finally {
       setIsSubmitting(false);
     }
