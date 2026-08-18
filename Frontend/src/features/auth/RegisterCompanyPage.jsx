@@ -8,6 +8,7 @@ import { registerCompanySchema } from "./schemas.js";
 import { getErrorMessage } from "../../utils.js";
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
+import { PasswordInput } from "@/components/ui/password-input.jsx";
 import { Label } from "@/components/ui/label.jsx";
 
 const optionalText = (value) => (value?.trim() ? value.trim() : undefined);
@@ -111,8 +112,7 @@ export function RegisterCompanyPage() {
           </div>
           <div className="space-y-2">
             <Label>Admin password *</Label>
-            <Input
-              type="password"
+            <PasswordInput
               {...register("adminPassword")}
               className={errors.adminPassword ? "border-destructive" : ""}
             />
