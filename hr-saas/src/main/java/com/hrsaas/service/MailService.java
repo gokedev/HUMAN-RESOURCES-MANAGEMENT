@@ -6,7 +6,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -105,8 +106,13 @@ public class MailService {
 
         try {
             restTemplate.postForEntity(brevoApiUrl, request, String.class);
-        } catch (RestClientException e) {
-            log.error("Failed to send email via Brevo to {}: {}", toEmail, e.getMessage(), e);
+            log.info("Email sent successfully to {}", toEmail);
+        } catch (HttpClientErrorException e) {
+            log.error("Brevo API client error (status={}): {} — response: {}", e.getStatusCode().value(), e.getMessage(), e.getResponseBodyAsString());
+        } catch (HttpServerErrorException e) {
+            log.error("Brevo API server error (status={}): {} — response: {}", e.getStatusCode().value(), e.getMessage(), e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Unexpected error sending email to {}: {}", toEmail, e.getMessage(), e);
         }
     }
 }
