@@ -1,11 +1,15 @@
 package com.hrsaas.controller;
 
+import com.hrsaas.dto.AttendanceComplianceData;
 import com.hrsaas.dto.AttendanceRecordResponseDto;
 import com.hrsaas.dto.CreateEmployeeRequest;
 import com.hrsaas.dto.DepartmentCreateDto;
 import com.hrsaas.dto.DepartmentResponseDto;
+import com.hrsaas.dto.EmployeeCounts;
+import com.hrsaas.dto.HeadcountTrendData;
 import com.hrsaas.dto.LeaveRequestResponseDto;
 import com.hrsaas.dto.LeaveReviewDto;
+import com.hrsaas.dto.LeaveStatsData;
 import com.hrsaas.dto.UserResponseDto;
 import com.hrsaas.service.AttendanceService;
 import com.hrsaas.service.DepartmentService;
