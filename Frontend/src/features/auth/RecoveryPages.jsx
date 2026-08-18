@@ -137,6 +137,7 @@ export function ResetPasswordPage() {
           <Label htmlFor="newPassword">New password</Label>
           <Input id="newPassword" type="password" {...register("newPassword")} className={errors.newPassword ? "border-destructive" : ""} />
           {errors.newPassword && <p className="text-xs text-destructive">{errors.newPassword.message}</p>}
+          {!errors.newPassword && <p className="text-xs text-muted-foreground">Must be 8+ chars with uppercase, lowercase, digit, and special character (@$!%*?&amp;#).</p>}
         </div>
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting && (
@@ -202,6 +203,7 @@ export function AcceptInvitationPage() {
           <Label htmlFor="password">Password</Label>
           <Input id="password" type="password" {...register("password")} className={errors.password ? "border-destructive" : ""} />
           {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+          {!errors.password && <p className="text-xs text-muted-foreground">Must be 8+ chars with uppercase, lowercase, digit, and special character (@$!%*?&amp;#).</p>}
         </div>
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting && (
