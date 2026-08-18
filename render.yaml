@@ -15,10 +15,10 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
-      - key: BREVO_API_KEY
+      - key: MAIL_USERNAME
         sync: false
-      - key: BREVO_API_URL
-        value: https://api.brevo.com/v3/smtp/email
+      - key: MAIL_PASSWORD
+        sync: false
       - key: MAIL_FROM_ADDRESS
         value: no-reply@hrsaas.com
       - key: FRONTEND_BASE_URL
