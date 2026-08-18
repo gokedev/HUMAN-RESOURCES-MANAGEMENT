@@ -24,7 +24,6 @@ spring:
     user: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     baseline-on-migrate: true
-    baseline-version: 2
     locations: classpath:db/migration
 
 app:
