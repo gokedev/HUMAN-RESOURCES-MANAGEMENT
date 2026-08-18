@@ -28,6 +28,6 @@ services:
       - key: SERVER_PORT
         value: 8080
       - key: JAVA_VERSION
-        value: "20"
+        value: "21"
     healthCheckPath: /actuator/health
     autoDeploy: true
