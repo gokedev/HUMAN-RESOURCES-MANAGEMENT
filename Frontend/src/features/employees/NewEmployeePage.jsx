@@ -23,10 +23,14 @@ export function NewEmployeePage() {
     mutationFn: (payload) => employeeService.create(payload),
     onSuccess: async () => {
       await queryInvalidation.afterEmployeeChange(queryClient);
-      notify("Employee invited. They will receive an email to set their password.", "success");
+      notify({
+        title: "Employee invited",
+        message: "They will receive an email to set their password.",
+        variant: "success",
+      });
       navigate("/employees", { replace: true });
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Invite failed", message: getErrorMessage(error), variant: "danger" }),
   });
 
   function buildPayload(values) {
