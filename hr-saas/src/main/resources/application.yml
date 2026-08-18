@@ -4,13 +4,11 @@ server:
 spring:
   application:
     name: hr-saas-backend
-
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/hr_saas}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: none
@@ -20,7 +18,6 @@ spring:
         format_sql: true
         jdbc:
           time_zone: UTC
-
   flyway:
     enabled: true
     url: ${DB_URL}
