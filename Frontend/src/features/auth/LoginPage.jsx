@@ -8,6 +8,7 @@ import { loginSchema } from "./schemas.js";
 import { getErrorMessage, tokenStorage } from "../../utils.js";
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
+import { PasswordInput } from "@/components/ui/password-input.jsx";
 import { Label } from "@/components/ui/label.jsx";
 import { Checkbox } from "@/components/ui/checkbox.jsx";
 
@@ -59,7 +60,7 @@ export function LoginPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" {...register("password")} className={errors.password ? "border-destructive" : ""} />
+          <PasswordInput id="password" {...register("password")} className={errors.password ? "border-destructive" : ""} />
           {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
         </div>
         <div className="space-y-2">
