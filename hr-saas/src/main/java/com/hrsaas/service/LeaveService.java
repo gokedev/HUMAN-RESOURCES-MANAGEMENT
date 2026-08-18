@@ -5,12 +5,15 @@ import com.hrsaas.dto.LeaveReviewDto;
 import com.hrsaas.dto.LeaveStatsData;
 import com.hrsaas.dto.LeaveTypeStats;
 import com.hrsaas.dto.LeaveStatusStats;
+import com.hrsaas.dto.LeaveRequestResponseDto;
 import com.hrsaas.entity.LeaveRequest;
 import com.hrsaas.entity.User;
 import com.hrsaas.enums.LeaveStatus;
+import com.hrsaas.enums.Role;
 import com.hrsaas.exception.ApiException;
 import com.hrsaas.repository.LeaveRequestRepository;
 import com.hrsaas.repository.UserRepository;
+import com.hrsaas.security.RoleGuard;
 import com.hrsaas.tenant.TenantContext;
 import org.slf4j.Logger;
 
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -46,6 +50,7 @@ public class LeaveService {
 
     @Transactional
     public LeaveRequest createLeaveRequest(LeaveRequestCreateDto dto) {
+        RoleGuard.requireRole(Role.EMPLOYEE);
         UUID tenantId = TenantContext.getTenantId();
         UUID employeeId = TenantContext.getUserId();
         log.info("Creating leave request for employee={} in company={}", employeeId, tenantId);
@@ -75,6 +80,24 @@ public class LeaveService {
         return leaveRequestRepository.findByCompanyId(tenantId, pageable);
     }
 
+    public Page<LeaveRequestResponseDto> listCompanyLeaveRequestsWithFilters(
+            String status, UUID employeeId, Pageable pageable) {
+        UUID tenantId = TenantContext.getTenantId();
+        log.debug("Listing filtered leave requests for company={}", tenantId);
+        Page<LeaveRequest> page = leaveRequestRepository.findByCompanyIdWithFilters(
+                tenantId, status, employeeId, pageable);
+
+        // Batch-fetch employee names
+        List<UUID> employeeIds = page.getContent().stream()
+                .map(LeaveRequest::getEmployeeId)
+                .distinct()
+                .toList();
+        Map<UUID, User> employeeMap = userRepository.findAllById(employeeIds).stream()
+                .collect(java.util.stream.Collectors.toMap(User::getId, u -> u));
+
+        return page.map(lr -> LeaveRequestResponseDto.fromEntityWithEmployee(lr, employeeMap.get(lr.getEmployeeId())));
+    }
+
     public Page<LeaveRequest> listOwnLeaveRequests(Pageable pageable) {
         UUID tenantId = TenantContext.getTenantId();
         UUID employeeId = TenantContext.getUserId();
@@ -84,6 +107,7 @@ public class LeaveService {
 
     @Transactional
     public LeaveRequest reviewLeaveRequest(UUID leaveRequestId, LeaveReviewDto dto) {
+        RoleGuard.requireRole(Role.ADMIN);
         UUID tenantId = TenantContext.getTenantId();
         UUID reviewerId = TenantContext.getUserId();
         log.info("Reviewing leave request={} by user={}", leaveRequestId, reviewerId);
@@ -118,6 +142,7 @@ public class LeaveService {
 
     @Transactional
     public void cancelLeaveRequest(UUID leaveRequestId) {
+        RoleGuard.requireRole(Role.EMPLOYEE);
         UUID tenantId = TenantContext.getTenantId();
         UUID employeeId = TenantContext.getUserId();
         log.info("Cancelling leave request={} by employee={}", leaveRequestId, employeeId);

@@ -6,7 +6,7 @@ import { Button } from "../../components/ui/button.jsx";
 import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feedback.jsx";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { usePageTitle } from "../../hooks.js";
-import { useToast } from "../../contexts.jsx";
+import { useAuth, useToast } from "../../contexts.jsx";
 import { leaveService } from "../../api.js";
 import { queryKeys } from "../../constants.js";
 import { getErrorMessage, queryInvalidation } from "../../utils.js";
@@ -17,6 +17,7 @@ const PAGE_SIZE = 10;
 export function MyLeavePage() {
   usePageTitle("My Leave");
   const { notify } = useToast();
+  const { role } = useAuth();
   const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
@@ -54,12 +55,14 @@ export function MyLeavePage() {
         title="My leave"
         description="Request time off, cancel pending requests, and review your leave history."
         actions={
-          <Button
-            type="button"
-            onClick={() => setShowCreate(true)}
-          >
-            <Plus size={16} /> Request leave
-          </Button>
+          role === "EMPLOYEE" ? (
+            <Button
+              type="button"
+              onClick={() => setShowCreate(true)}
+            >
+              <Plus size={16} /> Request leave
+            </Button>
+          ) : null
         }
       />
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

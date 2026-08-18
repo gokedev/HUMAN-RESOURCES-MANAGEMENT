@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Eye, Inbox, X } from "lucide-react";
+import { Check, Eye, Filter, Inbox, X } from "lucide-react";
 import { PageHeader, Pagination, StatusBadge } from "../../components/common/ui.jsx";
 import { Button } from "../../components/ui/button.jsx";
 import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feedback.jsx";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { useEmployeeNameMap, usePageTitle } from "../../hooks.js";
 import { useToast } from "../../contexts.jsx";
-import { leaveService } from "../../api.js";
+import { employeeService, leaveService } from "../../api.js";
 import { queryKeys } from "../../constants.js";
 import { getErrorMessage, queryInvalidation } from "../../utils.js";
 import { LeaveDetailsModal, ReviewLeaveModal } from "./LeaveModals.jsx";
+import { Select } from "../../components/ui/select.jsx";
 
 const PAGE_SIZE = 10;
 
@@ -21,15 +22,29 @@ export function LeaveRequestsPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [selected, setSelected] = useState(null);
   const [reviewTarget, setReviewTarget] = useState(null);
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterEmployee, setFilterEmployee] = useState("");
+
+  const queryParams = {
+    page: currentPage,
+    size: PAGE_SIZE,
+    sort: "createdAt,desc",
+    ...(filterStatus ? { status: filterStatus } : {}),
+    ...(filterEmployee ? { employeeId: filterEmployee } : {}),
+  };
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: queryKeys.leave.company({ page: currentPage, size: PAGE_SIZE, sort: "createdAt,desc" }),
-    queryFn: () =>
-      leaveService.listCompany({ page: currentPage, size: PAGE_SIZE, sort: "createdAt,desc" }),
+    queryKey: queryKeys.leave.company(queryParams),
+    queryFn: () => leaveService.listCompany(queryParams),
   });
   const nameMap = useEmployeeNameMap();
   const requests = data?.content ?? [];
   const pagination = data?.page;
+
+  const { data: allEmployees = [] } = useQuery({
+    queryKey: queryKeys.employees.all,
+    queryFn: () => employeeService.listAll(),
+  });
 
   const reviewMutation = useMutation({
     mutationFn: ({ id, approve, note }) =>
@@ -52,6 +67,41 @@ export function LeaveRequestsPage() {
         title="Leave requests"
         description="Review pending requests, approve or reject leave, and track request history."
       />
+      <div className="flex flex-wrap items-center gap-3 px-4 py-3">
+        <Filter size={16} className="text-muted-foreground" />
+        <Select
+          value={filterStatus}
+          onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(0); }}
+          className="w-40 h-9"
+        >
+          <option value="">All statuses</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+          <option value="CANCELLED">Cancelled</option>
+        </Select>
+        <Select
+          value={filterEmployee}
+          onChange={(e) => { setFilterEmployee(e.target.value); setCurrentPage(0); }}
+          className="w-56 h-9"
+        >
+          <option value="">All employees</option>
+          {allEmployees.map((emp) => (
+            <option key={emp.id} value={emp.id}>
+              {emp.firstName} {emp.lastName}
+            </option>
+          ))}
+        </Select>
+        {(filterStatus || filterEmployee) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { setFilterStatus(""); setFilterEmployee(""); setCurrentPage(0); }}
+          >
+            Clear filters
+          </Button>
+        )}
+      </div>
       <DataTableShell
         title="Company requests"
         description="Paginated leave requests."
@@ -86,7 +136,11 @@ export function LeaveRequestsPage() {
               <TableBody>
                 {requests.map((request) => (
                   <TableRow key={request.id}>
-                    <TableCell>{nameMap[request.employeeId] ?? "Unknown employee"}</TableCell>
+                    <TableCell>
+                      {request.employeeFirstName
+                        ? `${request.employeeFirstName} ${request.employeeLastName}`
+                        : nameMap[request.employeeId] ?? "Unknown employee"}
+                    </TableCell>
                     <TableCell>{request.leaveType.replace(/_/g, " ")}</TableCell>
                     <TableCell>
                       {new Date(request.startDate).toLocaleDateString()} →{" "}
@@ -155,7 +209,11 @@ export function LeaveRequestsPage() {
       {selected && (
         <LeaveDetailsModal
           request={selected}
-          employeeName={nameMap[selected.employeeId] ?? "Unknown employee"}
+          employeeName={
+            selected.employeeFirstName
+              ? `${selected.employeeFirstName} ${selected.employeeLastName}`
+              : nameMap[selected.employeeId] ?? "Unknown employee"
+          }
           onClose={() => setSelected(null)}
         />
       )}

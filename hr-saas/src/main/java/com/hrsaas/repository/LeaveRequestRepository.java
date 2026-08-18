@@ -18,6 +18,16 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
     Page<LeaveRequest> findByCompanyIdAndEmployeeId(UUID companyId, UUID employeeId, Pageable pageable);
     Optional<LeaveRequest> findByIdAndCompanyId(UUID id, UUID companyId);
 
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.companyId = :companyId "
+            + "AND (:status IS NULL OR lr.status = :status) "
+            + "AND (:employeeId IS NULL OR lr.employeeId = :employeeId) "
+            + "ORDER BY lr.createdAt DESC")
+    Page<LeaveRequest> findByCompanyIdWithFilters(
+            @Param("companyId") UUID companyId,
+            @Param("status") String status,
+            @Param("employeeId") UUID employeeId,
+            Pageable pageable);
+
     // Analytical query methods
     @Query("SELECT LOWER(lr.leaveType), COUNT(lr) FROM LeaveRequest lr WHERE lr.companyId = :companyId GROUP BY LOWER(lr.leaveType)")
     List<Object[]> countByCompanyIdAndLeaveType(@Param("companyId") UUID companyId);

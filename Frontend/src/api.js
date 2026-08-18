@@ -134,8 +134,13 @@ export const attendanceService = {
 
 export const leaveService = {
   listCompany(params) {
+    const { status, employeeId, ...rest } = params || {};
+    const query = {};
+    if (status) query.status = status;
+    if (employeeId) query.employeeId = employeeId;
+    Object.assign(query, rest);
     return apiClient
-      .get("/api/admin/leave-requests", { params })
+      .get("/api/admin/leave-requests", { params: query })
       .then((response) => response.data);
   },
   review(id, payload) {

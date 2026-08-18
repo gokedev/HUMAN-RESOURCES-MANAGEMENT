@@ -110,9 +110,13 @@ public class AdminController {
     }
 
     @GetMapping("/leave-requests")
-    public ResponseEntity<Page<LeaveRequestResponseDto>> listLeaveRequests(Pageable pageable) {
-        log.debug("GET /api/admin/leave-requests - Listing leave requests, page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
-        return ResponseEntity.ok(leaveService.listCompanyLeaveRequests(pageable).map(LeaveRequestResponseDto::fromEntity));
+    public ResponseEntity<Page<LeaveRequestResponseDto>> listLeaveRequests(
+            Pageable pageable,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) UUID employeeId
+    ) {
+        log.debug("GET /api/admin/leave-requests - Listing leave requests, status={}, employeeId={}", status, employeeId);
+        return ResponseEntity.ok(leaveService.listCompanyLeaveRequestsWithFilters(status, employeeId, pageable));
     }
 
     @PatchMapping("/leave-requests/{id}/review")

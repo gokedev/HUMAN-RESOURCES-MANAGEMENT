@@ -32,6 +32,11 @@ public class LeaveRequestResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private String employeeFirstName;
+    private String employeeLastName;
+    private String employeeEmail;
+    private UUID employeeDepartmentId;
+
     public static LeaveRequestResponseDto fromEntity(com.hrsaas.entity.LeaveRequest leaveRequest) {
         return LeaveRequestResponseDto.builder()
                 .id(leaveRequest.getId())
@@ -47,5 +52,18 @@ public class LeaveRequestResponseDto {
                 .createdAt(leaveRequest.getCreatedAt())
                 .updatedAt(leaveRequest.getUpdatedAt())
                 .build();
+    }
+
+    public static LeaveRequestResponseDto fromEntityWithEmployee(
+            com.hrsaas.entity.LeaveRequest leaveRequest,
+            com.hrsaas.entity.User employee) {
+        LeaveRequestResponseDto dto = fromEntity(leaveRequest);
+        if (employee != null) {
+            dto.setEmployeeFirstName(employee.getFirstName());
+            dto.setEmployeeLastName(employee.getLastName());
+            dto.setEmployeeEmail(employee.getEmail());
+            dto.setEmployeeDepartmentId(employee.getDepartmentId());
+        }
+        return dto;
     }
 }
