@@ -2,13 +2,10 @@ package com.hrsaas.dto;
 
 import java.util.List;
 
-/**
- * Data transfer object for attendance compliance statistics.
- */
 public class AttendanceComplianceData {
     private List<AttendanceStatusStats> todayAttendanceByStatus;
     private List<AttendanceStatusStats> weekAttendanceByStatus;
-    private double complianceRate; // Percentage of expected check-ins that occurred
+    private double complianceRate;
     private int expectedCheckins;
     private int actualCheckins;
     private int todayCheckedIn;
@@ -30,7 +27,6 @@ public class AttendanceComplianceData {
         this.todayTotalEmployees = todayTotalEmployees;
     }
 
-    // Getters and setters
     public List<AttendanceStatusStats> getTodayAttendanceByStatus() {
         return todayAttendanceByStatus;
     }
@@ -85,44 +81,5 @@ public class AttendanceComplianceData {
 
     public void setTodayTotalEmployees(int todayTotalEmployees) {
         this.todayTotalEmployees = todayTotalEmployees;
-    }
-}
-
-/**
- * Stats for attendance by status (e.g., PRESENT, ABSENT, etc.)
- */
-public class AttendanceStatusStats {
-    private String status;
-    private int count;
-    private String color; // For chart styling
-
-    public AttendanceStatusStats(String status, int count, String color) {
-        this.status = status;
-        this.count = count;
-        this.color = color;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
     }
 }
