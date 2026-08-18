@@ -7,8 +7,11 @@ function Dialog({ open, onOpenChange, children }) {
 
   React.useEffect(() => {
     const el = dialogRef.current;
-    if (el && open && !el.open) {
+    if (!el) return;
+    if (open && !el.open) {
       el.showModal();
+    } else if (!open && el.open) {
+      el.close();
     }
   }, [open]);
 
