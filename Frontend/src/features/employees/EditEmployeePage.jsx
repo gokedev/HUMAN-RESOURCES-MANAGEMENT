@@ -28,10 +28,10 @@ export function EditEmployeePage() {
     mutationFn: (payload) => employeeService.update(id, payload),
     onSuccess: async () => {
       await queryInvalidation.afterEmployeeChange(queryClient);
-      notify("Employee updated.", "success");
+      notify({ title: "Employee updated", variant: "success" });
       navigate(`/employees/${id}`, { replace: true });
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Update failed", message: getErrorMessage(error), variant: "danger" }),
   });
 
   function buildPayload(values) {
