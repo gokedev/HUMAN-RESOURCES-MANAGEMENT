@@ -115,10 +115,10 @@ export function ResetPasswordPage() {
     setIsSubmitting(true);
     try {
       await authService.resetPassword(values);
-      notify("Password updated. Sign in with your new password.", "success");
+      notify({ title: "Password updated", message: "Sign in with your new password.", variant: "success" });
       navigate("/login", { replace: true });
     } catch (error) {
-      notify(getErrorMessage(error), "danger");
+      notify({ title: "Reset failed", message: getErrorMessage(error), variant: "danger" });
     } finally {
       setIsSubmitting(false);
     }
@@ -180,10 +180,10 @@ export function AcceptInvitationPage() {
     setIsSubmitting(true);
     try {
       await authService.acceptInvitation(values);
-      notify("Password set. You can now sign in.", "success");
+      notify({ title: "Password set", message: "You can now sign in.", variant: "success" });
       navigate("/login", { replace: true });
     } catch (error) {
-      notify(getErrorMessage(error), "danger");
+      notify({ title: "Invitation failed", message: getErrorMessage(error), variant: "danger" });
     } finally {
       setIsSubmitting(false);
     }
