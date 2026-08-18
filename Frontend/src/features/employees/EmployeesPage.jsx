@@ -47,13 +47,13 @@ export function EmployeesPage() {
       deactivate ? employeeService.deactivate(id) : employeeService.reactivate(id),
     onSuccess: async () => {
       await queryInvalidation.afterEmployeeChange(queryClient);
-      notify(
-        pendingAction?.deactivate ? "Employee deactivated." : "Employee reactivated.",
-        "success"
-      );
+      notify({
+        title: pendingAction?.deactivate ? "Employee deactivated" : "Employee reactivated",
+        variant: "success",
+      });
       setPendingAction(null);
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Action failed", message: getErrorMessage(error), variant: "danger" }),
   });
 
   const filtered = useMemo(() => {
