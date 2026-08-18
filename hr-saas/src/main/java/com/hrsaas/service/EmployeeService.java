@@ -22,8 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+
+import com.hrsaas.dto.EmployeeCounts;
+import com.hrsaas.dto.HeadcountTrendData;
+import com.hrsaas.dto.TrendDataPoint;
 
 @Service
 public class EmployeeService {
@@ -154,17 +159,20 @@ public class EmployeeService {
         LocalDateTime endDate = LocalDateTime.now();
         LocalDateTime startDate = endDate.minusMonths(months);
 
-        // Get monthly hires
-        List<Object[]> monthlyHires = userRepository.countEmployeesByHireDateRange(
+        // Get total hires in the period
+        Long hiresCount = userRepository.countEmployeesByHireDateRange(
                 tenantId, startDate, endDate);
 
-        // Get monthly separations (deactivated/suspended employees)
-        List<Object[]> monthlySeparations = userRepository.countEmployeesByStatusChangeDateRange(
+        // Get total separations (deactivated/suspended employees) in the period
+        Long separationsCount = userRepository.countEmployeesByStatusChangeDateRange(
                 tenantId, UserStatus.SUSPENDED, startDate, endDate);
 
-        // Build trend data
-        List<TrendDataPoint> hiresData = buildTrendData(monthlyHires, startDate, endDate);
-        List<TrendDataPoint> separationsData = buildTrendData(monthlySeparations, startDate, endDate);
+        // Build trend data - for MVP, return single data points representing totals
+        List<TrendDataPoint> hiresData = new java.util.ArrayList<>();
+        hiresData.add(new TrendDataPoint("Hires", hiresCount.intValue()));
+
+        List<TrendDataPoint> separationsData = new java.util.ArrayList<>();
+        separationsData.add(new TrendDataPoint("Separations", separationsCount.intValue()));
 
         return new HeadcountTrendData(hiresData, separationsData);
     }
@@ -178,28 +186,6 @@ public class EmployeeService {
         return new EmployeeCounts(activeCount, pendingCount, suspendedCount);
     }
 
-    private List<TrendDataPoint> buildTrendData(List<Object[]> rawData, LocalDateTime startDate, LocalDateTime endDate) {
-        // Since we're getting aggregated counts for the entire range, we need to group by month
-        // For simplicity in this MVP, let's return a single data point representing the total
-        // In a production implementation, we'd want to group by month for proper trending
-
-        Long hiresCount = 0L;
-        Long separationsCount = 0L;
-
-        if (!rawData.isEmpty()) {
-            // Assuming the query returns a single row with the count
-            Object[] row = rawData.get(0);
-            if (row.length >= 2) {
-                hiresCount = ((Number) row[1]).longValue();
-            }
-        }
-
-        // For now, return simplified data - in production we'd want proper monthly grouping
-        List<TrendDataPoint> result = new java.util.ArrayList<>();
-        result.add(new TrendDataPoint("Current Period", hiresCount.intValue()));
-
-        return result;
-    }
 
     private String generateSecureToken() {
         byte[] bytes = new byte[48];
