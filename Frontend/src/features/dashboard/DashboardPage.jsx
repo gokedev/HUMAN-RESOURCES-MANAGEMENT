@@ -220,9 +220,7 @@ function EmployeeDashboard() {
           <div>
             <span className="text-sm text-muted-foreground font-medium">Annual leave balance</span>
             <strong className="block text-2xl font-bold text-foreground tabular-nums">
-              {leaveStatsData?.leaveByType?.find(stat =>
-                stat.leaveType.toLowerCase() === "annual"
-              )?.count ?? 20}
+              {annualLeaveBalance}
             </strong>
           </div>
         </article>
