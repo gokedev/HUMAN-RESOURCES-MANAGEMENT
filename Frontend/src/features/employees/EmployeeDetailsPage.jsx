@@ -30,19 +30,19 @@ export function EmployeeDetailsPage() {
     mutationFn: () => employeeService.deactivate(id),
     onSuccess: async () => {
       await queryInvalidation.afterEmployeeChange(queryClient);
-      notify("Employee deactivated.", "success");
+      notify({ title: "Employee deactivated", message: "They can no longer log in.", variant: "success" });
       setShowDeactivate(false);
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Action failed", message: getErrorMessage(error), variant: "danger" }),
   });
   const reactivateMutation = useMutation({
     mutationFn: () => employeeService.reactivate(id),
     onSuccess: async () => {
       await queryInvalidation.afterEmployeeChange(queryClient);
-      notify("Employee reactivated.", "success");
+      notify({ title: "Employee reactivated", message: "They can log in again.", variant: "success" });
       setShowReactivate(false);
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Action failed", message: getErrorMessage(error), variant: "danger" }),
   });
 
   const employee = employees?.find((emp) => emp.id === id) ?? null;
