@@ -58,17 +58,25 @@ export function useTodayAttendance(enabled = true) {
     mutationFn: () => attendanceService.checkIn(),
     onSuccess: async () => {
       await queryInvalidation.afterAttendanceChange(queryClient);
-      notify("Checked in successfully.", "success");
+      notify({
+        title: "Checked in",
+        message: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        variant: "success",
+      });
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Check-in failed", message: getErrorMessage(error), variant: "danger" }),
   });
   const checkOutMutation = useMutation({
     mutationFn: () => attendanceService.checkOut(),
     onSuccess: async () => {
       await queryInvalidation.afterAttendanceChange(queryClient);
-      notify("Checked out successfully.", "success");
+      notify({
+        title: "Checked out",
+        message: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        variant: "success",
+      });
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Check-out failed", message: getErrorMessage(error), variant: "danger" }),
   });
   return {
     isLoading: todayQuery.isLoading,
