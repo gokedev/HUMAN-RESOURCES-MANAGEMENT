@@ -1,6 +1,8 @@
 package com.hrsaas.service;
 
 import com.hrsaas.entity.AttendanceRecord;
+import com.hrsaas.dto.AttendanceComplianceData;
+import com.hrsaas.dto.AttendanceStatusStats;
 import com.hrsaas.enums.AttendanceStatus;
 import com.hrsaas.exception.ApiException;
 import com.hrsaas.repository.AttendanceRecordRepository;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -116,7 +119,7 @@ public class AttendanceService {
         }
 
         // Get total employees for compliance calculation
-        int totalEmployees = employeeService.getActiveVsPendingCounts().getActive().intValue();
+        int totalEmployees = (int) employeeService.getActiveVsPendingCounts().getActive();
 
         // Calculate expected check-ins (assuming 1 per employee per workday)
         int expectedCheckins = totalEmployees; // For today
