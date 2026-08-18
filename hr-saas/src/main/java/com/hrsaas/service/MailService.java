@@ -84,6 +84,11 @@ public class MailService {
     }
 
     private void send(String toEmail, String subject, String htmlBody) {
+        if (brevoApiKey == null || brevoApiKey.isBlank()) {
+            log.error("BREVO_API_KEY is not set — skipping email to {}", toEmail);
+            return;
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("api-key", brevoApiKey);
