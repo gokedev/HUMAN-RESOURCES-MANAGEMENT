@@ -81,7 +81,7 @@ public class LeaveStatsData {
 /**
  * Stats for leave by type (e.g., Vacation, Sick Leave, etc.)
  */
-class LeaveTypeStats {
+public class LeaveTypeStats {
     private String leaveType;
     private int count;
 
@@ -110,7 +110,7 @@ class LeaveTypeStats {
 /**
  * Stats for leave by status (e.g., PENDING, APPROVED, REJECTED)
  */
-class LeaveStatusStats {
+public class LeaveStatusStats {
     private String status;
     private int count;
 
