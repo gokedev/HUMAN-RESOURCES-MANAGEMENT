@@ -28,7 +28,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
     Long countByCompanyIdAndStatusName(@Param("companyId") UUID companyId, @Param("status") String status);
 
     @Query("SELECT lrmonth, COUNT(lr) FROM (" +
-           "SELECT CONCAT(YEAR(lr.startDate), '-', LPAD(MONTH(lr.startDate), 2, '0')) as lrmonth, lr.id " +
+           "SELECT CONCAT(YEAR(lr.startDate), '-', LPAD(CAST(MONTH(lr.startDate) AS CHAR), 2, '0')) as lrmonth, lr.id " +
            "FROM LeaveRequest lr WHERE lr.companyId = :companyId AND lr.startDate >= :startDate AND lr.startDate <= :endDate" +
            ") AS monthly GROUP BY lrmonth")
     List<Object[]> countByCompanyIdAndMonthRange(@Param("companyId") UUID companyId,
