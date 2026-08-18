@@ -116,6 +116,12 @@ body {
   to { transform: translateX(calc(100% + 1rem)); opacity: 0; }
 }
 
+/* Combined slide-in and fade-in animation */
+@keyframes toast-slide-fade-in {
+  from { transform: translateX(calc(100% + 1rem)); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
 .animate-in {
   animation-duration: 300ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
@@ -123,9 +129,10 @@ body {
 }
 
 .slide-in-from-right-full {
-  animation-name: toast-slide-in;
+  animation-name: toast-slide-fade-in;
 }
 
+/* Keep fade-in for backward compatibility but make it use the combined animation */
 .fade-in {
-  animation-name: toast-fade-in;
+  animation-name: toast-slide-fade-in;
 }
