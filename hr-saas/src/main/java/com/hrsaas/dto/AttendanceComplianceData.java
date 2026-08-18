@@ -91,7 +91,7 @@ public class AttendanceComplianceData {
 /**
  * Stats for attendance by status (e.g., PRESENT, ABSENT, etc.)
  */
-class AttendanceStatusStats {
+public class AttendanceStatusStats {
     private String status;
     private int count;
     private String color; // For chart styling
