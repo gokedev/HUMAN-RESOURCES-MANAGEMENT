@@ -2,6 +2,9 @@ package com.hrsaas.service;
 
 import com.hrsaas.dto.LeaveRequestCreateDto;
 import com.hrsaas.dto.LeaveReviewDto;
+import com.hrsaas.dto.LeaveStatsData;
+import com.hrsaas.dto.LeaveTypeStats;
+import com.hrsaas.dto.LeaveStatusStats;
 import com.hrsaas.entity.LeaveRequest;
 import com.hrsaas.entity.User;
 import com.hrsaas.enums.LeaveStatus;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -148,7 +152,7 @@ public class LeaveService {
         }
 
         // Get leave requests by status
-        List<Object[]> leaveByStatusRaw = leaveRequestRepository.countByCompanyIdAndStatus(tenantId);
+        List<Object[]> leaveByStatusRaw = leaveRequestRepository.countByCompanyIdAndStatusGrouped(tenantId);
         List<LeaveStatusStats> leaveByStatus = new java.util.ArrayList<>();
         for (Object[] row : leaveByStatusRaw) {
             String status = ((String) row[0]).toLowerCase();
@@ -167,9 +171,8 @@ public class LeaveService {
         }
 
         // Get counts for pending requests
-        List<Object[]> pendingCountRaw = leaveRequestRepository.countByCompanyIdAndStatus(
-                tenantId, "PENDING");
-        int totalPendingRequests = pendingCountRaw.isEmpty() ? 0 : ((Number) pendingCountRaw.get(0)[1]).intValue();
+        Long pendingCount = leaveRequestRepository.countByCompanyIdAndStatusName(tenantId, "PENDING");
+        int totalPendingRequests = pendingCount != null ? pendingCount.intValue() : 0;
 
         // Get counts for approved this month
         List<Object[]> approvedThisMonthRaw = leaveRequestRepository.countByCompanyIdAndStatusAndDateRange(
