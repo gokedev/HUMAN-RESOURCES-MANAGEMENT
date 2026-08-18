@@ -80,11 +80,24 @@ public class MailService {
 
     private void send(String toEmail, String subject, String htmlBody) {
         try {
+            // Check if API key is configured
+            if (brevoApiKey == null || brevoApiKey.isBlank()) {
+                log.error("Brevo API key is not configured. Please set BREVO_API_KEY environment variable.");
+                return;
+            }
+
             String url = "https://api.brevo.com/v3/sendEmail";
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("api-key", brevoApiKey);
             headers.setContentType(MediaType.APPLICATION_JSON);
+
+            // Add more detailed logging
+            log.debug("Brevo API Key (first 10 chars): {}", brevoApiKey != null ? brevoApiKey.substring(0, Math.min(10, brevoApiKey.length())) : "NULL");
+            log.debug("From Address: {}", fromAddress);
+            log.debug("To Email: {}", toEmail);
+            log.debug("Subject: {}", subject);
+            log.debug("HTML Body length: {}", htmlBody != null ? htmlBody.length() : 0);
 
             Map<String, Object> emailData = new HashMap<>();
             emailData.put("sender", Map.of(
@@ -98,13 +111,16 @@ public class MailService {
             emailData.put("subject", subject);
             emailData.put("htmlContent", htmlBody);
 
+            log.debug("Request payload: {}", emailData);
+
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(emailData, headers);
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.info("Email sent successfully via Brevo API to {} — subject: {}", toEmail, subject);
             } else {
-                log.error("Failed to send email via Brevo API to {}: HTTP {}", toEmail, response.getStatusCode());
+                log.error("Failed to send email via Brevo API to {}: HTTP {} - Response: {}",
+                        toEmail, response.getStatusCode(), response.getBody());
             }
         } catch (Exception e) {
             log.error("Failed to send email to {}: {}", toEmail, e.getMessage(), e);
