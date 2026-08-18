@@ -33,19 +33,19 @@ export function MyLeavePage() {
     mutationFn: (payload) => leaveService.createMine(payload),
     onSuccess: async () => {
       await queryInvalidation.afterLeaveChange(queryClient);
-      notify("Leave request submitted.", "success");
+      notify({ title: "Leave submitted", message: "Your request is pending approval.", variant: "success" });
       setShowCreate(false);
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Submission failed", message: getErrorMessage(error), variant: "danger" }),
   });
   const cancelMutation = useMutation({
     mutationFn: (id) => leaveService.cancelMine(id),
     onSuccess: async () => {
       await queryInvalidation.afterLeaveChange(queryClient);
-      notify("Leave request cancelled.", "success");
+      notify({ title: "Leave cancelled", variant: "success" });
       setCancelTarget(null);
     },
-    onError: (error) => notify(getErrorMessage(error), "danger"),
+    onError: (error) => notify({ title: "Cancellation failed", message: getErrorMessage(error), variant: "danger" }),
   });
 
   return (
