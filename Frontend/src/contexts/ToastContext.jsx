@@ -121,24 +121,39 @@ export function ToastProvider({ children }) {
   }, []);
 
   const notify = useCallback(
-    ({ title, message, description, variant = "info", duration = 5000, action }) => {
+    (param1, param2) => {
+      let title, message, description, variant = "info", duration = 5000, action = null;
+
+      // Support both new-style and old-style calls
+      if (typeof param1 === "string") {
+        // Old-style: notify(message, variant)
+        message = param1;
+        variant = typeof param2 === "string" ? param2 : "info";
+      } else if (param1 && typeof param1 === "object") {
+        // New-style: notify({ title, message, description, variant, duration, action })
+        title = param1.title;
+        message = param1.message;
+        description = param1.description;
+        variant = param1.variant ?? "info";
+        duration = param1.duration ?? 5000;
+        action = param1.action;
+      } else {
+        // Fallback if neither matches expected patterns
+        console.warn("Invalid arguments passed to notify function");
+        return;
+      }
+
       const id = crypto.randomUUID();
       const toast = {
         id,
         title,
-        message: typeof arguments[0] === "string" ? arguments[0] : message,
+        message,
         description,
-        variant: typeof arguments[1] === "string" ? arguments[1] : variant,
+        variant,
         duration,
         action,
       };
-      // Support old-style: notify("message", "tone")
-      if (typeof arguments[0] === "string") {
-        toast.message = arguments[0];
-        toast.variant = arguments[1] ?? "info";
-        toast.title = undefined;
-        toast.description = undefined;
-      }
+
       setToasts((current) => {
         const next = [...current, toast];
         return next.length > MAX_VISIBLE ? next.slice(-MAX_VISIBLE) : next;
