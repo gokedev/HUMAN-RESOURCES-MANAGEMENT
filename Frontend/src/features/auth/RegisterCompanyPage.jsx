@@ -117,6 +117,7 @@ export function RegisterCompanyPage() {
               className={errors.adminPassword ? "border-destructive" : ""}
             />
             {errors.adminPassword && <p className="text-xs text-destructive">{errors.adminPassword.message}</p>}
+            {!errors.adminPassword && <p className="text-xs text-muted-foreground">Must be 8+ chars with uppercase, lowercase, digit, and special character (@$!%*?&amp;#).</p>}
           </div>
         </div>
         <Button type="submit" className="w-full" disabled={isSubmitting}>
