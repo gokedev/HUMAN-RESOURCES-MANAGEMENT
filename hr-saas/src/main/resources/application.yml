@@ -24,6 +24,11 @@ spring:
   spring:
     flyway:
       enabled: true
+      database: postgresql
+      schemas: public
+      url: ${DB_URL}
+      user: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
       baseline-on-migrate: false
       locations: classpath:db/migration
 
