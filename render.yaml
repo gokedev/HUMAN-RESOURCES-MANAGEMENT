@@ -3,22 +3,16 @@ services:
     name: hr-saas-backend
     runtime: image
     image:
-      url: # Leave blank - Render builds from Dockerfile
+      url:
     dockerfilePath: ./hr-saas/Dockerfile
     dockerContext: ./hr-saas
     envVars:
       - key: DB_URL
-        fromDatabase:
-          name: hr-saas-db
-          property: connectionString
+        value: jdbc:postgresql://aws-1-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
       - key: DB_USERNAME
-        fromDatabase:
-          name: hr-saas-db
-          property: user
+        value: postgres.nkpgyzeoejfxuqdpneuv
       - key: DB_PASSWORD
-        fromDatabase:
-          name: hr-saas-db
-          property: password
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: BREVO_API_KEY
@@ -37,9 +31,3 @@ services:
         value: "20"
     healthCheckPath: /actuator/health
     autoDeploy: true
-
-  - type: postgresql
-    name: hr-saas-db
-    plan: free
-    databaseName: hr_saas
-    ipAllowList: []
