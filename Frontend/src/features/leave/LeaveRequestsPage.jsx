@@ -51,9 +51,12 @@ export function LeaveRequestsPage() {
       leaveService.review(id, { approve, note: note ?? undefined }),
     onSuccess: async () => {
       await queryInvalidation.afterLeaveChange(queryClient);
+      const empName = reviewTarget?.request?.employeeFirstName
+        ? `${reviewTarget.request.employeeFirstName} ${reviewTarget.request.employeeLastName}`
+        : reviewTarget?.employeeName ?? "employee";
       notify({
         title: reviewTarget?.approve ? "Leave approved" : "Leave rejected",
-        message: `Request from ${reviewTarget?.employeeName ?? "employee"} has been updated.`,
+        message: `Request from ${empName} has been updated.`,
         variant: "success",
       });
       setReviewTarget(null);
