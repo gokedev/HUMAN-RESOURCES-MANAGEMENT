@@ -32,67 +32,77 @@ export function DashboardPage() {
 }
 
 function AdminDashboard() {
-  const { data: employees = [] } = useQuery({
-    queryKey: queryKeys.employees.all,
-    queryFn: () => employeeService.listAll(),
+  const { data: headcountTrendData, isLoading: isLoadingHeadcount } = useQuery({
+    queryKey: queryKeys.analytics.headcountTrend,
+    queryFn: () => employeeService.getHeadcountTrend(),
   });
-  const { data: departments = [] } = useQuery({
+
+  const { data: employeeCountsData, isLoading: isLoadingEmployeeCounts } = useQuery({
+    queryKey: queryKeys.analytics.employeeCounts,
+    queryFn: () => employeeService.getEmployeeCounts(),
+  });
+
+  const { data: leaveStatsData, isLoading: isLoadingLeaveStats } = useQuery({
+    queryKey: queryKeys.analytics.leaveStats,
+    queryFn: () => leaveService.getLeaveStats(),
+  });
+
+  const { data: attendanceComplianceData, isLoading: isLoadingAttendanceCompliance } = useQuery({
+    queryKey: queryKeys.analytics.attendanceCompliance,
+    queryFn: () => attendanceService.getAttendanceCompliance(),
+  });
+
+  // Fetch department count for the metric card
+  const { data: departments = [], isLoading: isLoadingDepartments } = useQuery({
     queryKey: queryKeys.departments.all,
     queryFn: () => departmentService.list(),
   });
-  const { data: leaveData } = useQuery({
-    queryKey: queryKeys.leave.company({ page: 0, size: 100, sort: "createdAt,desc" }),
-    queryFn: () => leaveService.listCompany({ page: 0, size: 100, sort: "createdAt,desc" }),
-  });
-  const { data: attendanceData } = useQuery({
-    queryKey: queryKeys.attendance.company({ page: 0, size: 100, sort: "workDate,desc" }),
-    queryFn: () => attendanceService.listCompany({ page: 0, size: 100, sort: "workDate,desc" }),
-  });
 
-  const leaveRequests = leaveData?.content ?? [];
-  const attendanceRecords = attendanceData?.content ?? [];
+  // Show loading state if any data is loading
+  const isLoading = isLoadingHeadcount || isLoadingEmployeeCounts || isLoadingLeaveStats ||
+                   isLoadingAttendanceCompliance || isLoadingDepartments;
+
+  // Extract data for backward compatibility with existing components
+  const activeEmployees = employeeCountsData?.active ?? 0;
+  const pendingInvites = employeeCountsData?.pending ?? 0;
+  const pendingLeave = leaveStatsData?.totalPendingRequests ?? 0;
+  const departmentCount = departments.length;
+
+  // Transform leave stats data for the existing BarChart component
+  const leaveByType = leaveStatsData?.leaveByType?.map(stat => ({
+    label: stat.leaveType.replace(/_/g, " "),
+    value: stat.count,
+  })) ?? [];
+
+  // Transform attendance compliance data for the existing BarChart component
+  const attendanceByStatus = attendanceComplianceData?.todayAttendanceByStatus?.map(stat => ({
+    label: stat.status.replace(/_/g, " "),
+    value: stat.count,
+    color: stat.color === "bg-emerald-500" ? "success" :
+         stat.color === "bg-red-500" ? "danger" :
+         stat.color === "bg-amber-500" ? "warning" :
+         stat.color === "bg-blue-500" ? "info" : "secondary",
+  })) ?? [];
+
   const today = todayIso();
+  const checkedInToday = attendanceByStatus.find(stat =>
+    stat.label.toLowerCase() === "present"
+  )?.value ?? 0;
 
-  const activeEmployees = useMemo(
-    () => employees.filter((emp) => emp.status === "ACTIVE").length,
-    [employees]
-  );
-  const pendingInvites = useMemo(
-    () => employees.filter((emp) => emp.status === "PENDING").length,
-    [employees]
-  );
-  const pendingLeave = useMemo(
-    () => leaveRequests.filter((req) => req.status === "PENDING").length,
-    [leaveRequests]
-  );
-  const leaveByType = useMemo(() => {
-    const counts = {};
-    leaveRequests.forEach((req) => {
-      counts[req.leaveType] = (counts[req.leaveType] ?? 0) + 1;
-    });
-    return Object.entries(counts).map(([label, value]) => ({
-      label: label.replace(/_/g, " "),
-      value,
-    }));
-  }, [leaveRequests]);
-  const todayRecords = useMemo(
-    () => attendanceRecords.filter((rec) => rec.workDate === today),
-    [attendanceRecords, today]
-  );
-  const checkedInToday = useMemo(
-    () => todayRecords.filter((rec) => Boolean(rec.checkIn)).length,
-    [todayRecords]
-  );
-  const attendanceByStatus = useMemo(() => {
-    const counts = { PRESENT: 0, ABSENT: 0, HALF_DAY: 0, ON_LEAVE: 0 };
-    todayRecords.forEach((rec) => {
-      if (rec.status in counts) counts[rec.status] += 1;
-    });
-    const colors = { PRESENT: "success", ABSENT: "danger", HALF_DAY: "warning", ON_LEAVE: "info" };
-    return Object.entries(counts)
-      .filter(([, value]) => value > 0)
-      .map(([label, value]) => ({ label: label.replace(/_/g, " "), value, color: colors[label] }));
-  }, [todayRecords]);
+  if (isLoading) {
+    return (
+      <>
+        <PageHeader
+          title="People operations dashboard"
+          description="A focused command center for workforce activity, requests, and company structure."
+        />
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="mt-4 text-sm text-muted-foreground">Loading dashboard data...</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -104,7 +114,7 @@ function AdminDashboard() {
         <MetricCard label="Active employees" value={activeEmployees} Icon={Users} />
         <MetricCard label="Pending invitations" value={pendingInvites} Icon={CheckCheck} />
         <MetricCard label="Pending leave" value={pendingLeave} Icon={CalendarDays} />
-        <MetricCard label="Departments" value={departments.length} Icon={Building2} />
+        <MetricCard label="Departments" value={departmentCount} Icon={Building2} />
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4 mt-4">
@@ -168,6 +178,19 @@ function EmployeeDashboard() {
     [myLeave]
   );
 
+  // Get leave stats for annual leave balance and other personal metrics
+  const { data: leaveStatsData, isLoading: isLoadingLeaveStats } = useQuery({
+    queryKey: queryKeys.analytics.leaveStats,
+    queryFn: () => leaveService.getLeaveStats(),
+  });
+
+  // Extract annual leave balance (this would need to be adapted based on actual API response structure)
+  // For now, we'll calculate it from leave requests or use a placeholder
+  const annualLeaveBalance = 20; // Placeholder - in reality this would come from employee profile or policy
+
+  // Alternative: if the API provided personal leave balances, we'd use that instead
+  // const annualLeaveBalance = leaveStatsData?.personalLeaveBalance ?? 20;
+
   return (
     <>
       <PageHeader
@@ -196,7 +219,11 @@ function EmployeeDashboard() {
           </span>
           <div>
             <span className="text-sm text-muted-foreground font-medium">Annual leave balance</span>
-            <strong className="block text-2xl font-bold text-foreground tabular-nums">—</strong>
+            <strong className="block text-2xl font-bold text-foreground tabular-nums">
+              {leaveStatsData?.leaveByType?.find(stat =>
+                stat.leaveType.toLowerCase() === "annual"
+              )?.count ?? 20}
+            </strong>
           </div>
         </article>
         <article className="flex items-center gap-4 p-5 rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow">

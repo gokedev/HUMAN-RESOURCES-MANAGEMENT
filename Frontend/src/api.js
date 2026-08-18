@@ -86,6 +86,13 @@ export const employeeService = {
       .patch(`/api/admin/employees/${id}/reactivate`)
       .then((response) => response.data);
   },
+  // Analytical methods for dashboard
+  async getHeadcountTrend() {
+    return apiClient.get("/api/admin/analytics/headcount-trend").then((response) => response.data);
+  },
+  async getEmployeeCounts() {
+    return apiClient.get("/api/admin/analytics/employee-counts").then((response) => response.data);
+  },
 };
 
 export const departmentService = {
@@ -119,6 +126,10 @@ export const attendanceService = {
       .get("/api/employee/attendance", { params })
       .then((response) => response.data);
   },
+  // Analytical methods for dashboard
+  async getAttendanceCompliance() {
+    return apiClient.get("/api/admin/analytics/attendance-compliance").then((response) => response.data);
+  },
 };
 
 export const leaveService = {
@@ -146,6 +157,10 @@ export const leaveService = {
     return apiClient
       .patch(`/api/employee/leave-requests/${id}/cancel`)
       .then((response) => response.data);
+  },
+  // Analytical methods for dashboard
+  async getLeaveStats() {
+    return apiClient.get("/api/admin/analytics/leave-stats").then((response) => response.data);
   },
 };
 

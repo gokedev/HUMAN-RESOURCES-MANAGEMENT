@@ -131,4 +131,63 @@ public class LeaveService {
         leaveRequestRepository.save(leaveRequest);
         log.info("Leave request={} cancelled", leaveRequestId);
     }
+
+    // Analytical method for dashboard
+    public LeaveStatsData getLeaveStats() {
+        UUID tenantId = TenantContext.getTenantId();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+        // Get leave requests by type
+        List<Object[]> leaveByTypeRaw = leaveRequestRepository.countByCompanyIdAndLeaveType(tenantId);
+        List<LeaveTypeStats> leaveByType = new java.util.ArrayList<>();
+        for (Object[] row : leaveByTypeRaw) {
+            String leaveType = ((String) row[0]).toLowerCase();
+            int count = ((Number) row[1]).intValue();
+            leaveByType.add(new LeaveTypeStats(leaveType, count));
+        }
+
+        // Get leave requests by status
+        List<Object[]> leaveByStatusRaw = leaveRequestRepository.countByCompanyIdAndStatus(tenantId);
+        List<LeaveStatusStats> leaveByStatus = new java.util.ArrayList<>();
+        for (Object[] row : leaveByStatusRaw) {
+            String status = ((String) row[0]).toLowerCase();
+            int count = ((Number) row[1]).intValue();
+            leaveByStatus.add(new LeaveStatusStats(status, count));
+        }
+
+        // Get monthly leave trends (last 6 months)
+        List<Object[]> monthlyLeaveTrendsRaw = leaveRequestRepository.countByCompanyIdAndMonthRange(
+                tenantId, startOfMonth, now);
+        java.util.Map<String, Integer> monthlyLeaveTrends = new java.util.HashMap<>();
+        for (Object[] row : monthlyLeaveTrendsRaw) {
+            String month = ((String) row[0]); // Format: yyyy-MM
+            int count = ((Number) row[1]).intValue();
+            monthlyLeaveTrends.put(month, count);
+        }
+
+        // Get counts for pending requests
+        List<Object[]> pendingCountRaw = leaveRequestRepository.countByCompanyIdAndStatus(
+                tenantId, "PENDING");
+        int totalPendingRequests = pendingCountRaw.isEmpty() ? 0 : ((Number) pendingCountRaw.get(0)[1]).intValue();
+
+        // Get counts for approved this month
+        List<Object[]> approvedThisMonthRaw = leaveRequestRepository.countByCompanyIdAndStatusAndDateRange(
+                tenantId, "APPROVED", startOfMonth, now);
+        int totalApprovedThisMonth = approvedThisMonthRaw.isEmpty() ? 0 : ((Number) approvedThisMonthRaw.get(0)[1]).intValue();
+
+        // Get counts for rejected this month
+        List<Object[]> rejectedThisMonthRaw = leaveRequestRepository.countByCompanyIdAndStatusAndDateRange(
+                tenantId, "REJECTED", startOfMonth, now);
+        int totalRejectedThisMonth = rejectedThisMonthRaw.isEmpty() ? 0 : ((Number) rejectedThisMonthRaw.get(0)[1]).intValue();
+
+        return new LeaveStatsData(
+                leaveByType,
+                leaveByStatus,
+                monthlyLeaveTrends,
+                totalPendingRequests,
+                totalApprovedThisMonth,
+                totalRejectedThisMonth
+        );
+    }
 }

@@ -124,4 +124,33 @@ public class AdminController {
         log.debug("GET /api/admin/attendance - Listing attendance, page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
         return ResponseEntity.ok(attendanceService.listCompanyAttendance(pageable).map(AttendanceRecordResponseDto::fromEntity));
     }
+
+    // Analytical endpoints for dashboard
+    @GetMapping("/analytics/headcount-trend")
+    public ResponseEntity<HeadcountTrendData> getHeadcountTrend() {
+        log.debug("GET /api/admin/analytics/headcount-trend - Getting headcount trend data");
+        HeadcountTrendData trendData = employeeService.getHeadcountTrend(12); // Last 12 months
+        return ResponseEntity.ok(trendData);
+    }
+
+    @GetMapping("/analytics/employee-counts")
+    public ResponseEntity<EmployeeCounts> getEmployeeCounts() {
+        log.debug("GET /api/admin/analytics/employee-counts - Getting employee counts by status");
+        EmployeeCounts counts = employeeService.getActiveVsPendingCounts();
+        return ResponseEntity.ok(counts);
+    }
+
+    @GetMapping("/analytics/leave-stats")
+    public ResponseEntity<LeaveStatsData> getLeaveStats() {
+        log.debug("GET /api/admin/analytics/leave-stats - Getting leave statistics");
+        LeaveStatsData stats = leaveService.getLeaveStats();
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/analytics/attendance-compliance")
+    public ResponseEntity<AttendanceComplianceData> getAttendanceCompliance() {
+        log.debug("GET /api/admin/analytics/attendance-compliance - Getting attendance compliance data");
+        AttendanceComplianceData compliance = attendanceService.getAttendanceCompliance();
+        return ResponseEntity.ok(compliance);
+    }
 }

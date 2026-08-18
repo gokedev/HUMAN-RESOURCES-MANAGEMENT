@@ -22,9 +22,12 @@ public class AttendanceService {
     private static final Logger log = LoggerFactory.getLogger(AttendanceService.class);
 
     private final AttendanceRecordRepository attendanceRecordRepository;
+    private final EmployeeService employeeService;
 
-    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository) {
+    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository,
+                             EmployeeService employeeService) {
         this.attendanceRecordRepository = attendanceRecordRepository;
+        this.employeeService = employeeService;
     }
 
     @Transactional
@@ -81,5 +84,81 @@ public class AttendanceService {
         UUID tenantId = TenantContext.getTenantId();
         log.debug("Listing company attendance for company={}", tenantId);
         return attendanceRecordRepository.findByCompanyId(tenantId, pageable);
+    }
+
+    // Analytical method for dashboard
+    public AttendanceComplianceData getAttendanceCompliance() {
+        UUID tenantId = TenantContext.getTenantId();
+        LocalDate today = LocalDate.now();
+        LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue() - 1);
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+
+        // Get today's attendance by status
+        List<Object[]> todayAttendanceByStatusRaw = attendanceRecordRepository.countByCompanyIdAndWorkDate(
+                tenantId, today);
+        List<AttendanceStatusStats> todayAttendanceByStatus = new java.util.ArrayList<>();
+        for (Object[] row : todayAttendanceByStatusRaw) {
+            String status = ((String) row[0]).toLowerCase();
+            int count = ((Number) row[1]).intValue();
+            String color = getStatusColor(status);
+            todayAttendanceByStatus.add(new AttendanceStatusStats(status, count, color));
+        }
+
+        // Get week's attendance by status
+        List<Object[]> weekAttendanceByStatusRaw = attendanceRecordRepository.countByCompanyIdAndWorkDateBetween(
+                tenantId, startOfWeek, endOfWeek);
+        List<AttendanceStatusStats> weekAttendanceByStatus = new java.util.ArrayList<>();
+        for (Object[] row : weekAttendanceByStatusRaw) {
+            String status = ((String) row[0]).toLowerCase();
+            int count = ((Number) row[1]).intValue();
+            String color = getStatusColor(status);
+            weekAttendanceByStatus.add(new AttendanceStatusStats(status, count, color));
+        }
+
+        // Get total employees for compliance calculation
+        int totalEmployees = employeeService.getActiveVsPendingCounts().getActive().intValue();
+
+        // Calculate expected check-ins (assuming 1 per employee per workday)
+        int expectedCheckins = totalEmployees; // For today
+        int actualCheckins = 0;
+        for (AttendanceStatusStats stat : todayAttendanceByStatus) {
+            if ("present".equalsIgnoreCase(stat.getStatus()) ||
+                "half_day".equalsIgnoreCase(stat.getStatus()) ||
+                "on_leave".equalsIgnoreCase(stat.getStatus())) {
+                actualCheckins += stat.getCount();
+            }
+        }
+
+        double complianceRate = expectedCheckins > 0 ?
+                ((double) actualCheckins / expectedCheckins) * 100 : 0.0;
+
+        int todayCheckedIn = 0;
+        int todayTotalEmployees = totalEmployees;
+        for (AttendanceStatusStats stat : todayAttendanceByStatus) {
+            if ("present".equalsIgnoreCase(stat.getStatus())) {
+                todayCheckedIn = stat.getCount();
+                break;
+            }
+        }
+
+        return new AttendanceComplianceData(
+                todayAttendanceByStatus,
+                weekAttendanceByStatus,
+                complianceRate,
+                expectedCheckins,
+                actualCheckins,
+                todayCheckedIn,
+                todayTotalEmployees
+        );
+    }
+
+    private String getStatusColor(String status) {
+        switch (status.toLowerCase()) {
+            case "present": return "bg-emerald-500";
+            case "absent": return "bg-red-500";
+            case "half_day": return "bg-amber-500";
+            case "on_leave": return "bg-blue-500";
+            default: return "bg-gray-500";
+        }
     }
 }

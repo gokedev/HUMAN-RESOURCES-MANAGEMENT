@@ -32,6 +32,12 @@ export const queryKeys = {
     company: (params) => ["leave", "company", params],
     mine: (params) => ["leave", "mine", params],
   },
+  analytics: {
+    headcountTrend: ["analytics", "headcount-trend"],
+    employeeCounts: ["analytics", "employee-counts"],
+    leaveStats: ["analytics", "leave-stats"],
+    attendanceCompliance: ["analytics", "attendance-compliance"],
+  },
 };
 
 export const LEAVE_TYPES = [
