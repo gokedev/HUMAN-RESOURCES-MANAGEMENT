@@ -43,7 +43,7 @@ export function LoginPage() {
       navigate("/dashboard", { replace: true });
     } catch (error) {
       tokenStorage.clear();
-      notify(getErrorMessage(error), "danger");
+      notify({ title: "Login failed", message: getErrorMessage(error), variant: "danger" });
     }
   }
 
