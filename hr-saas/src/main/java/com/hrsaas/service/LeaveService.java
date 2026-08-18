@@ -13,6 +13,8 @@ import com.hrsaas.repository.LeaveRequestRepository;
 import com.hrsaas.repository.UserRepository;
 import com.hrsaas.tenant.TenantContext;
 import org.slf4j.Logger;
+
+import java.time.LocalDate;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -139,8 +141,8 @@ public class LeaveService {
     // Analytical method for dashboard
     public LeaveStatsData getLeaveStats() {
         UUID tenantId = TenantContext.getTenantId();
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDate now = LocalDate.now();
+        LocalDate startOfMonth = now.withDayOfMonth(1);
 
         // Get leave requests by type
         List<Object[]> leaveByTypeRaw = leaveRequestRepository.countByCompanyIdAndLeaveType(tenantId);
