@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -86,11 +87,12 @@ public class MailService {
                 return;
             }
 
-            String url = "https://api.brevo.com/v3/sendEmail";
+            String url = "https://api.brevo.com/v3/smtp/email";
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("api-key", brevoApiKey);
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
             // Add more detailed logging
             log.debug("Brevo API Key (first 10 chars): {}", brevoApiKey != null ? brevoApiKey.substring(0, Math.min(10, brevoApiKey.length())) : "NULL");
