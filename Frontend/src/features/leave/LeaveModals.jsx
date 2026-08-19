@@ -11,7 +11,7 @@ import { Label } from "../../components/ui/label.jsx";
 import { Textarea } from "../../components/ui/textarea.jsx";
 import { Select } from "../../components/ui/select.jsx";
 import { AvatarGradient } from "../../components/ui/avatar.jsx";
-import { leaveService } from "../../api.js";
+import { leaveService } from "../../api/index.js";
 
 export const leaveTypes = ["ANNUAL", "SICK", "UNPAID", "MATERNITY", "PATERNITY", "OTHER"];
 
