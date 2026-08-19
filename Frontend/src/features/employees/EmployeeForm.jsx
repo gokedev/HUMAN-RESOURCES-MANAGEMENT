@@ -23,7 +23,6 @@ export const createEmployeeSchema = z.object({
 
 export const editEmployeeSchema = z.object(baseSchema);
 
-// Shared create/edit employee form used by the new and edit pages.
 export function EmployeeForm({ departments = [], initialValues, submitLabel, isSubmitting, onSubmit }) {
   const schema = initialValues?.email !== undefined ? editEmployeeSchema : createEmployeeSchema;
   const {
@@ -61,7 +60,7 @@ export function EmployeeForm({ departments = [], initialValues, submitLabel, isS
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label>First name *</Label>
           <Input
@@ -70,7 +69,7 @@ export function EmployeeForm({ departments = [], initialValues, submitLabel, isS
             {...register("firstName")}
           />
           {errors.firstName && (
-            <p className="text-xs text-destructive">{errors.firstName.message}</p>
+            <p className="text-xs text-red-600 dark:text-red-400">{errors.firstName.message}</p>
           )}
         </div>
         <div className="space-y-1.5">
@@ -81,7 +80,7 @@ export function EmployeeForm({ departments = [], initialValues, submitLabel, isS
             {...register("lastName")}
           />
           {errors.lastName && (
-            <p className="text-xs text-destructive">{errors.lastName.message}</p>
+            <p className="text-xs text-red-600 dark:text-red-400">{errors.lastName.message}</p>
           )}
         </div>
       </div>
@@ -95,11 +94,11 @@ export function EmployeeForm({ departments = [], initialValues, submitLabel, isS
             placeholder="employee@company.com"
           />
           {errors.email && (
-            <p className="text-xs text-destructive">{errors.email.message}</p>
+            <p className="text-xs text-red-600 dark:text-red-400">{errors.email.message}</p>
           )}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label>Phone</Label>
           <Input type="tel" {...register("phone")} />
