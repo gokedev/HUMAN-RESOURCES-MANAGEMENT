@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { KeyRound, Palette, ShieldCheck, UserRound } from "lucide-react";
 import { PageHeader, StatusBadge } from "../../components/common/ui.jsx";
 import { CardSkeleton } from "../../components/feedback.jsx";
@@ -22,15 +22,57 @@ export function ProfilePage() {
   usePageTitle("Profile");
   const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("personal");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    phone: "",
+    address: "",
+    emergencyContact: "",
+    jobTitle: ""
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
   const { data: profile, isLoading } = useQuery({
     queryKey: queryKeys.profile.me,
     queryFn: () => profileService.me(),
   });
+
   const { data: departments = [] } = useQuery({
     queryKey: queryKeys.departments.all,
     queryFn: () => departmentService.list(),
   });
+
   const departmentName = departments.find((dept) => dept.id === profile?.departmentId)?.name;
+
+  // Initialize edit form with current profile data when profile loads or editing starts
+  const initializeEditForm = () => {
+    if (profile) {
+      setEditForm({
+        phone: profile?.phone ?? "",
+        address: profile?.address ?? "",
+        emergencyContact: profile?.emergencyContact ?? "",
+        jobTitle: profile?.jobTitle ?? ""
+      });
+    }
+  };
+
+  const updateMutation = useMutation({
+    mutationFn: (payload) => profileService.update(payload),
+    onSuccess: () => {
+      setIsEditing(false);
+      // Refetch profile to get updated data
+      // In a real app, you might invalidate the profile query here
+    },
+    onError: (error) => {
+      console.error("Update failed:", error);
+      // In a real app, you'd show an error toast/notification
+    }
+  });
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    updateMutation.mutate(editForm);
+  };
 
   return (
     <>
@@ -72,7 +114,12 @@ export function ProfilePage() {
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
               type="button"
-              onClick={() => setActiveTab(id)}
+              onClick={() => {
+                setActiveTab(id);
+                if (id === "personal") {
+                  initializeEditForm();
+                }
+              }}
             >
               <Icon size={16} className="mr-2" /> {label}
             </button>
@@ -89,21 +136,105 @@ export function ProfilePage() {
                 </div>
               </div>
               <div className="p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <ProfileField label="Email">{profile?.email ?? "—"}</ProfileField>
-                  <ProfileField label="Role">{profile?.role ?? "—"}</ProfileField>
-                  <ProfileField label="Status">
-                    {profile?.status ? <StatusBadge status={profile.status} /> : "—"}
-                  </ProfileField>
-                  <ProfileField label="Job Title">{profile?.jobTitle ?? "—"}</ProfileField>
-                  <ProfileField label="Department">{departmentName ?? "—"}</ProfileField>
-                  <ProfileField label="Phone">{profile?.phone ?? "—"}</ProfileField>
-                  <ProfileField label="Hire Date">
-                    {profile?.dateOfHire
-                      ? new Date(profile.dateOfHire).toLocaleDateString()
-                      : "—"}
-                  </ProfileField>
-                </div>
+                {isEditing ? (
+                  <form onSubmit={handleSave} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Phone Number</span>
+                        <input
+                          type="tel"
+                          value={editForm.phone}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border border-muted p-2 bg-background"
+                          disabled={isSaving}
+                        />
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Address</span>
+                        <input
+                          type="text"
+                          value={editForm.address}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, address: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border border-muted p-2 bg-background"
+                          disabled={isSaving}
+                        />
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Emergency Contact</span>
+                        <input
+                          type="text"
+                          value={editForm.emergencyContact}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, emergencyContact: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border border-muted p-2 bg-background"
+                          disabled={isSaving}
+                        />
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Job Title</span>
+                        <input
+                          type="text"
+                          value={editForm.jobTitle}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, jobTitle: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border border-muted p-2 bg-background"
+                          disabled={isSaving}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsEditing(false);
+                          initializeEditForm();
+                        }}
+                        disabled={isSaving}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="default"
+                        type="submit"
+                        disabled={isSaving}
+                        className="ml-2"
+                      >
+                        {isSaving ? "Saving..." : "Save Changes"}
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <ProfileField label="Email">{profile?.email ?? "—"}</ProfileField>
+                    <ProfileField label="Role">{profile?.role ?? "—"}</ProfileField>
+                    <ProfileField label="Status">
+                      {profile?.status ? <StatusBadge status={profile.status} /> : "—"}
+                    </ProfileField>
+                    <ProfileField label="Job Title">{profile?.jobTitle ?? "—"}</ProfileField>
+                    <ProfileField label="Department">{departmentName ?? "—"}</ProfileField>
+                    <ProfileField label="Phone">{profile?.phone ?? "—"}</ProfileField>
+                    <ProfileField label="Hire Date">
+                      {profile?.dateOfHire
+                        ? new Date(profile.dateOfHire).toLocaleDateString()
+                        : "—"}
+                    </ProfileField>
+                    <ProfileField label="Address">{profile?.address ?? "—"}</ProfileField>
+                    <ProfileField label="Emergency Contact">{profile?.emergencyContact ?? "—"}</ProfileField>
+                  </div>
+                )}
+
+                {!isEditing && (
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(true);
+                        initializeEditForm();
+                      }}
+                    >
+                      Edit Profile
+                    </Button>
+                  </div>
+                )}
               </div>
             </>
           )}
