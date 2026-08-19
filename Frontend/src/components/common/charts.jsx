@@ -1,11 +1,14 @@
 export function BarChart({ data = [], height = 180 }) {
-  const max = Math.max(1, ...data.map((item) => item.value ?? 0));
-  if (data.length === 0) {
+  // Ensure data is an array
+  const chartData = Array.isArray(data) ? data : [];
+  if (chartData.length === 0) {
     return <p className="text-center text-muted-foreground py-4 text-sm">No data to display yet.</p>;
   }
+
+  const max = Math.max(1, ...chartData.map((item) => item.value ?? 0));
   return (
     <div className="flex flex-col justify-end gap-3" style={{ height }} aria-label="Bar chart">
-      {data.map((item) => (
+      {chartData.map((item) => (
         <div className="grid items-center gap-2" style={{ gridTemplateColumns: "1fr 2.5rem 4.5rem" }} key={item.label}>
           <div className="h-2.5 rounded-full bg-muted overflow-hidden">
             <div
@@ -54,10 +57,12 @@ export function AttendanceCalendar({ records = [], month = null }) {
   const monthLabel = start.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
   const recordByDay = {};
-  records.forEach((rec) => {
-    const [y, m, d] = rec.workDate.split("-").map(Number);
-    if (y === year && m === monthIndex + 1) recordByDay[d] = rec;
-  });
+  if (Array.isArray(records)) {
+    records.forEach((rec) => {
+      const [y, m, d] = rec.workDate.split("-").map(Number);
+      if (y === year && m === monthIndex + 1) recordByDay[d] = rec;
+    });
+  }
 
   const today = new Date().getDate();
 
