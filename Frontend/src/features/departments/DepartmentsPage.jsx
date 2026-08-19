@@ -139,9 +139,9 @@ export function DepartmentsPage() {
       </DataTableShell>
 
       {showCreate && (
-        <CreateDepartmentModal
+          <CreateDepartmentModal
           isSubmitting={createMutation.isPending}
-          onCreate={(name) => createMutation.mutate(name)}
+          onCreate={(data) => createMutation.mutate(data.name)}
           onClose={() => setShowCreate(false)}
         />
       )}
