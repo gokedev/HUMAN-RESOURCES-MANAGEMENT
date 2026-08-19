@@ -89,11 +89,11 @@ export function LeaveRequestsPage() {
           className="w-56 h-9"
         >
           <option value="">All employees</option>
-          {allEmployees.map((emp) => (
+          {Array.isArray(allEmployees) ? allEmployees.map((emp) => (
             <option key={emp.id} value={emp.id}>
               {emp.firstName} {emp.lastName}
             </option>
-          ))}
+          )) : null}
         </Select>
         {(filterStatus || filterEmployee) && (
           <Button
