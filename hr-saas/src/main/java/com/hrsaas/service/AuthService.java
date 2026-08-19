@@ -7,6 +7,7 @@ import com.hrsaas.dto.LoginRequest;
 import com.hrsaas.dto.RefreshTokenRequest;
 import com.hrsaas.dto.RegisterCompanyRequest;
 import com.hrsaas.dto.ResetPasswordRequest;
+import com.hrsaas.dto.UpdatePasswordRequest;
 import com.hrsaas.entity.Company;
 import com.hrsaas.entity.Invitation;
 import com.hrsaas.entity.PasswordResetToken;
@@ -32,6 +33,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
@@ -295,6 +297,29 @@ public class AuthService {
             suffix++;
         }
         return slug;
+    }
+
+    @Transactional
+    public void updatePassword(UUID userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("User not found"));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw ApiException.badRequest("Current password is incorrect");
+        }
+
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw ApiException.badRequest("New password cannot be empty");
+        }
+
+        // Optional: Add password strength validation here
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        // Invalidate all existing refresh tokens for security
+        refreshTokenRepository.deleteByUserId(userId);
+
+        log.info("Password updated for userId={}", userId);
     }
 
     private String generateSecureToken() {
