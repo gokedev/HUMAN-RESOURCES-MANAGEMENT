@@ -90,7 +90,8 @@ export function useTodayAttendance(enabled = true) {
         queryKeys.attendance.mine({ page: 0, size: 7, sort: "workDate,desc" }),
         (old) => {
           if (!old) return old;
-          return { ...old, content: [data, ...old.content.filter((r) => r.workDate !== today)] };
+          const content = Array.isArray(old.content) ? old.content : [];
+          return { ...old, content: [data, ...content.filter((r) => r.workDate !== today)] };
         }
       );
       notify({
@@ -109,7 +110,8 @@ export function useTodayAttendance(enabled = true) {
         queryKeys.attendance.mine({ page: 0, size: 7, sort: "workDate,desc" }),
         (old) => {
           if (!old) return old;
-          return { ...old, content: old.content.map((r) => (r.workDate === today ? data : r)) };
+          const content = Array.isArray(old.content) ? old.content : [];
+          return { ...old, content: content.map((r) => (r.workDate === today ? data : r)) };
         }
       );
       notify({
