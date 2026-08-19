@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, UserX, UserCheck } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, UserX, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { ConfirmDialog, PageHeader, StatusBadge } from "../../components/common/ui.jsx";
 import { CardSkeleton, EmptyState } from "../../components/feedback.jsx";
@@ -18,6 +18,7 @@ export function EmployeeDetailsPage() {
   const queryClient = useQueryClient();
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [showReactivate, setShowReactivate] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
   const { data: employees, isLoading } = useQuery({
     queryKey: queryKeys.employees.all,
     queryFn: () => employeeService.listAll(),
@@ -43,6 +44,15 @@ export function EmployeeDetailsPage() {
       setShowReactivate(false);
     },
     onError: (error) => notify({ title: "Action failed", message: getErrorMessage(error), variant: "danger" }),
+  });
+  const deleteMutation = useMutation({
+    mutationFn: () => employeeService.delete(id),
+    onSuccess: async () => {
+      await queryInvalidation.afterEmployeeChange(queryClient);
+      notify({ title: "Employee deleted", variant: "success" });
+      navigate("/employees");
+    },
+    onError: (error) => notify({ title: "Delete failed", message: getErrorMessage(error), variant: "danger" }),
   });
 
   const employee = employees?.find((emp) => emp.id === id) ?? null;
@@ -111,6 +121,13 @@ export function EmployeeDetailsPage() {
                 <UserCheck size={16} className="mr-1.5" /> Reactivate
               </Button>
             ) : null}
+            <Button
+              variant="destructive"
+              type="button"
+              onClick={() => setShowDelete(true)}
+            >
+              <Trash2 size={16} className="mr-1.5" /> Delete
+            </Button>
           </div>
         }
       />
@@ -198,6 +215,17 @@ export function EmployeeDetailsPage() {
           isProcessing={reactivateMutation.isPending}
           onConfirm={() => reactivateMutation.mutate()}
           onClose={() => setShowReactivate(false)}
+        />
+      )}
+      {showDelete && (
+        <ConfirmDialog
+          title="Delete employee"
+          message={`Permanently delete ${employee.firstName} ${employee.lastName}? This action cannot be undone.`}
+          confirmLabel="Delete"
+          variant="destructive"
+          isProcessing={deleteMutation.isPending}
+          onConfirm={() => deleteMutation.mutate()}
+          onClose={() => setShowDelete(false)}
         />
       )}
     </>

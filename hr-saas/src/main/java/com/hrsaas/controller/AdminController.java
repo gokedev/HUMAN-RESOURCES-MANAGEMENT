@@ -88,6 +88,13 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/employees/{id}")
+    public ResponseEntity<Void> deleteEmployee(@PathVariable UUID id) {
+        log.info("DELETE /api/admin/employees/{} - Deleting employee", id);
+        employeeService.deleteEmployee(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/departments")
     public ResponseEntity<DepartmentResponseDto> createDepartment(@Valid @RequestBody DepartmentCreateDto dto) {
         log.info("POST /api/admin/departments - Creating department: {}", dto.getName());

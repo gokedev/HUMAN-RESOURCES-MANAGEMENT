@@ -153,6 +153,17 @@ public class EmployeeService {
         log.info("Employee reactivated: id={}", employeeId);
     }
 
+    @Transactional
+    public void deleteEmployee(UUID employeeId) {
+        UUID tenantId = TenantContext.getTenantId();
+        log.info("Deleting employee={} for company={}", employeeId, tenantId);
+        User employee = getEmployee(employeeId);
+        invitationRepository.findByUserIdAndAcceptedAtIsNull(employee.getId())
+                .ifPresent(invitationRepository::delete);
+        userRepository.delete(employee);
+        log.info("Employee deleted: id={}", employeeId);
+    }
+
     // Analytical methods for dashboard
     public HeadcountTrendData getHeadcountTrend(int months) {
         UUID tenantId = TenantContext.getTenantId();

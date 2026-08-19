@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, Pencil, Plus, UserCheck, UserX, Users } from "lucide-react";
+import { Eye, Pencil, Plus, Trash2, UserCheck, UserX, Users } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import {
   ConfirmDialog,
@@ -28,6 +28,7 @@ export function EmployeesPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [pendingAction, setPendingAction] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data: employees = [], isLoading, isError } = useQuery({
     queryKey: queryKeys.employees.all,
@@ -54,6 +55,16 @@ export function EmployeesPage() {
       setPendingAction(null);
     },
     onError: (error) => notify({ title: "Action failed", message: getErrorMessage(error), variant: "danger" }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => employeeService.delete(id),
+    onSuccess: async () => {
+      await queryInvalidation.afterEmployeeChange(queryClient);
+      notify({ title: "Employee deleted", variant: "success" });
+      setDeleteTarget(null);
+    },
+    onError: (error) => notify({ title: "Delete failed", message: getErrorMessage(error), variant: "danger" }),
   });
 
   const filtered = useMemo(() => {
@@ -244,6 +255,16 @@ export function EmployeesPage() {
                             <UserCheck size={16} />
                           </Button>
                         ) : null}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          type="button"
+                          title="Delete"
+                          onClick={() => setDeleteTarget(emp)}
+                        >
+                          <Trash2 size={16} />
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -273,6 +294,17 @@ export function EmployeesPage() {
           isProcessing={statusMutation.isPending}
           onConfirm={() => statusMutation.mutate(pendingAction)}
           onClose={() => setPendingAction(null)}
+        />
+      )}
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete employee"
+          message={`Permanently delete ${deleteTarget.firstName} ${deleteTarget.lastName}? This action cannot be undone.`}
+          confirmLabel="Delete"
+          variant="destructive"
+          isProcessing={deleteMutation.isPending}
+          onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
+          onClose={() => setDeleteTarget(null)}
         />
       )}
     </>

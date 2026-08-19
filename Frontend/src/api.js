@@ -86,6 +86,11 @@ export const employeeService = {
       .patch(`/api/admin/employees/${id}/reactivate`)
       .then((response) => response.data);
   },
+  delete(id) {
+    return apiClient
+      .delete(`/api/admin/employees/${id}`)
+      .then((response) => response.data);
+  },
   // Analytical methods for dashboard
   async getHeadcountTrend() {
     return apiClient.get("/api/admin/analytics/headcount-trend").then((response) => response.data);
