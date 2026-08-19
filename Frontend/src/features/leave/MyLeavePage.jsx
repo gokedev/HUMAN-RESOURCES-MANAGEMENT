@@ -7,7 +7,7 @@ import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feed
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useAuth, useToast } from "../../contexts.jsx";
-import { leaveService, profileService } from "../../api.js";
+import { leaveService, profileService } from "../../api/index.js";
 import { queryKeys, LEAVE_TYPES } from "../../constants.js";
 import { getErrorMessage, queryInvalidation } from "../../utils.js";
 import { CreateLeaveModal, LeaveDetailsModal } from "./LeaveModals.jsx";
