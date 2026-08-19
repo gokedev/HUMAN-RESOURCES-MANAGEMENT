@@ -33,7 +33,7 @@ export function AttendancePage() {
       />
       <DataTableShell
         title="Attendance records"
-        description="Paginated company attendance records."
+        description={`${pagination?.totalElements ?? records.length} record${(pagination?.totalElements ?? records.length) === 1 ? "" : "s"}`}
       >
         {isLoading ? (
           <TableSkeleton rows={8} />
@@ -56,8 +56,8 @@ export function AttendancePage() {
                 <TableRow>
                   <TableHead>Employee</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead>Check-in</TableHead>
-                  <TableHead>Check-out</TableHead>
+                  <TableHead className="hidden sm:table-cell">Check-in</TableHead>
+                  <TableHead className="hidden sm:table-cell">Check-out</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -65,26 +65,24 @@ export function AttendancePage() {
               <TableBody>
                 {records.map((record) => (
                   <TableRow key={record.id}>
-                    <TableCell>{nameMap[record.employeeId] ?? "Unknown employee"}</TableCell>
+                    <TableCell className="font-medium">{nameMap[record.employeeId] ?? "Unknown employee"}</TableCell>
                     <TableCell>{new Date(record.workDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{record.checkIn ? formatTime(record.checkIn) : "—"}</TableCell>
-                    <TableCell>{record.checkOut ? formatTime(record.checkOut) : "—"}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{record.checkIn ? formatTime(record.checkIn) : "—"}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{record.checkOut ? formatTime(record.checkOut) : "—"}</TableCell>
                     <TableCell>
                       <StatusBadge status={record.status} />
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="inline-flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          type="button"
-                          title="View details"
-                          onClick={() => setSelected(record)}
-                        >
-                          <Eye size={16} />
-                        </Button>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        type="button"
+                        title="View details"
+                        onClick={() => setSelected(record)}
+                      >
+                        <Eye size={16} />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
