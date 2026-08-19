@@ -42,9 +42,9 @@ export function MyAttendancePage() {
         title="My attendance"
         description="Check in, check out, and review your personal attendance history."
       />
-      <section className="rounded-xl border bg-card p-5 shadow-sm border-l-4 border-l-emerald-500 mb-4">
-        <div className="flex items-center gap-2 mb-1">
-          <h3 className="text-lg font-semibold text-foreground">Today</h3>
+      <section className={`rounded-xl border bg-card p-5 shadow-sm transition-all duration-200 ${hasCheckedOut ? "border-l-4 border-l-primary" : hasCheckedIn ? "border-l-4 border-l-emerald-500" : "border-l-4 border-l-muted"}`}>
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="text-base font-semibold text-foreground">Today</h3>
           <Clock size={18} className="text-primary shrink-0" />
         </div>
         <p className="text-2xl font-bold text-foreground">
@@ -62,7 +62,7 @@ export function MyAttendancePage() {
               ? "You are currently checked in."
               : "Start your workday."}
         </p>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
           <Button
             type="button"
             disabled={todayLoading || hasCheckedIn || isCheckingIn}
@@ -91,10 +91,10 @@ export function MyAttendancePage() {
         </div>
       </section>
 
-      <section className="rounded-xl border bg-card shadow-sm overflow-hidden mb-4">
+      <section className="rounded-xl border bg-card shadow-sm overflow-hidden mt-6">
         <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2 className="font-semibold text-foreground">This month</h2>
+            <h2 className="text-base font-semibold text-foreground">This month</h2>
             <p className="text-sm text-muted-foreground mt-0.5">Your attendance status day by day.</p>
           </div>
           <CalendarRange size={18} className="text-primary shrink-0" />
@@ -104,56 +104,58 @@ export function MyAttendancePage() {
         </div>
       </section>
 
-      <DataTableShell title="History" description="Your personal attendance records.">
-        {isLoading ? (
-          <TableSkeleton rows={6} />
-        ) : isError ? (
-          <EmptyState
-            icon={ClipboardCheck}
-            title="Could not load attendance"
-            description="Check your connection and try again."
-          />
-        ) : history.length === 0 ? (
-          <EmptyState
-            icon={ClipboardCheck}
-            title="No attendance records"
-            description="Your attendance history will appear here once you check in."
-          />
-        ) : (
-          <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Check-in</TableHead>
-                  <TableHead>Check-out</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {history.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell>{new Date(record.workDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{record.checkIn ? formatTime(record.checkIn) : "—"}</TableCell>
-                    <TableCell>{record.checkOut ? formatTime(record.checkOut) : "—"}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={record.status} />
-                    </TableCell>
+      <div className="mt-6">
+        <DataTableShell title="History" description="Your personal attendance records.">
+          {isLoading ? (
+            <TableSkeleton rows={6} />
+          ) : isError ? (
+            <EmptyState
+              icon={ClipboardCheck}
+              title="Could not load attendance"
+              description="Check your connection and try again."
+            />
+          ) : history.length === 0 ? (
+            <EmptyState
+              icon={ClipboardCheck}
+              title="No attendance records"
+              description="Your attendance history will appear here once you check in."
+            />
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Check-in</TableHead>
+                    <TableHead className="hidden sm:table-cell">Check-out</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {pagination ? (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={pagination.totalPages}
-                totalElements={pagination.totalElements}
-                onPageChange={setCurrentPage}
-              />
-            ) : null}
-          </>
-        )}
-      </DataTableShell>
+                </TableHeader>
+                <TableBody>
+                  {history.map((record) => (
+                    <TableRow key={record.id}>
+                      <TableCell>{new Date(record.workDate).toLocaleDateString()}</TableCell>
+                      <TableCell>{record.checkIn ? formatTime(record.checkIn) : "—"}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{record.checkOut ? formatTime(record.checkOut) : "—"}</TableCell>
+                      <TableCell>
+                        <StatusBadge status={record.status} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {pagination ? (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={pagination.totalPages}
+                  totalElements={pagination.totalElements}
+                  onPageChange={setCurrentPage}
+                />
+              ) : null}
+            </>
+          )}
+        </DataTableShell>
+      </div>
     </>
   );
 }
