@@ -54,12 +54,3 @@ export const LEAVE_TYPES = [
   "PATERNITY",
   "OTHER",
 ];
-
-export const ATTENDANCE_STATUSES = ["PRESENT", "ABSENT", "HALF_DAY", "ON_LEAVE"];
-
-export const LEAVE_STATUSES = [
-  "PENDING",
-  "APPROVED",
-  "REJECTED",
-  "CANCELLED",
-];
