@@ -49,20 +49,22 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
                                                          @Param("startDate") LocalDate startDate,
                                                          @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT COALESCE(SUM(lr.endDate - lr.startDate + 1), 0) FROM LeaveRequest lr " +
-            "WHERE lr.companyId = :companyId AND lr.employeeId = :employeeId " +
-            "AND lr.leaveType = :leaveType AND lr.status = 'APPROVED' " +
-            "AND lr.startDate >= :yearStart AND lr.startDate <= :yearEnd")
+    @Query(value = "SELECT COALESCE(SUM(lr.end_date - lr.start_date + 1), 0) FROM leave_requests lr " +
+            "WHERE lr.company_id = :companyId AND lr.employee_id = :employeeId " +
+            "AND lr.leave_type = :leaveType AND lr.status = 'APPROVED' " +
+            "AND lr.start_date >= :yearStart AND lr.start_date <= :yearEnd",
+            nativeQuery = true)
     Long sumApprovedDaysByEmployeeAndType(@Param("companyId") UUID companyId,
                                           @Param("employeeId") UUID employeeId,
                                           @Param("leaveType") String leaveType,
                                           @Param("yearStart") LocalDate yearStart,
                                           @Param("yearEnd") LocalDate yearEnd);
 
-    @Query("SELECT COALESCE(SUM(lr.endDate - lr.startDate + 1), 0) FROM LeaveRequest lr " +
-            "WHERE lr.companyId = :companyId AND lr.employeeId = :employeeId " +
-            "AND lr.leaveType = :leaveType AND lr.status = 'PENDING' " +
-            "AND lr.startDate >= :yearStart AND lr.startDate <= :yearEnd")
+    @Query(value = "SELECT COALESCE(SUM(lr.end_date - lr.start_date + 1), 0) FROM leave_requests lr " +
+            "WHERE lr.company_id = :companyId AND lr.employee_id = :employeeId " +
+            "AND lr.leave_type = :leaveType AND lr.status = 'PENDING' " +
+            "AND lr.start_date >= :yearStart AND lr.start_date <= :yearEnd",
+            nativeQuery = true)
     Long sumPendingDaysByEmployeeAndType(@Param("companyId") UUID companyId,
                                          @Param("employeeId") UUID employeeId,
                                          @Param("leaveType") String leaveType,
