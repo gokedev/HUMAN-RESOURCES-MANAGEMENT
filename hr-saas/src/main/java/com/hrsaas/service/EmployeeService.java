@@ -96,7 +96,7 @@ public class EmployeeService {
                 .build();
         invitationRepository.save(invitation);
 
-        String inviteLink = frontendBaseUrl + "/accept-invite?token=" + token;
+        String inviteLink = frontendBaseUrl + "/accept-invitation?token=" + token;
         mailService.sendEmployeeInvitation(employee.getEmail(), employee.getFirstName(), company.getName(), inviteLink);
 
         log.info("Employee created successfully: id={}, email={}", employee.getId(), employee.getEmail());
