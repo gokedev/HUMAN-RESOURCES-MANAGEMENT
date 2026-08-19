@@ -13,12 +13,12 @@ export function AttendanceDetailsModal({ record, employeeName, onClose }) {
           <AvatarGradient className="h-12 w-12 text-sm shrink-0" name={employeeName}>
             {employeeName.charAt(0).toUpperCase()}
           </AvatarGradient>
-          <div>
-            <h2 className="text-base font-semibold text-foreground">{employeeName}</h2>
+          <div className="min-w-0">
+            <h2 className="break-words text-base font-semibold text-foreground">{employeeName}</h2>
             <p className="text-sm text-muted-foreground">{new Date(record.workDate).toLocaleDateString()}</p>
           </div>
         </section>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</span>
             <div className="mt-1">
@@ -27,20 +27,20 @@ export function AttendanceDetailsModal({ record, employeeName, onClose }) {
           </div>
           <div>
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Check-in</span>
-            <p className="mt-1 text-sm text-foreground">{record.checkIn ? formatDateTime(record.checkIn) : "—"}</p>
+            <p className="mt-1 break-words text-sm text-foreground">{record.checkIn ? formatDateTime(record.checkIn) : "—"}</p>
           </div>
           <div>
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Check-out</span>
-            <p className="mt-1 text-sm text-foreground">{record.checkOut ? formatDateTime(record.checkOut) : "—"}</p>
+            <p className="mt-1 break-words text-sm text-foreground">{record.checkOut ? formatDateTime(record.checkOut) : "—"}</p>
           </div>
           <div>
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Work date</span>
-            <p className="mt-1 text-sm text-foreground">{new Date(record.workDate).toLocaleDateString()}</p>
+            <p className="mt-1 break-words text-sm text-foreground">{new Date(record.workDate).toLocaleDateString()}</p>
           </div>
           {record.notes ? (
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Notes</span>
-              <p className="mt-1 text-sm text-foreground">{record.notes}</p>
+              <p className="mt-1 break-words text-sm text-foreground">{record.notes}</p>
             </div>
           ) : null}
         </div>
