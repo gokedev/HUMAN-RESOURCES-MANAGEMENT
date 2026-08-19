@@ -60,17 +60,14 @@ export function DepartmentsPage() {
         title="Departments"
         description="Organize people into company teams and reporting areas."
         actions={
-          <Button
-            type="button"
-            onClick={() => setShowCreate(true)}
-          >
+          <Button type="button" onClick={() => setShowCreate(true)}>
             <Plus size={16} /> New department
           </Button>
         }
       />
       <DataTableShell
         title="Department list"
-        description="All departments in your company."
+        description={`${departments.length} department${departments.length === 1 ? "" : "s"} in your company`}
       >
         {isLoading ? (
           <TableSkeleton rows={5} />
@@ -79,76 +76,65 @@ export function DepartmentsPage() {
             icon={Building2}
             title="Could not load departments"
             description="Check your connection and try again."
+            actionLabel="Retry"
+            onAction={() => queryClient.invalidateQueries({ queryKey: queryKeys.departments.all })}
           />
         ) : departments.length === 0 ? (
           <EmptyState
             icon={Building2}
-            title="No departments yet"
+            title="No departments"
             description="Create your first department to start organizing your team."
+            actionLabel="New department"
+            onAction={() => setShowCreate(true)}
           />
         ) : (
-          <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Members</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Department</TableHead>
+                <TableHead>Members</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {departments.map((dept) => (
+                <TableRow key={dept.id}>
+                  <TableCell className="font-medium">{dept.name}</TableCell>
+                  <TableCell>
+                    <span className="text-muted-foreground">
+                      {employeeCounts[dept.id] ?? 0} member{(employeeCounts[dept.id] ?? 0) !== 1 ? "s" : ""}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+                      type="button"
+                      title="Delete department"
+                      onClick={() => setDeleteTarget(dept)}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {departments.map((dept) => (
-                  <TableRow key={dept.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#ff7a59] to-[#ff4e6a] text-white text-xs font-bold shrink-0">
-                          {dept.name.charAt(0).toUpperCase()}
-                        </span>
-                        <div>
-                          <strong>{dept.name}</strong>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{employeeCounts[dept.id] ?? 0}</TableCell>
-                    <TableCell>{new Date(dept.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="inline-flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          type="button"
-                          title="Delete department"
-                          disabled={deleteMutation.isPending}
-                          onClick={() => setDeleteTarget(dept)}
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            <p className="text-sm text-muted-foreground px-4 py-3 border-t border-border">
-              Members are assigned automatically when employees join a department.
-            </p>
-          </>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </DataTableShell>
 
       {showCreate && (
-          <CreateDepartmentModal
+        <CreateDepartmentModal
           isSubmitting={createMutation.isPending}
-          onCreate={(data) => createMutation.mutate(data.name)}
+          onCreate={(values) => createMutation.mutate(values.name)}
           onClose={() => setShowCreate(false)}
         />
       )}
       {deleteTarget && (
         <ConfirmDialog
           title="Delete department"
-          message={`Delete "${deleteTarget.name}"? Current members will keep their profiles but lose their department assignment.`}
+          message={`Permanently delete "${deleteTarget.name}"? Employees in this department will become unassigned.`}
           confirmLabel="Delete"
           variant="destructive"
           isProcessing={deleteMutation.isPending}
