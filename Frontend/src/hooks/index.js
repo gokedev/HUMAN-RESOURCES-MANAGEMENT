@@ -45,19 +45,26 @@ export function useEmployeeNameMap() {
 export function useTodayAttendance(enabled = true) {
   const { notify } = useToast();
   const queryClient = useQueryClient();
+  const today = new Date().toISOString().split("T")[0];
   const todayQuery = useQuery({
-    queryKey: queryKeys.attendance.mine({ page: 0, size: 1, sort: "workDate,desc" }),
-    queryFn: () => attendanceService.listMine({ page: 0, size: 1, sort: "workDate,desc" }),
+    queryKey: queryKeys.attendance.mine({ page: 0, size: 7, sort: "workDate,desc" }),
+    queryFn: () => attendanceService.listMine({ page: 0, size: 7, sort: "workDate,desc" }),
     enabled,
   });
-  const today = new Date().toISOString().split("T")[0];
-  const todayRecord = todayQuery.data?.content?.find((r) => r.workDate === today);
+  const todayRecord = todayQuery.data?.content?.find((r) => r.workDate === today) ?? null;
   const hasCheckedIn = Boolean(todayRecord);
   const hasCheckedOut = hasCheckedIn && Boolean(todayRecord?.checkOut);
   const checkInMutation = useMutation({
     mutationFn: () => attendanceService.checkIn(),
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await queryInvalidation.afterAttendanceChange(queryClient);
+      queryClient.setQueryData(
+        queryKeys.attendance.mine({ page: 0, size: 7, sort: "workDate,desc" }),
+        (old) => {
+          if (!old) return old;
+          return { ...old, content: [data, ...old.content.filter((r) => r.workDate !== today)] };
+        }
+      );
       notify({
         title: "Checked in",
         message: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -68,8 +75,15 @@ export function useTodayAttendance(enabled = true) {
   });
   const checkOutMutation = useMutation({
     mutationFn: () => attendanceService.checkOut(),
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await queryInvalidation.afterAttendanceChange(queryClient);
+      queryClient.setQueryData(
+        queryKeys.attendance.mine({ page: 0, size: 7, sort: "workDate,desc" }),
+        (old) => {
+          if (!old) return old;
+          return { ...old, content: old.content.map((r) => (r.workDate === today ? data : r)) };
+        }
+      );
       notify({
         title: "Checked out",
         message: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),

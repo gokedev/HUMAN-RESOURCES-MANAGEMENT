@@ -205,7 +205,9 @@ function EmployeeDashboard() {
           <div>
             <span className="text-sm text-muted-foreground font-medium">Today's status</span>
             <strong className="block text-2xl font-bold text-foreground tabular-nums">
-              {todayRecord ? (
+              {hasCheckedOut ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-0.5 text-sm font-semibold text-primary">Completed</span>
+              ) : hasCheckedIn ? (
                 <StatusBadge status={todayRecord.status} />
               ) : (
                 "Not checked in"
@@ -235,22 +237,21 @@ function EmployeeDashboard() {
         </article>
       </section>
 
-      <section className="rounded-xl border bg-card p-5 shadow-sm border-l-4 border-l-emerald-500 mb-4">
+      <section className={`rounded-xl border bg-card p-5 shadow-sm border-l-4 mb-4 ${hasCheckedOut ? "border-l-primary" : hasCheckedIn ? "border-l-emerald-500" : "border-l-muted"}`}>
         <div className="flex items-center gap-2 mb-1">
           <Clock3 size={18} className="text-primary shrink-0" />
           <h2>Attendance</h2>
         </div>
         <p className="text-2xl font-bold text-foreground">
-          {todayRecord?.checkIn
-            ? new Date(todayRecord.checkIn).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            : "Not checked in"}
+          {hasCheckedOut
+            ? "Done for today"
+            : todayRecord?.checkIn
+              ? new Date(todayRecord.checkIn).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              : "Not checked in"}
         </p>
         <p className="text-sm text-muted-foreground mt-1 font-medium">
-          {todayRecord?.checkOut
-            ? `Checked out at ${new Date(todayRecord.checkOut).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}`
+          {hasCheckedOut
+            ? "You've completed your check-in for today."
             : hasCheckedIn
               ? "You are currently checked in."
               : "Start your workday."}
