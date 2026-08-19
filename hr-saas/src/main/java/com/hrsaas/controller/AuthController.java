@@ -66,4 +66,6 @@ public class AuthController {
         authService.resetPassword(request);
         return ResponseEntity.ok().build();
     }
+
+    // Moved to EmployeeController for proper security protection
 }
