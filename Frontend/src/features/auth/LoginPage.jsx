@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth, useToast } from "../../contexts.jsx";
+import { useAuth } from "../../contexts.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { loginSchema } from "./schemas.js";
 import { getErrorMessage, tokenStorage } from "../../utils.js";
@@ -11,14 +11,15 @@ import { Input } from "@/components/ui/input.jsx";
 import { PasswordInput } from "@/components/ui/password-input.jsx";
 import { Label } from "@/components/ui/label.jsx";
 import { Checkbox } from "@/components/ui/checkbox.jsx";
+import { AlertTriangle } from "lucide-react";
 
 export function LoginPage() {
   usePageTitle("Login");
   const { login, isAuthenticated } = useAuth();
-  const { notify } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state;
+  const [serverError, setServerError] = useState("");
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -36,6 +37,7 @@ export function LoginPage() {
   });
 
   async function onSubmit(values) {
+    setServerError("");
     try {
       await login(
         { email: values.email, password: values.password, companySlug: values.companySlug },
@@ -44,7 +46,7 @@ export function LoginPage() {
       navigate("/dashboard", { replace: true });
     } catch (error) {
       tokenStorage.clear();
-      notify({ title: "Login failed", message: getErrorMessage(error), variant: "danger" });
+      setServerError(getErrorMessage(error));
     }
   }
 
@@ -75,6 +77,12 @@ export function LoginPage() {
           </label>
           <Link to="/forgot-password" className="text-sm text-primary hover:underline">Forgot password?</Link>
         </div>
+        {serverError && (
+          <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+            <span>{serverError}</span>
+          </div>
+        )}
         <Button type="submit" className="w-full">Sign in</Button>
       </form>
       <p className="mt-4 text-center text-sm text-muted-foreground">
