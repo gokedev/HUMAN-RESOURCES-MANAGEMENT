@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { attendanceService, employeeService } from "../api.js";
+import { attendanceService, employeeService, leaveService } from "../api.js";
 import { queryKeys } from "../constants.js";
 import { useToast } from "../contexts.jsx";
 import { getErrorMessage, queryInvalidation } from "../utils.js";
@@ -51,9 +51,37 @@ export function useTodayAttendance(enabled = true) {
     queryFn: () => attendanceService.listMine({ page: 0, size: 7, sort: "workDate,desc" }),
     enabled,
   });
-  const todayRecord = todayQuery.data?.content?.find((r) => r.workDate === today) ?? null;
-  const hasCheckedIn = Boolean(todayRecord);
-  const hasCheckedOut = hasCheckedIn && Boolean(todayRecord?.checkOut);
+
+  // Fetch approved leave requests to check for attendance sync
+  const leaveQuery = useQuery({
+    queryKey: queryKeys.leave.mine({ page: 0, size: 100, sort: "createdAt,desc" }),
+    queryFn: () => leaveService.listMine({ page: 0, size: 100, sort: "createdAt,desc" }),
+    enabled,
+  });
+
+  const todayRecordRaw = todayQuery.data?.content?.find((r) => r.workDate === today) ?? null;
+
+  // Check if today falls within any approved leave period
+  const todayInApprovedLeave = leaveQuery.data?.content?.some(leave =>
+    leave.status === "APPROVED" &&
+    new Date(today) >= new Date(leave.startDate) &&
+    new Date(today) <= new Date(leave.endDate)
+  );
+
+  let todayRecord = todayRecordRaw;
+  let hasCheckedIn = Boolean(todayRecord);
+  let hasCheckedOut = hasCheckedIn && Boolean(todayRecord?.checkOut);
+
+  // If today is in approved leave, override the attendance record
+  if (todayInApprovedLeave) {
+    todayRecord = {
+      ...todayRecordRaw,
+      status: "ON_LEAVE",
+    };
+    hasCheckedIn = Boolean(todayRecord);
+    hasCheckedOut = hasCheckedIn && Boolean(todayRecord?.checkOut);
+  }
+
   const checkInMutation = useMutation({
     mutationFn: () => attendanceService.checkIn(),
     onSuccess: async (data) => {
@@ -93,7 +121,7 @@ export function useTodayAttendance(enabled = true) {
     onError: (error) => notify({ title: "Check-out failed", message: getErrorMessage(error), variant: "danger" }),
   });
   return {
-    isLoading: todayQuery.isLoading,
+    isLoading: todayQuery.isLoading || leaveQuery.isLoading,
     todayRecord,
     hasCheckedIn,
     hasCheckedOut,
