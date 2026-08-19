@@ -31,6 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Leave request lifecycle: submit, review (approve/reject), cancel.
+ * Also calculates leave balances and provides analytics for the dashboard.
+ */
 @Service
 public class LeaveService {
 
@@ -50,12 +54,15 @@ public class LeaveService {
         this.mailService = mailService;
     }
 
+    // ── Create leave request ──────────────────────
+
+    /** Employee submits a new leave request (status starts as PENDING). */
     @Transactional
     public LeaveRequest createLeaveRequest(LeaveRequestCreateDto dto) {
         RoleGuard.requireRole(Role.EMPLOYEE);
         UUID tenantId = TenantContext.getTenantId();
         UUID employeeId = TenantContext.getUserId();
-        log.info("Creating leave request for employee={} in company={}", employeeId, tenantId);
+        log.info("Creating leave request: employee={}, company={}", employeeId, tenantId);
 
         if (dto.getEndDate().isBefore(dto.getStartDate())) {
             throw ApiException.badRequest("End date cannot be before start date");
@@ -76,20 +83,25 @@ public class LeaveService {
         return saved;
     }
 
+    // ── List leave requests ───────────────────────
+
+    /** Lists all leave requests in the company (admin, unfiltered). */
     public Page<LeaveRequest> listCompanyLeaveRequests(Pageable pageable) {
         UUID tenantId = TenantContext.getTenantId();
-        log.debug("Listing company leave requests for company={}", tenantId);
         return leaveRequestRepository.findByCompanyId(tenantId, pageable);
     }
 
+    /**
+     * Lists leave requests with optional filters (status, employeeId).
+     * Batch-fetches employee names to avoid N+1 queries.
+     */
     public Page<LeaveRequestResponseDto> listCompanyLeaveRequestsWithFilters(
             String status, UUID employeeId, Pageable pageable) {
         UUID tenantId = TenantContext.getTenantId();
-        log.debug("Listing filtered leave requests for company={}", tenantId);
         Page<LeaveRequest> page = leaveRequestRepository.findByCompanyIdWithFilters(
                 tenantId, status, employeeId, pageable);
 
-        // Batch-fetch employee names
+        // Batch-fetch employee names in one query
         List<UUID> employeeIds = page.getContent().stream()
                 .map(LeaveRequest::getEmployeeId)
                 .distinct()
@@ -100,13 +112,16 @@ public class LeaveService {
         return page.map(lr -> LeaveRequestResponseDto.fromEntityWithEmployee(lr, employeeMap.get(lr.getEmployeeId())));
     }
 
+    /** Lists only the current employee's own leave requests. */
     public Page<LeaveRequest> listOwnLeaveRequests(Pageable pageable) {
         UUID tenantId = TenantContext.getTenantId();
         UUID employeeId = TenantContext.getUserId();
-        log.debug("Listing leave requests for employee={} in company={}", employeeId, tenantId);
         return leaveRequestRepository.findByCompanyIdAndEmployeeId(tenantId, employeeId, pageable);
     }
 
+    // ── Review leave request (admin) ──────────────
+
+    /** Admin approves or rejects a PENDING leave request. Sends email notification to employee. */
     @Transactional
     public LeaveRequest reviewLeaveRequest(UUID leaveRequestId, LeaveReviewDto dto) {
         RoleGuard.requireRole(Role.ADMIN);
@@ -129,6 +144,7 @@ public class LeaveService {
         LeaveRequest saved = leaveRequestRepository.save(leaveRequest);
         log.info("Leave request={} reviewed: status={}", leaveRequestId, saved.getStatus());
 
+        // Notify the employee via email (async)
         User employee = userRepository.findById(leaveRequest.getEmployeeId()).orElse(null);
         if (employee != null) {
             mailService.sendLeaveStatusEmail(
@@ -142,6 +158,9 @@ public class LeaveService {
         return saved;
     }
 
+    // ── Cancel leave request (employee) ───────────
+
+    /** Employee cancels their own PENDING leave request. */
     @Transactional
     public void cancelLeaveRequest(UUID leaveRequestId) {
         RoleGuard.requireRole(Role.EMPLOYEE);
@@ -165,6 +184,13 @@ public class LeaveService {
         log.info("Leave request={} cancelled", leaveRequestId);
     }
 
+    // ── Leave balance ─────────────────────────────
+
+    /**
+     * Calculates leave balance for a specific type.
+     * Uses default entitlements (ANNUAL=20, SICK=10, MATERNITY=90, PATERNITY=14).
+     * Remaining = entitlement - approved days - pending days.
+     */
     public LeaveBalanceDto getLeaveBalance(UUID employeeId, LeaveType leaveType) {
         UUID tenantId = TenantContext.getTenantId();
         LocalDate yearStart = LocalDate.now().withDayOfYear(1);
@@ -189,6 +215,7 @@ public class LeaveService {
                 .build();
     }
 
+    /** Returns leave balances for all leave types. */
     public List<LeaveBalanceDto> getAllLeaveBalances(UUID employeeId) {
         List<LeaveBalanceDto> balances = new java.util.ArrayList<>();
         for (LeaveType type : LeaveType.values()) {
@@ -197,6 +224,7 @@ public class LeaveService {
         return balances;
     }
 
+    /** Default annual entitlements per leave type (in calendar days). */
     private int getDefaultEntitlement(LeaveType leaveType) {
         return switch (leaveType) {
             case ANNUAL -> 20;
@@ -208,61 +236,48 @@ public class LeaveService {
         };
     }
 
-    // Analytical method for dashboard
+    // ── Analytics (admin dashboard) ───────────────
+
+    /** Aggregates leave stats: by type, by status, monthly trends, pending/approved/rejected counts. */
     public LeaveStatsData getLeaveStats() {
         UUID tenantId = TenantContext.getTenantId();
         LocalDate now = LocalDate.now();
         LocalDate startOfMonth = now.withDayOfMonth(1);
 
-        // Get leave requests by type
+        // Leave by type
         List<Object[]> leaveByTypeRaw = leaveRequestRepository.countByCompanyIdAndLeaveType(tenantId);
         List<LeaveTypeStats> leaveByType = new java.util.ArrayList<>();
         for (Object[] row : leaveByTypeRaw) {
-            String leaveType = ((String) row[0]).toLowerCase();
-            int count = ((Number) row[1]).intValue();
-            leaveByType.add(new LeaveTypeStats(leaveType, count));
+            leaveByType.add(new LeaveTypeStats(((String) row[0]).toLowerCase(), ((Number) row[1]).intValue()));
         }
 
-        // Get leave requests by status
+        // Leave by status
         List<Object[]> leaveByStatusRaw = leaveRequestRepository.countByCompanyIdAndStatusGrouped(tenantId);
         List<LeaveStatusStats> leaveByStatus = new java.util.ArrayList<>();
         for (Object[] row : leaveByStatusRaw) {
-            String status = ((String) row[0]).toLowerCase();
-            int count = ((Number) row[1]).intValue();
-            leaveByStatus.add(new LeaveStatusStats(status, count));
+            leaveByStatus.add(new LeaveStatusStats(((String) row[0]).toLowerCase(), ((Number) row[1]).intValue()));
         }
 
-        // Get monthly leave trends (last 6 months)
-        List<Object[]> monthlyLeaveTrendsRaw = leaveRequestRepository.countByCompanyIdAndMonthRange(
-                tenantId, startOfMonth, now);
+        // Monthly trends (current month only for MVP)
+        List<Object[]> monthlyRaw = leaveRequestRepository.countByCompanyIdAndMonthRange(tenantId, startOfMonth, now);
         java.util.Map<String, Integer> monthlyLeaveTrends = new java.util.HashMap<>();
-        for (Object[] row : monthlyLeaveTrendsRaw) {
-            String month = ((String) row[0]); // Format: yyyy-MM
-            int count = ((Number) row[1]).intValue();
-            monthlyLeaveTrends.put(month, count);
+        for (Object[] row : monthlyRaw) {
+            monthlyLeaveTrends.put((String) row[0], ((Number) row[1]).intValue());
         }
 
-        // Get counts for pending requests
+        // Pending count (company-wide)
         Long pendingCount = leaveRequestRepository.countByCompanyIdAndStatusName(tenantId, "PENDING");
         int totalPendingRequests = pendingCount != null ? pendingCount.intValue() : 0;
 
-        // Get counts for approved this month
-        List<Object[]> approvedThisMonthRaw = leaveRequestRepository.countByCompanyIdAndStatusAndDateRange(
-                tenantId, "APPROVED", startOfMonth, now);
-        int totalApprovedThisMonth = approvedThisMonthRaw.isEmpty() ? 0 : ((Number) approvedThisMonthRaw.get(0)[1]).intValue();
+        // Approved this month
+        List<Object[]> approvedRaw = leaveRequestRepository.countByCompanyIdAndStatusAndDateRange(tenantId, "APPROVED", startOfMonth, now);
+        int totalApprovedThisMonth = approvedRaw.isEmpty() ? 0 : ((Number) approvedRaw.get(0)[1]).intValue();
 
-        // Get counts for rejected this month
-        List<Object[]> rejectedThisMonthRaw = leaveRequestRepository.countByCompanyIdAndStatusAndDateRange(
-                tenantId, "REJECTED", startOfMonth, now);
-        int totalRejectedThisMonth = rejectedThisMonthRaw.isEmpty() ? 0 : ((Number) rejectedThisMonthRaw.get(0)[1]).intValue();
+        // Rejected this month
+        List<Object[]> rejectedRaw = leaveRequestRepository.countByCompanyIdAndStatusAndDateRange(tenantId, "REJECTED", startOfMonth, now);
+        int totalRejectedThisMonth = rejectedRaw.isEmpty() ? 0 : ((Number) rejectedRaw.get(0)[1]).intValue();
 
-        return new LeaveStatsData(
-                leaveByType,
-                leaveByStatus,
-                monthlyLeaveTrends,
-                totalPendingRequests,
-                totalApprovedThisMonth,
-                totalRejectedThisMonth
-        );
+        return new LeaveStatsData(leaveByType, leaveByStatus, monthlyLeaveTrends,
+                totalPendingRequests, totalApprovedThisMonth, totalRejectedThisMonth);
     }
 }
