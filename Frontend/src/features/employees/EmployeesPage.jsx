@@ -86,8 +86,16 @@ export function EmployeesPage() {
     onError: (error) => notify({ title: "Failed to revoke invitation", message: getErrorMessage(error), variant: "danger" }),
   });
 
+  // Defensive check to prevent "filter is not a function" errors
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
+
+    // Ensure employees is an array before calling filter
+    if (!Array.isArray(employees)) {
+      console.error('Employees is not an array:', employees);
+      return [];
+    }
+
     return employees.filter((emp) => {
       if (departmentFilter && emp.departmentId !== departmentFilter) return false;
       if (statusFilter && emp.status !== statusFilter) return false;
