@@ -11,6 +11,26 @@ export function getErrorMessage(error) {
   return "Something went wrong. Please try again.";
 }
 
+export function formatTime(value) {
+  if (!value) return "—";
+  return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+export function formatDate(value) {
+  if (!value) return "—";
+  return new Date(value).toLocaleDateString();
+}
+
+export function formatMoney(amount) {
+  if (amount == null) return "—";
+  return new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+}
+
+export const MONTH_NAMES = [
+  "", "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
 const storageFor = (rememberMe) => (rememberMe ? localStorage : sessionStorage);
 export const tokenStorage = {
   get() {
