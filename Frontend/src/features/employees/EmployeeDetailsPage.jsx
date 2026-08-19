@@ -8,7 +8,7 @@ import { CardSkeleton, EmptyState } from "../../components/feedback.jsx";
 import { AvatarGradient } from "../../components/ui/avatar.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useToast } from "../../contexts.jsx";
-import { departmentService, employeeService } from "../../api.js";
+import { departmentService, employeeService } from "../../api/index.js";
 import { queryKeys } from "../../constants.js";
 import { getErrorMessage, queryInvalidation } from "../../utils.js";
 
