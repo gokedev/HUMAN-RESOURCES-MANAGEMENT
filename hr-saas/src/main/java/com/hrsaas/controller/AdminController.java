@@ -1,22 +1,8 @@
 package com.hrsaas.controller;
 
-import com.hrsaas.dto.AttendanceComplianceData;
-import com.hrsaas.dto.AttendanceRecordResponseDto;
-import com.hrsaas.dto.CreateEmployeeRequest;
-import com.hrsaas.dto.DepartmentCreateDto;
-import com.hrsaas.dto.DepartmentResponseDto;
-import com.hrsaas.dto.EmployeeCounts;
-import com.hrsaas.dto.HeadcountTrendData;
-import com.hrsaas.dto.LeaveBalanceDto;
-import com.hrsaas.dto.LeaveRequestResponseDto;
-import com.hrsaas.dto.LeaveReviewDto;
-import com.hrsaas.dto.LeaveStatsData;
-import com.hrsaas.dto.UserResponseDto;
+import com.hrsaas.dto.*;
 import com.hrsaas.enums.LeaveType;
-import com.hrsaas.service.AttendanceService;
-import com.hrsaas.service.DepartmentService;
-import com.hrsaas.service.EmployeeService;
-import com.hrsaas.service.LeaveService;
+import com.hrsaas.service.*;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -39,17 +26,20 @@ public class AdminController {
     private final DepartmentService departmentService;
     private final LeaveService leaveService;
     private final AttendanceService attendanceService;
+    private final PayrollService payrollService;
 
     public AdminController(
             EmployeeService employeeService,
             DepartmentService departmentService,
             LeaveService leaveService,
-            AttendanceService attendanceService
+            AttendanceService attendanceService,
+            PayrollService payrollService
     ) {
         this.employeeService = employeeService;
         this.departmentService = departmentService;
         this.leaveService = leaveService;
         this.attendanceService = attendanceService;
+        this.payrollService = payrollService;
     }
 
     @PostMapping("/employees")
@@ -94,6 +84,20 @@ public class AdminController {
     public ResponseEntity<Void> deleteEmployee(@PathVariable UUID id) {
         log.info("DELETE /api/admin/employees/{} - Deleting employee", id);
         employeeService.deleteEmployee(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/employees/{id}/resend-invite")
+    public ResponseEntity<Void> resendInvitation(@PathVariable UUID id) {
+        log.info("POST /api/admin/employees/{}/resend-invite - Resending invitation", id);
+        employeeService.resendInvitation(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/employees/{id}/revoke-invite")
+    public ResponseEntity<Void> revokeInvitation(@PathVariable UUID id) {
+        log.info("POST /api/admin/employees/{}/revoke-invite - Revoking invitation", id);
+        employeeService.revokeInvitation(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -182,5 +186,28 @@ public class AdminController {
         log.debug("GET /api/admin/analytics/attendance-compliance - Getting attendance compliance data");
         AttendanceComplianceData compliance = attendanceService.getAttendanceCompliance();
         return ResponseEntity.ok(compliance);
+    }
+
+    // --- Payroll ---
+
+    @PostMapping("/payroll/generate")
+    public ResponseEntity<Map<String, Object>> generatePayroll(@Valid @RequestBody PayrollGenerateRequest request) {
+        log.info("POST /api/admin/payroll/generate - month={}, year={}", request.getMonth(), request.getYear());
+        return ResponseEntity.status(HttpStatus.CREATED).body(payrollService.generatePayroll(request));
+    }
+
+    @GetMapping("/payroll/payslips")
+    public ResponseEntity<List<PayslipResponseDto>> listPayslips(
+            @RequestParam int month,
+            @RequestParam int year
+    ) {
+        log.debug("GET /api/admin/payroll/payslips - month={}, year={}", month, year);
+        return ResponseEntity.ok(payrollService.listPayslipsForPeriod(month, year));
+    }
+
+    @GetMapping("/payroll/payslips/{id}")
+    public ResponseEntity<PayslipResponseDto> getPayslip(@PathVariable UUID id) {
+        log.debug("GET /api/admin/payroll/payslips/{}", id);
+        return ResponseEntity.ok(payrollService.getPayslip(id));
     }
 }
