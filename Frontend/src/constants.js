@@ -33,6 +33,11 @@ export const queryKeys = {
     mine: (params) => ["leave", "mine", params],
     balance: (employeeId) => ["leave-balance", employeeId],
   },
+  payroll: {
+    all: ["payroll"],
+    period: (params) => ["payroll", "period", params],
+    mine: ["payroll", "mine"],
+  },
   analytics: {
     headcountTrend: ["analytics", "headcount-trend"],
     employeeCounts: ["analytics", "employee-counts"],
