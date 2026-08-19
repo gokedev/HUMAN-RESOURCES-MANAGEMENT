@@ -11,6 +11,7 @@ import {
   StatusBadge,
 } from "../../components/common/ui.jsx";
 import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feedback.jsx";
+import { AvatarGradient } from "../../components/ui/avatar.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useToast } from "../../contexts.jsx";
 import { departmentService, employeeService } from "../../api.js";
@@ -92,21 +93,22 @@ export function EmployeesPage() {
         title="Employees"
         description="Manage workforce records, invitations, reporting lines, and account status."
         actions={
-          <Button variant="default" asChild>
+          <Button asChild>
             <Link to="/employees/new">
-              <Plus size={16} className="mr-1.5" /> Add employee
+              <Plus size={16} /> Add employee
             </Link>
           </Button>
         }
       />
       <DataTableShell
         title="Employee directory"
-        description="Search, filter, and manage company users."
+        description={`${filtered.length} employee${filtered.length === 1 ? "" : "s"} total`}
         action={
           <Button
-            variant="outline"
+            variant="ghost"
+            size="sm"
             type="button"
-            onClick={() => setSearch("")}
+            onClick={() => { setSearch(""); setDepartmentFilter(""); setStatusFilter(""); setCurrentPage(0); }}
           >
             Clear filters
           </Button>
@@ -122,7 +124,7 @@ export function EmployeesPage() {
             placeholder="Search name, email, or job title..."
           />
           <select
-            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="h-9 rounded-lg border border-input bg-transparent px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={departmentFilter}
             onChange={(e) => {
               setDepartmentFilter(e.target.value);
@@ -137,7 +139,7 @@ export function EmployeesPage() {
             ))}
           </select>
           <select
-            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="h-9 rounded-lg border border-input bg-transparent px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
@@ -158,6 +160,8 @@ export function EmployeesPage() {
             icon={Users}
             title="Could not load employees"
             description="Check your connection and try again."
+            actionLabel="Retry"
+            onAction={() => queryClient.invalidateQueries({ queryKey: queryKeys.employees.all })}
           />
         ) : pageItems.length === 0 ? (
           <EmptyState
@@ -168,6 +172,8 @@ export function EmployeesPage() {
                 ? "Add your first employee to get started."
                 : "Try adjusting your search or filters."
             }
+            actionLabel={filtered.length === 0 ? "Add employee" : undefined}
+            onAction={filtered.length === 0 ? () => window.location.href = "/employees/new" : undefined}
           />
         ) : (
           <>
@@ -175,10 +181,9 @@ export function EmployeesPage() {
               <thead>
                 <tr>
                   <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">Employee</th>
-                  <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">Department</th>
-                  <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">Job Title</th>
+                  <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider hidden sm:table-cell">Department</th>
+                  <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider hidden md:table-cell">Job Title</th>
                   <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">Status</th>
-                  <th className="h-10 px-4 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider">Role</th>
                   <th className="h-10 px-4 text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -187,48 +192,32 @@ export function EmployeesPage() {
                   <tr key={emp.id} className="border-b hover:bg-muted/50 transition-colors last:border-0">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-coral to-coral-strong text-white text-xs font-bold shrink-0">
+                        <AvatarGradient className="h-9 w-9 text-xs shrink-0" name={`${emp.firstName} ${emp.lastName}`}>
                           {emp.firstName.charAt(0).toUpperCase()}
-                        </span>
-                        <div>
-                          <div className="font-medium">
+                        </AvatarGradient>
+                        <div className="min-w-0">
+                          <div className="font-medium truncate">
                             {emp.firstName} {emp.lastName}
                           </div>
-                          <div className="text-sm text-muted-foreground">{emp.email}</div>
+                          <div className="text-xs text-muted-foreground truncate">{emp.email}</div>
+                          <div className="text-xs text-muted-foreground sm:hidden">{departmentNameMap[emp.departmentId] ?? ""}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="p-4">{departmentNameMap[emp.departmentId] ?? "—"}</td>
-                    <td className="p-4">{emp.jobTitle ?? "—"}</td>
+                    <td className="p-4 hidden sm:table-cell">{departmentNameMap[emp.departmentId] ?? "—"}</td>
+                    <td className="p-4 hidden md:table-cell">{emp.jobTitle ?? "—"}</td>
                     <td className="p-4">
                       <StatusBadge status={emp.status} />
                     </td>
-                    <td className="p-4">{emp.role}</td>
                     <td className="p-4 text-right">
                       <div className="inline-flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          asChild
-                        >
-                          <Link
-                            to={`/employees/${emp.id}`}
-                            title="View details"
-                          >
+                        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                          <Link to={`/employees/${emp.id}`} title="View details">
                             <Eye size={16} />
                           </Link>
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          asChild
-                        >
-                          <Link
-                            to={`/employees/${emp.id}/edit`}
-                            title="Edit"
-                          >
+                        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                          <Link to={`/employees/${emp.id}/edit`} title="Edit">
                             <Pencil size={16} />
                           </Link>
                         </Button>
@@ -258,7 +247,7 @@ export function EmployeesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
                           type="button"
                           title="Delete"
                           onClick={() => setDeleteTarget(emp)}
@@ -290,7 +279,7 @@ export function EmployeesPage() {
               : "Reactivate this employee? They will be able to log in again."
           }
           confirmLabel={pendingAction.deactivate ? "Deactivate" : "Reactivate"}
-          variant={pendingAction.deactivate ? "danger" : "primary"}
+          variant={pendingAction.deactivate ? "destructive" : "default"}
           isProcessing={statusMutation.isPending}
           onConfirm={() => statusMutation.mutate(pendingAction)}
           onClose={() => setPendingAction(null)}
