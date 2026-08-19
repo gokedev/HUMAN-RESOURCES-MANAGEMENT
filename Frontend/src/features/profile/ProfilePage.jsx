@@ -38,7 +38,7 @@ export function ProfilePage() {
   });
   const [isPasswordUpdating, setIsPasswordUpdating] = useState(false);
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile = null, isLoading } = useQuery({
     queryKey: queryKeys.profile.me,
     queryFn: () => profileService.me(),
   });
