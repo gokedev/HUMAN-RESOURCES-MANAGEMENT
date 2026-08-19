@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { KeyRound, Palette, ShieldCheck, UserRound } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { KeyRound, Palette, ShieldCheck, UserRound, Pencil } from "lucide-react";
 import { PageHeader, StatusBadge } from "../../components/common/ui.jsx";
 import { CardSkeleton } from "../../components/feedback.jsx";
 import { AvatarGradient } from "../../components/ui/avatar.jsx";
 import { usePageTitle } from "../../hooks.js";
-import { useTheme } from "../../contexts.jsx";
-import { departmentService, profileService } from "../../api.js";
+import { useTheme, useToast } from "../../contexts.jsx";
+import { departmentService, profileService, authService } from "../../api.js";
 import { queryKeys } from "../../constants.js";
 import { Button } from "../../components/ui/button.jsx";
+import { getErrorMessage } from "../../utils.js";
 
 const tabs = [
   { id: "personal", label: "Personal Information", icon: UserRound },
@@ -30,6 +31,12 @@ export function ProfilePage() {
     jobTitle: ""
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [isPasswordUpdating, setIsPasswordUpdating] = useState(false);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: queryKeys.profile.me,
@@ -42,6 +49,8 @@ export function ProfilePage() {
   });
 
   const departmentName = departments.find((dept) => dept.id === profile?.departmentId)?.name;
+  const queryClient = useQueryClient();
+  const { notify } = useToast();
 
   // Initialize edit form with current profile data when profile loads or editing starts
   const initializeEditForm = () => {
@@ -59,19 +68,40 @@ export function ProfilePage() {
     mutationFn: (payload) => profileService.update(payload),
     onSuccess: () => {
       setIsEditing(false);
-      // Refetch profile to get updated data
-      // In a real app, you might invalidate the profile query here
+      notify({ title: "Profile updated", variant: "success" });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.me });
     },
-    onError: (error) => {
-      console.error("Update failed:", error);
-      // In a real app, you'd show an error toast/notification
-    }
+    onError: (error) => notify({ title: "Update failed", message: getErrorMessage(error), variant: "danger" }),
+  });
+
+  const updatePasswordMutation = useMutation({
+    mutationFn: (payload) => authService.updatePassword(payload),
+    onSuccess: () => {
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setIsPasswordUpdating(false);
+      notify({ title: "Password updated", variant: "success" });
+    },
+    onError: (error) => notify({ title: "Update failed", message: getErrorMessage(error), variant: "danger" }),
   });
 
   const handleSave = (e) => {
     e.preventDefault();
     setIsSaving(true);
     updateMutation.mutate(editForm);
+  };
+
+  const handlePasswordUpdate = (e) => {
+    e.preventDefault();
+    setIsPasswordUpdating(true);
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      notify({ title: "Passwords do not match", variant: "danger" });
+      setIsPasswordUpdating(false);
+      return;
+    }
+    updatePasswordMutation.mutate({
+      currentPassword: passwordForm.currentPassword,
+      newPassword: passwordForm.newPassword,
+    });
   };
 
   return (
@@ -209,16 +239,24 @@ export function ProfilePage() {
                     <ProfileField label="Status">
                       {profile?.status ? <StatusBadge status={profile.status} /> : "—"}
                     </ProfileField>
-                    <ProfileField label="Job Title">{profile?.jobTitle ?? "—"}</ProfileField>
+                    <ProfileField label="Job Title" showEditIcon={true} isEditing={isEditing}>
+                      {profile?.jobTitle ?? "—"}
+                    </ProfileField>
                     <ProfileField label="Department">{departmentName ?? "—"}</ProfileField>
-                    <ProfileField label="Phone">{profile?.phone ?? "—"}</ProfileField>
+                    <ProfileField label="Phone" showEditIcon={true} isEditing={isEditing}>
+                      {profile?.phone ?? "—"}
+                    </ProfileField>
                     <ProfileField label="Hire Date">
                       {profile?.dateOfHire
                         ? new Date(profile.dateOfHire).toLocaleDateString()
                         : "—"}
                     </ProfileField>
-                    <ProfileField label="Address">{profile?.address ?? "—"}</ProfileField>
-                    <ProfileField label="Emergency Contact">{profile?.emergencyContact ?? "—"}</ProfileField>
+                    <ProfileField label="Address" showEditIcon={true} isEditing={isEditing}>
+                      {profile?.address ?? "—"}
+                    </ProfileField>
+                    <ProfileField label="Emergency Contact" showEditIcon={true} isEditing={isEditing}>
+                      {profile?.emergencyContact ?? "—"}
+                    </ProfileField>
                   </div>
                 )}
 
@@ -248,11 +286,61 @@ export function ProfilePage() {
                 </div>
               </div>
               <div className="p-6">
-                <p className="text-sm text-muted-foreground">
-                  Password resets are sent to your email. Use the reset flow below to set a new
-                  password.
+                <form onSubmit={handlePasswordUpdate} className="space-y-4">
+                  <div>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Current Password</span>
+                    <input
+                      type="password"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                      className="mt-1 block w-full rounded-md border border-muted p-2 bg-background"
+                      disabled={isPasswordUpdating}
+                    />
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">New Password</span>
+                    <input
+                      type="password"
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                      className="mt-1 block w-full rounded-md border border-muted p-2 bg-background"
+                      disabled={isPasswordUpdating}
+                    />
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Confirm New Password</span>
+                    <input
+                      type="password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      className="mt-1 block w-full rounded-md border border-muted p-2 bg-background"
+                      disabled={isPasswordUpdating}
+                    />
+                  </div>
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                      }}
+                      disabled={isPasswordUpdating}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="default"
+                      type="submit"
+                      disabled={isPasswordUpdating}
+                      className="ml-2"
+                    >
+                      {isPasswordUpdating ? "Updating..." : "Update Password"}
+                    </Button>
+                  </div>
+                </form>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  If you don't remember your current password, you can reset it using the link below.
                 </p>
-                <Link className="mt-4 inline-block" to="/forgot-password">
+                <Link className="mt-2 inline-block" to="/forgot-password">
                   <Button variant="outline">Reset password</Button>
                 </Link>
               </div>
@@ -309,11 +397,18 @@ export function ProfilePage() {
   );
 }
 
-function ProfileField({ label, children }) {
+function ProfileField({ label, children, showEditIcon, isEditing }) {
   return (
     <div>
       <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
-      <div className="mt-1 text-sm text-foreground">{children}</div>
+      <div className="flex items-center mt-1 text-sm text-foreground">
+        {children}
+        {showEditIcon && !isEditing && (
+          <Button variant="ghost" size="icon" className="p-1" title="Edit field">
+            <Pencil size={12} />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
