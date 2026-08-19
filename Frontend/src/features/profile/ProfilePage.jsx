@@ -7,7 +7,7 @@ import { CardSkeleton } from "../../components/feedback.jsx";
 import { AvatarGradient } from "../../components/ui/avatar.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useTheme, useToast } from "../../contexts.jsx";
-import { departmentService, profileService, authService } from "../../api.js";
+import { departmentService, profileService, authService } from "../../api/index.js";
 import { queryKeys } from "../../constants.js";
 import { Button } from "../../components/ui/button.jsx";
 import { getErrorMessage } from "../../utils.js";
