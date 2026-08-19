@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, ClipboardCheck, CalendarDays,
   Clock3, CalendarRange, UserRound, Settings, Menu, Moon, Sun, LogOut,
+  Wallet, Receipt,
 } from "lucide-react";
 import { useAuth, useTheme } from "../contexts.jsx";
 import { navigationItems } from "../router.jsx";
@@ -16,6 +17,7 @@ import { cn } from "../lib/utils.js";
 const iconMap = {
   LayoutDashboard, Users, Building2, ClipboardCheck,
   CalendarDays, Clock3, CalendarRange, UserRound, Settings,
+  Wallet, Receipt,
 };
 
 function formatBreadcrumb(pathname) {
