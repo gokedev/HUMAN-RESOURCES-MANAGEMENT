@@ -34,7 +34,7 @@ export const navigationItems = [
   { label: "Attendance", path: "/attendance", icon: "ClipboardCheck", roles: ["ADMIN"] },
   { label: "Leave Requests", path: "/leave", icon: "CalendarDays", roles: ["ADMIN"] },
   { label: "My Attendance", path: "/my-attendance", icon: "Clock3", roles: ["ADMIN", "EMPLOYEE"] },
-  { label: "My Leave", path: "/my-leave", icon: "CalendarRange", roles: ["ADMIN", "EMPLOYEE"] },
+  { label: "My Leave", path: "/my-leave", icon: "CalendarRange", roles: ["EMPLOYEE"] },
   { label: "Profile", path: "/profile", icon: "UserRound", roles: ["ADMIN", "EMPLOYEE"] },
   { label: "Settings", path: "/settings", icon: "Settings", roles: ["ADMIN", "EMPLOYEE"] },
 ];
