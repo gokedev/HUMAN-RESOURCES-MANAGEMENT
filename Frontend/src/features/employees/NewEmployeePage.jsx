@@ -43,6 +43,7 @@ export function NewEmployeePage() {
     if (values.jobTitle) payload.jobTitle = values.jobTitle;
     if (values.departmentId) payload.departmentId = values.departmentId;
     if (values.dateOfHire) payload.dateOfHire = values.dateOfHire;
+    if (values.baseSalary) payload.baseSalary = Number(values.baseSalary);
     return payload;
   }
 
