@@ -28,22 +28,27 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
             @Param("employeeId") UUID employeeId,
             Pageable pageable);
 
-    // Analytical query methods
-    @Query("SELECT LOWER(lr.leaveType), COUNT(lr) FROM LeaveRequest lr WHERE lr.companyId = :companyId GROUP BY LOWER(lr.leaveType)")
+    // Analytical query methods — using native queries for PostgreSQL compatibility
+    @Query(value = "SELECT lr.leave_type, COUNT(*) FROM leave_requests lr WHERE lr.company_id = :companyId GROUP BY lr.leave_type",
+            nativeQuery = true)
     List<Object[]> countByCompanyIdAndLeaveType(@Param("companyId") UUID companyId);
 
-    @Query("SELECT LOWER(lr.status), COUNT(lr) FROM LeaveRequest lr WHERE lr.companyId = :companyId GROUP BY LOWER(lr.status)")
+    @Query(value = "SELECT lr.status, COUNT(*) FROM leave_requests lr WHERE lr.company_id = :companyId GROUP BY lr.status",
+            nativeQuery = true)
     List<Object[]> countByCompanyIdAndStatusGrouped(@Param("companyId") UUID companyId);
 
-    @Query("SELECT COUNT(lr) FROM LeaveRequest lr WHERE lr.companyId = :companyId AND LOWER(lr.status) = :status")
-    Long countByCompanyIdAndStatusName(@Param("companyId") UUID companyId, @Param("status") String status);
-
-    @Query("SELECT CONCAT(CAST(YEAR(lr.startDate) AS string), '-', CASE WHEN MONTH(lr.startDate) < 10 THEN CONCAT('0', CAST(MONTH(lr.startDate) AS string)) ELSE CAST(MONTH(lr.startDate) AS string) END) as lrmonth, COUNT(lr) FROM LeaveRequest lr WHERE lr.companyId = :companyId AND lr.startDate >= :startDate AND lr.startDate <= :endDate GROUP BY YEAR(lr.startDate), MONTH(lr.startDate)")
+    @Query(value = "SELECT TO_CHAR(lr.start_date, 'YYYY-MM') as lrmonth, COUNT(*) FROM leave_requests lr WHERE lr.company_id = :companyId AND lr.start_date >= :startDate AND lr.start_date <= :endDate GROUP BY TO_CHAR(lr.start_date, 'YYYY-MM') ORDER BY lrmonth",
+            nativeQuery = true)
     List<Object[]> countByCompanyIdAndMonthRange(@Param("companyId") UUID companyId,
                                                  @Param("startDate") LocalDate startDate,
                                                  @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT LOWER(lr.status), COUNT(lr) FROM LeaveRequest lr WHERE lr.companyId = :companyId AND LOWER(lr.status) = :status AND lr.startDate >= :startDate AND lr.startDate <= :endDate")
+    @Query(value = "SELECT COUNT(*) FROM leave_requests lr WHERE lr.company_id = :companyId AND lr.status = :status",
+            nativeQuery = true)
+    Long countByCompanyIdAndStatusName(@Param("companyId") UUID companyId, @Param("status") String status);
+
+    @Query(value = "SELECT COALESCE(lr.status, 'UNKNOWN') as status_val, COUNT(*) FROM leave_requests lr WHERE lr.company_id = :companyId AND lr.status = :status AND lr.start_date >= :startDate AND lr.start_date <= :endDate GROUP BY lr.status",
+            nativeQuery = true)
     List<Object[]> countByCompanyIdAndStatusAndDateRange(@Param("companyId") UUID companyId,
                                                          @Param("status") String status,
                                                          @Param("startDate") LocalDate startDate,
