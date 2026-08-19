@@ -8,7 +8,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from ".
 import { usePageTitle } from "../../hooks.js";
 import { useAuth, useToast } from "../../contexts.jsx";
 import { leaveService, profileService } from "../../api.js";
-import { queryKeys } from "../../constants.js";
+import { queryKeys, LEAVE_TYPES } from "../../constants.js";
 import { getErrorMessage, queryInvalidation } from "../../utils.js";
 import { CreateLeaveModal, LeaveDetailsModal } from "./LeaveModals.jsx";
 
@@ -76,29 +76,42 @@ export function MyLeavePage() {
           ) : null
         }
       />
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Annual leave balance</span>
-          <p className="text-2xl font-bold text-foreground mt-2">
-            {annualBalance ? annualBalance.remaining : "—"}
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {annualBalance
-              ? `${annualBalance.used} used · ${annualBalance.pending} pending`
-              : "No balance data"}
-          </p>
-        </div>
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Days approved</span>
-          <p className="text-2xl font-bold text-foreground mt-2">
-            {annualBalance ? annualBalance.used : "—"}
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">This year</p>
-        </div>
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Pending requests</span>
-          <p className="text-2xl font-bold text-foreground mt-2">{requests.filter((r) => r.status === "PENDING").length}</p>
-          <p className="text-sm text-muted-foreground mt-1">On this page</p>
+      <section className="mb-6">
+        <div className="rounded-xl border bg-card p-5">
+          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Leave Balances</span>
+          <div className="mt-4 space-y-3">
+            {balances ? (
+              <>
+                {LEAVE_TYPES.map((leaveType) => {
+                  const balance = balances?.find((b) => b.leaveType === leaveType) || {
+                    leaveType,
+                    remaining: 0,
+                    used: 0,
+                    pending: 0
+                  };
+                  return (
+                    <div key={leaveType} className="flex items-center justify-between p-3 bg-card border rounded-md">
+                      <div>
+                        <span className="text-sm font-medium text-foreground">
+                          {leaveType.replace(/_/g, " ")}
+                        </span>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {`${balance.used} used · ${balance.pending} pending`}
+                        </p>
+                      </div>
+                      <p className="text-2xl font-bold text-foreground">
+                        {balance.remaining}
+                      </p>
+                    </div>
+                  );
+                })}
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Loading leave balances...</p>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -139,13 +152,13 @@ export function MyLeavePage() {
                       {new Date(request.startDate).toLocaleDateString()} →{" "}
                       {new Date(request.endDate).toLocaleDateString()}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell max-w-[200px] truncate" title={request.reason}>
+                    <TableCell className="hidden md:table-cell max-w-50 truncate" title={request.reason}>
                       {request.reason ?? "—"}
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={request.status} />
                       {request.reviewNote && (request.status === "REJECTED" || request.status === "APPROVED") && (
-                        <p className="text-xs text-muted-foreground mt-1 max-w-[200px] truncate" title={request.reviewNote}>
+                        <p className="text-xs text-muted-foreground mt-1 max-w-50 truncate" title={request.reviewNote}>
                           {request.reviewNote}
                         </p>
                       )}
