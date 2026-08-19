@@ -26,6 +26,8 @@ import { ProfilePage } from "./features/profile/ProfilePage.jsx";
 import { MyLeavePage } from "./features/leave/MyLeavePage.jsx";
 import { MyAttendancePage } from "./features/attendance/MyAttendancePage.jsx";
 import { SettingsPage } from "./features/settings/SettingsPage.jsx";
+import { PayrollPage } from "./features/payroll/PayrollPage.jsx";
+import { MyPayslipsPage } from "./features/payroll/MyPayslipsPage.jsx";
 
 export const navigationItems = [
   { label: "Dashboard", path: "/dashboard", icon: "LayoutDashboard", roles: ["ADMIN", "EMPLOYEE"] },
@@ -33,8 +35,10 @@ export const navigationItems = [
   { label: "Departments", path: "/departments", icon: "Building2", roles: ["ADMIN"] },
   { label: "Attendance", path: "/attendance", icon: "ClipboardCheck", roles: ["ADMIN"] },
   { label: "Leave Requests", path: "/leave", icon: "CalendarDays", roles: ["ADMIN"] },
+  { label: "Payroll", path: "/payroll", icon: "Wallet", roles: ["ADMIN"] },
   { label: "My Attendance", path: "/my-attendance", icon: "Clock3", roles: ["ADMIN", "EMPLOYEE"] },
   { label: "My Leave", path: "/my-leave", icon: "CalendarRange", roles: ["EMPLOYEE"] },
+  { label: "My Payslips", path: "/my-payslips", icon: "Receipt", roles: ["EMPLOYEE"] },
   { label: "Profile", path: "/profile", icon: "UserRound", roles: ["ADMIN", "EMPLOYEE"] },
   { label: "Settings", path: "/settings", icon: "Settings", roles: ["ADMIN", "EMPLOYEE"] },
 ];
@@ -142,10 +146,19 @@ export const router = createBrowserRouter([
           </RoleGuard>
         ),
       },
+      {
+        path: "payroll",
+        element: (
+          <RoleGuard roles={["ADMIN"]}>
+            <PayrollPage />
+          </RoleGuard>
+        ),
+      },
       // Self-service pages are allowed for ADMIN and EMPLOYEE per the backend README.
       { path: "profile", element: <ProfilePage /> },
       { path: "my-leave", element: <MyLeavePage /> },
       { path: "my-attendance", element: <MyAttendancePage /> },
+      { path: "my-payslips", element: <MyPayslipsPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "unauthorized", element: <UnauthorizedPage /> },
       // Old URLs redirect to the dedicated pages so existing links and bookmarks still work.
