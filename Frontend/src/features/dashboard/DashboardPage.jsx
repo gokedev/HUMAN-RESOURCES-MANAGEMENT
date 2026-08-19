@@ -173,7 +173,7 @@ function EmployeeDashboard() {
     queryKey: queryKeys.leave.mine({ page: 0, size: 100, sort: "createdAt,desc" }),
     queryFn: () => leaveService.listMine({ page: 0, size: 100, sort: "createdAt,desc" }),
   });
-  const myLeave = leaveData?.content ?? [];
+  const myLeave = Array.isArray(leaveData?.content) ? leaveData?.content : [];
   const pendingMyLeave = useMemo(
     () => myLeave.filter((req) => req.status === "PENDING").length,
     [myLeave]
