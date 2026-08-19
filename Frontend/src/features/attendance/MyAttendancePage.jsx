@@ -51,7 +51,7 @@ export function MyAttendancePage() {
     );
 
     // For each attendance record, check if it falls within any approved leave period
-    return attendanceRecords.map(record => {
+    return Array.isArray(attendanceRecords) ? attendanceRecords.map(record => {
       // Check if this date falls within any approved leave period
       const recordDate = new Date(record.workDate);
       const isInApprovedLeave = approvedLeaves.some(leave =>
@@ -69,11 +69,11 @@ export function MyAttendancePage() {
       }
 
       return record;
-    });
+    }) : [];
   };
 
-  const monthData = processAttendanceData(monthDataRaw?.content ?? []);
-  const history = processAttendanceData(historyRaw);
+  const monthData = processAttendanceData(Array.isArray(monthDataRaw?.content) ? monthDataRaw?.content : []);
+  const history = processAttendanceData(Array.isArray(historyRaw) ? historyRaw : []);
   const pagination = historyRaw.page ?? null;
 
   return (
@@ -140,7 +140,7 @@ export function MyAttendancePage() {
           <CalendarRange size={18} className="text-primary shrink-0" />
         </div>
         <div className="p-4">
-          <AttendanceCalendar records={monthData?.content ?? []} />
+          <AttendanceCalendar records={monthData} />
         </div>
       </section>
 
