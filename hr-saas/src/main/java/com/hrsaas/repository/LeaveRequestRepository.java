@@ -54,6 +54,9 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
                                                          @Param("startDate") LocalDate startDate,
                                                          @Param("endDate") LocalDate endDate);
 
+    // Leave balance counts CALENDAR days (standard HR practice: "20 days of annual leave"
+    // means 20 calendar days off). Payroll deductions count WEEKDAYS only (you only lose
+    // salary for working days missed). This difference is intentional, not a bug.
     @Query(value = "SELECT COALESCE(SUM(lr.end_date - lr.start_date + 1), 0) FROM leave_requests lr " +
             "WHERE lr.company_id = :companyId AND lr.employee_id = :employeeId " +
             "AND lr.leave_type = :leaveType AND lr.status = 'APPROVED' " +
