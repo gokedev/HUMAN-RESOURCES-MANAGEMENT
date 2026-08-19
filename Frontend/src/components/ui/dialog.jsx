@@ -23,7 +23,7 @@ function Dialog({ open, onOpenChange, children }) {
     return () => el.removeEventListener("close", handleClose);
   }, [onOpenChange]);
 
-  function handleBackdropClick(e) {
+  function handleDialogClick(e) {
     if (e.target === dialogRef.current) {
       onOpenChange?.(false);
     }
@@ -34,8 +34,8 @@ function Dialog({ open, onOpenChange, children }) {
   return (
     <dialog
       ref={dialogRef}
-      className="dialog-overlay fixed inset-0 z-50 flex items-center justify-center bg-transparent border-none p-0 m-0"
-      onClick={handleBackdropClick}
+      onClick={handleDialogClick}
+      className="fixed inset-0 z-50 flex items-center justify-center border-none bg-transparent p-4 backdrop:bg-black/50 open:flex"
     >
       {children}
     </dialog>
@@ -46,7 +46,7 @@ const DialogContent = React.forwardRef(({ className, children, onClose, ...props
   <div
     ref={ref}
     className={cn(
-      "relative z-50 w-full max-w-lg rounded-xl border bg-card p-6 text-card-foreground shadow-xl",
+      "relative z-50 w-full max-w-lg rounded-xl border bg-card p-6 text-card-foreground shadow-xl animate-in fade-in zoom-in-95 duration-200",
       className
     )}
     onClick={(e) => e.stopPropagation()}
@@ -55,7 +55,7 @@ const DialogContent = React.forwardRef(({ className, children, onClose, ...props
     {children}
     {onClose && (
       <button
-        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-all duration-150 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         onClick={onClose}
         type="button"
       >
@@ -92,7 +92,7 @@ function ConfirmDialog({ title, message, confirmLabel = "Confirm", variant = "de
         </DialogHeader>
         <DialogFooter>
           <button
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold h-9 px-4 py-2 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors disabled:pointer-events-none disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold h-9 px-4 py-2 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground transition-all duration-150 disabled:pointer-events-none disabled:opacity-50"
             type="button"
             onClick={onClose}
             disabled={isProcessing}
@@ -101,9 +101,9 @@ function ConfirmDialog({ title, message, confirmLabel = "Confirm", variant = "de
           </button>
           <button
             className={cn(
-              "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold h-9 px-4 py-2 shadow-sm transition-colors disabled:pointer-events-none disabled:opacity-50 text-white",
+              "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold h-9 px-4 py-2 shadow-sm transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 text-white",
               variant === "destructive"
-                ? "bg-destructive hover:bg-destructive/90"
+                ? "bg-red-600 hover:bg-red-700"
                 : "bg-primary hover:bg-primary/90"
             )}
             type="button"
