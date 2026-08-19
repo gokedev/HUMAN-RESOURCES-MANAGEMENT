@@ -72,4 +72,10 @@ export const queryInvalidation = {
       queryClient.invalidateQueries({ queryKey: ["leave-balance"] }),
     ]);
   },
+  afterPayrollChange(queryClient) {
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.payroll.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.me }),
+    ]);
+  },
 };
