@@ -913,3 +913,15 @@ No body. Returns the logged-in employee's own payslips.
 
 Every token pair expires in ~1 hour by default — use `/api/auth/refresh`
 rather than logging in again mid-session.
+
+---
+
+# Known Limitations
+
+- **No server-side token revocation on deactivation** — When an employee is deactivated, their access token remains valid until expiry (1h). Production systems should revoke all tokens on deactivation.
+- **No rate limiting** — Login, forgot-password, and token-refresh endpoints have no rate limiting.
+- **Swagger UI publicly accessible** — API documentation is accessible without authentication in all environments.
+- **Payroll employee cap** — Payroll generation uses `PageRequest.of(0, 1000)`, silently skipping employees beyond the 1000th.
+- **Leave balance counts calendar days; payroll counts weekdays** — This is intentional: leave entitlement is in calendar days (standard HR practice), while salary deductions only apply to working days.
+- **Minimal test coverage** — Only 6 unit tests covering employee creation and leave request creation.
+- **`cmdk` and `recharts` are installed but unused** — `recharts` was replaced by a custom chart component; `cmdk` was never used.
