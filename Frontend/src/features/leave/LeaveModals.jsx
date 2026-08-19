@@ -52,7 +52,7 @@ export function CreateLeaveModal({ onCreate, isSubmitting = false, onClose }) {
             </Select>
             {errors.leaveType && <p className="text-xs text-red-600 dark:text-red-400">{errors.leaveType.message}</p>}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Start date *</Label>
               <Input type="date" {...register("startDate")} className={errors.startDate ? "border-destructive" : ""} />
@@ -99,7 +99,7 @@ export function ReviewLeaveModal({ request, action, onReview, isSubmitting = fal
         <div className="space-y-1.5 mb-4">
           <p className="text-sm"><span className="font-semibold">Type:</span> {request.leaveType.replace(/_/g, " ")}</p>
           <p className="text-sm"><span className="font-semibold">Dates:</span> {request.startDate} to {request.endDate}</p>
-          {request.reason && <p className="text-sm"><span className="font-semibold">Reason:</span> {request.reason}</p>}
+          {request.reason && <p className="break-words text-sm"><span className="font-semibold">Reason:</span> {request.reason}</p>}
         </div>
         <form id="review-leave-form" className="space-y-4" onSubmit={handleSubmit(onReview)} noValidate>
           <div className="space-y-2">
@@ -159,7 +159,7 @@ export function LeaveDetailsModal({ request, employeeName, employeeId, onClose }
             <p className="text-sm text-muted-foreground">{request.leaveType.replace(/_/g, " ")} leave</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
           <ModalField label="Status">
             <StatusBadge status={request.status} />
           </ModalField>
@@ -169,7 +169,7 @@ export function LeaveDetailsModal({ request, employeeName, employeeId, onClose }
           <ModalField label="Reason">{request.reason ?? "—"}</ModalField>
           <ModalField label="Submitted">{new Date(request.createdAt).toLocaleString()}</ModalField>
           {request.reviewNote && (
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <ModalField label="Review note">{request.reviewNote}</ModalField>
             </div>
           )}
@@ -177,7 +177,7 @@ export function LeaveDetailsModal({ request, employeeName, employeeId, onClose }
         {balance && (
           <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4 space-y-3">
             <p className="text-sm font-semibold text-foreground">Leave Balance ({request.leaveType.replace(/_/g, " ")})</p>
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-1 gap-3 text-center sm:grid-cols-3">
               <div>
                 <p className="text-2xl font-bold text-foreground">{balance.entitlement}</p>
                 <p className="text-xs text-muted-foreground">Entitlement</p>
@@ -200,8 +200,8 @@ export function LeaveDetailsModal({ request, employeeName, employeeId, onClose }
             )}
             {isPending && daysRequested > 0 && (
               <div className="border-t border-border pt-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Projected remaining if approved:</span>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="min-w-0 text-muted-foreground">Projected remaining if approved:</span>
                   <span className={`font-semibold ${wouldBeNegative ? "text-red-600" : "text-foreground"}`}>
                     {projectedRemaining} day{projectedRemaining !== 1 ? "s" : ""}
                   </span>
@@ -233,7 +233,7 @@ function ModalField({ label, children }) {
   return (
     <div>
       <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
-      <div className="mt-1 text-sm text-foreground">{children}</div>
+      <div className="mt-1 break-words text-sm text-foreground">{children}</div>
     </div>
   );
 }
