@@ -6,7 +6,7 @@ import { Button } from "../../components/ui/button.jsx";
 import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feedback.jsx";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { useEmployeeNameMap, usePageTitle } from "../../hooks.js";
-import { attendanceService } from "../../api.js";
+import { attendanceService } from "../../api/index.js";
 import { queryKeys } from "../../constants.js";
 import { AttendanceDetailsModal } from "./AttendanceModals.jsx";
 
