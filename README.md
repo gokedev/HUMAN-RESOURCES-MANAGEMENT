@@ -15,6 +15,7 @@ A full-stack multi-tenant HR management platform that allows companies to regist
 | **Role-Based Access Control** | `ADMIN` and `EMPLOYEE` roles enforced server-side via URL patterns + `RoleGuard` |
 | **Employee Management** | Create, view, update, deactivate, and reactivate employee profiles |
 | **Employee Invitations** | Email-based invite flow with token expiration (72h), resend, and revoke |
+| **Styled Transactional Emails** | Beautiful HTML emails for welcome, invitation, leave status, and password reset |
 | **Department Management** | Create, list, and delete departments with employee count tracking |
 | **Attendance Tracking** | Daily check-in / check-out with status tracking (PRESENT, ABSENT, HALF_DAY, ON_LEAVE) |
 | **Leave Management** | Submit, review (approve/reject), and cancel leave requests with email notifications |
