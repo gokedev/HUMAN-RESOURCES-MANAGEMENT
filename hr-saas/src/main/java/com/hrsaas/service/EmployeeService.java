@@ -167,16 +167,16 @@ public class EmployeeService {
     // Analytical methods for dashboard
     public HeadcountTrendData getHeadcountTrend(int months) {
         UUID tenantId = TenantContext.getTenantId();
-        LocalDateTime endDate = LocalDateTime.now();
-        LocalDateTime startDate = endDate.minusMonths(months);
+        java.time.LocalDate endDate = java.time.LocalDate.now();
+        java.time.LocalDate startDate = endDate.minusMonths(months);
 
-        // Get total hires in the period
+        // Get total hires in the period — dateOfHire is LocalDate
         Long hiresCount = userRepository.countEmployeesByHireDateRange(
                 tenantId, startDate, endDate);
 
         // Get total separations (deactivated/suspended employees) in the period
         Long separationsCount = userRepository.countEmployeesByStatusChangeDateRange(
-                tenantId, UserStatus.SUSPENDED, startDate, endDate);
+                tenantId, UserStatus.SUSPENDED, startDate.atStartOfDay(), endDate.atTime(23, 59, 59));
 
         // Build trend data - for MVP, return single data points representing totals
         List<TrendDataPoint> hiresData = new java.util.ArrayList<>();
