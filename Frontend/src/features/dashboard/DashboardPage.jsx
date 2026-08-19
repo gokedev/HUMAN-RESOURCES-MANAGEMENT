@@ -75,19 +75,23 @@ function AdminDashboard() {
   const pendingLeave = leaveStatsData?.totalPendingRequests ?? 0;
   const departmentCount = departments.length;
 
-  const leaveByType = leaveStatsData?.leaveByType?.map(stat => ({
-    label: stat.leaveType.replace(/_/g, " "),
-    value: stat.count,
-  })) ?? [];
+  const leaveByType = Array.isArray(leaveStatsData?.leaveByType)
+    ? leaveStatsData?.leaveByType.map(stat => ({
+        label: stat.leaveType.replace(/_/g, " "),
+        value: stat.count,
+      }))
+    : [];
 
-  const attendanceByStatus = attendanceComplianceData?.todayAttendanceByStatus?.map(stat => ({
-    label: stat.status.replace(/_/g, " "),
-    value: stat.count,
-    color: stat.color === "bg-emerald-500" ? "success" :
-         stat.color === "bg-red-500" ? "danger" :
-         stat.color === "bg-amber-500" ? "warning" :
-         stat.color === "bg-blue-500" ? "info" : "secondary",
-  })) ?? [];
+  const attendanceByStatus = Array.isArray(attendanceComplianceData?.todayAttendanceByStatus)
+    ? attendanceComplianceData?.todayAttendanceByStatus.map(stat => ({
+        label: stat.status.replace(/_/g, " "),
+        value: stat.count,
+        color: stat.color === "bg-emerald-500" ? "success" :
+             stat.color === "bg-red-500" ? "danger" :
+             stat.color === "bg-amber-500" ? "warning" :
+             stat.color === "bg-blue-500" ? "info" : "secondary",
+      }))
+    : [];
 
   const checkedInToday = attendanceByStatus.find(stat =>
     stat.label.toLowerCase() === "present"
