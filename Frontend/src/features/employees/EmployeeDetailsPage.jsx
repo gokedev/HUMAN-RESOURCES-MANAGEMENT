@@ -5,6 +5,7 @@ import { ArrowLeft, Pencil, Trash2, UserX, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { ConfirmDialog, PageHeader, StatusBadge } from "../../components/common/ui.jsx";
 import { CardSkeleton, EmptyState } from "../../components/feedback.jsx";
+import { AvatarGradient } from "../../components/ui/avatar.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useToast } from "../../contexts.jsx";
 import { departmentService, employeeService } from "../../api.js";
@@ -15,6 +16,7 @@ export function EmployeeDetailsPage() {
   usePageTitle("Employee Details");
   const { id } = useParams();
   const { notify } = useToast();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [showReactivate, setShowReactivate] = useState(false);
@@ -64,7 +66,7 @@ export function EmployeeDetailsPage() {
   if (isLoading) {
     return (
       <>
-        <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3">
+        <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3 transition-colors duration-150">
           <ArrowLeft size={15} /> Back to employees
         </Link>
         <PageHeader title="Employee details" description="Loading..." />
@@ -76,7 +78,7 @@ export function EmployeeDetailsPage() {
   if (!employee) {
     return (
       <>
-        <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3">
+        <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3 transition-colors duration-150">
           <ArrowLeft size={15} /> Back to employees
         </Link>
         <EmptyState
@@ -90,7 +92,7 @@ export function EmployeeDetailsPage() {
 
   return (
     <>
-      <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3">
+      <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3 transition-colors duration-150">
         <ArrowLeft size={15} /> Back to employees
       </Link>
       <PageHeader
@@ -100,33 +102,20 @@ export function EmployeeDetailsPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <Button variant="outline" asChild>
               <Link to={`/employees/${employee.id}/edit`}>
-                <Pencil size={16} className="mr-1.5" /> Edit
+                <Pencil size={16} /> Edit
               </Link>
             </Button>
             {employee.status === "ACTIVE" ? (
-              <Button
-                variant="destructive"
-                type="button"
-                onClick={() => setShowDeactivate(true)}
-              >
-                <UserX size={16} className="mr-1.5" /> Deactivate
+              <Button variant="destructive" type="button" onClick={() => setShowDeactivate(true)}>
+                <UserX size={16} /> Deactivate
               </Button>
             ) : employee.status === "SUSPENDED" ? (
-              <Button
-                variant="default"
-                type="button"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                onClick={() => setShowReactivate(true)}
-              >
-                <UserCheck size={16} className="mr-1.5" /> Reactivate
+              <Button type="button" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => setShowReactivate(true)}>
+                <UserCheck size={16} /> Reactivate
               </Button>
             ) : null}
-            <Button
-              variant="destructive"
-              type="button"
-              onClick={() => setShowDelete(true)}
-            >
-              <Trash2 size={16} className="mr-1.5" /> Delete
+            <Button variant="destructive" type="button" onClick={() => setShowDelete(true)}>
+              <Trash2 size={16} /> Delete
             </Button>
           </div>
         }
@@ -134,63 +123,44 @@ export function EmployeeDetailsPage() {
       <section className="rounded-xl border bg-card shadow-sm overflow-hidden">
         <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2 className="font-semibold text-foreground">Employee record</h2>
+            <h2 className="text-base font-semibold text-foreground">Employee record</h2>
             <p className="text-sm text-muted-foreground mt-0.5">Profile information and workspace access.</p>
           </div>
         </div>
-        <div className="p-5">
-          <section className="flex items-start gap-4 mb-4">
-            <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-coral to-coral-strong text-white text-xl font-bold shrink-0">
+        <div className="p-6">
+          <section className="flex items-start gap-4 mb-6">
+            <AvatarGradient className="h-16 w-16 text-xl shrink-0" name={`${employee.firstName} ${employee.lastName}`}>
               {employee.firstName.charAt(0).toUpperCase()}
-            </span>
+            </AvatarGradient>
             <div>
               <h2 className="text-xl font-semibold">
                 {employee.firstName} {employee.lastName}
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 {employee.jobTitle ?? "No job title"} · {employee.email}
               </p>
             </div>
           </section>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <strong className="text-sm font-medium">Status</strong>
-              <p className="mt-1">
-                <StatusBadge status={employee.status} />
-              </p>
-            </div>
-            <div>
-              <strong className="text-sm font-medium">Role</strong>
-              <p className="mt-1">{employee.role}</p>
-            </div>
-            <div>
-              <strong className="text-sm font-medium">Job Title</strong>
-              <p className="mt-1">{employee.jobTitle ?? "—"}</p>
-            </div>
-            <div>
-              <strong className="text-sm font-medium">Department</strong>
-              <p className="mt-1">{departmentName ?? "—"}</p>
-            </div>
-            <div>
-              <strong className="text-sm font-medium">Manager</strong>
-              <p className="mt-1">{managerName ? `${managerName.firstName} ${managerName.lastName}` : "—"}</p>
-            </div>
-            <div>
-              <strong className="text-sm font-medium">Phone</strong>
-              <p className="mt-1">{employee.phone ?? "—"}</p>
-            </div>
-            <div>
-              <strong className="text-sm font-medium">Hire Date</strong>
-              <p className="mt-1">{employee.dateOfHire ? new Date(employee.dateOfHire).toLocaleDateString() : "—"}</p>
-            </div>
-            <div>
-              <strong className="text-sm font-medium">Created</strong>
-              <p className="mt-1">{new Date(employee.createdAt).toLocaleString()}</p>
-            </div>
-            <div>
-              <strong className="text-sm font-medium">Last Updated</strong>
-              <p className="mt-1">{new Date(employee.updatedAt).toLocaleString()}</p>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <DetailField label="Status">
+              <StatusBadge status={employee.status} />
+            </DetailField>
+            <DetailField label="Role">{employee.role}</DetailField>
+            <DetailField label="Job Title">{employee.jobTitle ?? "—"}</DetailField>
+            <DetailField label="Department">{departmentName ?? "—"}</DetailField>
+            <DetailField label="Manager">
+              {managerName ? `${managerName.firstName} ${managerName.lastName}` : "—"}
+            </DetailField>
+            <DetailField label="Phone">{employee.phone ?? "—"}</DetailField>
+            <DetailField label="Hire Date">
+              {employee.dateOfHire ? new Date(employee.dateOfHire).toLocaleDateString() : "—"}
+            </DetailField>
+            <DetailField label="Created">
+              {new Date(employee.createdAt).toLocaleString()}
+            </DetailField>
+            <DetailField label="Last Updated">
+              {new Date(employee.updatedAt).toLocaleString()}
+            </DetailField>
           </div>
         </div>
       </section>
@@ -200,7 +170,7 @@ export function EmployeeDetailsPage() {
           title="Deactivate employee"
           message={`Are you sure you want to deactivate ${employee.firstName} ${employee.lastName}? They will no longer be able to log in.`}
           confirmLabel="Deactivate"
-          variant="danger"
+          variant="destructive"
           isProcessing={deactivateMutation.isPending}
           onConfirm={() => deactivateMutation.mutate()}
           onClose={() => setShowDeactivate(false)}
@@ -211,7 +181,7 @@ export function EmployeeDetailsPage() {
           title="Reactivate employee"
           message={`Reactivate ${employee.firstName} ${employee.lastName}? They will be able to log in again.`}
           confirmLabel="Reactivate"
-          variant="primary"
+          variant="default"
           isProcessing={reactivateMutation.isPending}
           onConfirm={() => reactivateMutation.mutate()}
           onClose={() => setShowReactivate(false)}
@@ -229,5 +199,14 @@ export function EmployeeDetailsPage() {
         />
       )}
     </>
+  );
+}
+
+function DetailField({ label, children }) {
+  return (
+    <div>
+      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
+      <p className="mt-1 text-sm text-foreground">{children}</p>
+    </div>
   );
 }
