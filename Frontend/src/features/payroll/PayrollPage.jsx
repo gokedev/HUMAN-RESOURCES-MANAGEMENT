@@ -12,7 +12,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from ".
 import { ConfirmDialog } from "../../components/ui/dialog.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useToast } from "../../contexts.jsx";
-import { payrollService } from "../../api.js";
+import { payrollService } from "../../api/index.js";
 import { queryKeys } from "../../constants.js";
 import { getErrorMessage, queryInvalidation } from "../../utils.js";
 import { PayslipViewModal } from "./PayslipView.jsx";
