@@ -19,19 +19,21 @@ export function DepartmentsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data: departments = [], isLoading, isError } = useQuery({
+  const { data: departments } = useQuery({
     queryKey: queryKeys.departments.all,
     queryFn: () => departmentService.list(),
   });
-  const { data: employees = [] } = useQuery({
+  const { data: employees } = useQuery({
     queryKey: queryKeys.employees.all,
     queryFn: () => employeeService.listAll(),
   });
   const employeeCounts = useMemo(() => {
     const counts = {};
-    employees.forEach((emp) => {
-      if (emp.departmentId) counts[emp.departmentId] = (counts[emp.departmentId] ?? 0) + 1;
-    });
+    if (Array.isArray(employees)) {
+      employees.forEach((emp) => {
+        if (emp.departmentId) counts[emp.departmentId] = (counts[emp.departmentId] ?? 0) + 1;
+      });
+    }
     return counts;
   }, [employees]);
 
@@ -67,7 +69,7 @@ export function DepartmentsPage() {
       />
       <DataTableShell
         title="Department list"
-        description={`${departments.length} department${departments.length === 1 ? "" : "s"} in your company`}
+        description={`${!Array.isArray(departments) ? 0 : departments.length} department${!Array.isArray(departments) || departments.length === 1 ? "" : "s"} in your company`}
       >
         {isLoading ? (
           <TableSkeleton rows={5} />
@@ -79,7 +81,7 @@ export function DepartmentsPage() {
             actionLabel="Retry"
             onAction={() => queryClient.invalidateQueries({ queryKey: queryKeys.departments.all })}
           />
-        ) : departments.length === 0 ? (
+        ) : !Array.isArray(departments) || departments.length === 0 ? (
           <EmptyState
             icon={Building2}
             title="No departments"
@@ -97,7 +99,7 @@ export function DepartmentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {departments.map((dept) => (
+              {Array.isArray(departments) ? departments.map((dept) => ( : null)}
                 <TableRow key={dept.id}>
                   <TableCell className="font-medium">{dept.name}</TableCell>
                   <TableCell>
