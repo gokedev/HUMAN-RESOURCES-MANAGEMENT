@@ -70,10 +70,7 @@ export function MyLeavePage() {
         description="Request time off, cancel pending requests, and review your leave history."
         actions={
           role === "EMPLOYEE" ? (
-            <Button
-              type="button"
-              onClick={() => setShowCreate(true)}
-            >
+            <Button type="button" onClick={() => setShowCreate(true)}>
               <Plus size={16} /> Request leave
             </Button>
           ) : null
@@ -81,36 +78,27 @@ export function MyLeavePage() {
       />
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold text-foreground">Annual leave balance</h3>
-            <CalendarDays size={18} className="text-primary shrink-0" />
-          </div>
-          <p className="text-2xl font-bold text-foreground">
+          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Annual leave balance</span>
+          <p className="text-2xl font-bold text-foreground mt-2">
             {annualBalance ? annualBalance.remaining : "—"}
           </p>
-          <p className="text-sm text-muted-foreground mt-1 font-medium">
+          <p className="text-sm text-muted-foreground mt-1">
             {annualBalance
               ? `${annualBalance.used} used · ${annualBalance.pending} pending`
               : "No balance data"}
           </p>
         </div>
         <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold text-foreground">Days approved</h3>
-            <CalendarDays size={18} className="text-primary shrink-0" />
-          </div>
-          <p className="text-2xl font-bold text-foreground">
+          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Days approved</span>
+          <p className="text-2xl font-bold text-foreground mt-2">
             {annualBalance ? annualBalance.used : "—"}
           </p>
-          <p className="text-sm text-muted-foreground mt-1 font-medium">This year</p>
+          <p className="text-sm text-muted-foreground mt-1">This year</p>
         </div>
         <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold text-foreground">Pending requests</h3>
-            <CalendarDays size={18} className="text-primary shrink-0" />
-          </div>
-          <p className="text-2xl font-bold text-foreground">{requests.filter((r) => r.status === "PENDING").length}</p>
-          <p className="text-sm text-muted-foreground mt-1 font-medium">On this page</p>
+          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Pending requests</span>
+          <p className="text-2xl font-bold text-foreground mt-2">{requests.filter((r) => r.status === "PENDING").length}</p>
+          <p className="text-sm text-muted-foreground mt-1">On this page</p>
         </div>
       </section>
 
@@ -128,6 +116,8 @@ export function MyLeavePage() {
             icon={Inbox}
             title="No leave requests"
             description="Submit your first leave request to get started."
+            actionLabel="Request leave"
+            onAction={() => setShowCreate(true)}
           />
         ) : (
           <>
@@ -135,8 +125,8 @@ export function MyLeavePage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Type</TableHead>
-                  <TableHead>Dates</TableHead>
-                  <TableHead>Reason</TableHead>
+                  <TableHead className="hidden sm:table-cell">Dates</TableHead>
+                  <TableHead className="hidden md:table-cell">Reason</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -145,11 +135,11 @@ export function MyLeavePage() {
                 {requests.map((request) => (
                   <TableRow key={request.id}>
                     <TableCell>{request.leaveType.replace(/_/g, " ")}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       {new Date(request.startDate).toLocaleDateString()} →{" "}
                       {new Date(request.endDate).toLocaleDateString()}
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate" title={request.reason}>
+                    <TableCell className="hidden md:table-cell max-w-[200px] truncate" title={request.reason}>
                       {request.reason ?? "—"}
                     </TableCell>
                     <TableCell>
@@ -176,7 +166,7 @@ export function MyLeavePage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
                             type="button"
                             title="Cancel request"
                             onClick={() => setCancelTarget(request)}
