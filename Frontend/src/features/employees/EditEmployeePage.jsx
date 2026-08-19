@@ -5,7 +5,7 @@ import { PageHeader } from "../../components/common/ui.jsx";
 import { CardSkeleton, EmptyState } from "../../components/feedback.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useToast } from "../../contexts.jsx";
-import { departmentService, employeeService } from "../../api.js";
+import { departmentService, employeeService } from "../../api/index.js";
 import { queryKeys } from "../../constants.js";
 import { getErrorMessage, queryInvalidation } from "../../utils.js";
 import { EmployeeForm } from "./EmployeeForm.jsx";
