@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.hrsaas.dto.EmployeeCounts;
@@ -84,6 +85,7 @@ public class EmployeeService {
                 .departmentId(request.getDepartmentId())
                 .managerId(request.getManagerId())
                 .dateOfHire(request.getDateOfHire())
+                .baseSalary(request.getBaseSalary())
                 .build();
         employee = userRepository.save(employee);
 
@@ -128,6 +130,7 @@ public class EmployeeService {
         employee.setDepartmentId(request.getDepartmentId());
         employee.setManagerId(request.getManagerId());
         employee.setDateOfHire(request.getDateOfHire());
+        employee.setBaseSalary(request.getBaseSalary());
         User saved = userRepository.save(employee);
         log.info("Employee updated successfully: id={}", saved.getId());
         return saved;
@@ -197,6 +200,34 @@ public class EmployeeService {
         return new EmployeeCounts(activeCount, pendingCount, suspendedCount);
     }
 
+
+    @Transactional
+    public void resendInvitation(UUID employeeId) {
+        UUID tenantId = TenantContext.getTenantId();
+        User employee = getEmployee(employeeId);
+        if (employee.getStatus() != UserStatus.PENDING) {
+            throw ApiException.badRequest("Employee is not pending invitation");
+        }
+        Invitation invitation = invitationRepository.findByUserIdAndAcceptedAtIsNull(employee.getId())
+                .orElseThrow(() -> ApiException.notFound("No pending invitation found for employee"));
+        String token = generateSecureToken();
+        invitation.setToken(token);
+        invitation.setExpiresAt(LocalDateTime.now().plusHours(inviteExpirationHours));
+        invitationRepository.save(invitation);
+        String inviteLink = frontendBaseUrl + "/accept-invitation?token=" + token;
+        mailService.sendEmployeeInvitation(employee.getEmail(), employee.getFirstName(),
+                companyRepository.findById(tenantId).orElseThrow().getName(), inviteLink);
+    }
+
+    @Transactional
+    public void revokeInvitation(UUID employeeId) {
+        User employee = getEmployee(employeeId);
+        Optional<Invitation> invitationOpt = invitationRepository.findByUserIdAndAcceptedAtIsNull(employee.getId());
+        if (invitationOpt.isPresent()) {
+            invitationRepository.delete(invitationOpt.get());
+        }
+        // If no pending invitation, do nothing (or could throw)
+    }
 
     private String generateSecureToken() {
         byte[] bytes = new byte[48];
