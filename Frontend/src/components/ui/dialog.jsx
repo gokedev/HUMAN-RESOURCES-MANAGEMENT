@@ -34,7 +34,7 @@ function Dialog({ open, onOpenChange, children }) {
   return (
     <dialog
       ref={dialogRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-transparent border-none p-0 backdrop:bg-black/50"
+      className="dialog-overlay fixed inset-0 z-50 flex items-center justify-center bg-transparent border-none p-0 m-0"
       onClick={handleBackdropClick}
     >
       {children}

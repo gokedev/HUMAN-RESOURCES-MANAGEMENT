@@ -71,6 +71,7 @@ export const router = createBrowserRouter([
       { path: "/forgot-password", element: <ForgotPasswordPage /> },
       { path: "/reset-password", element: <ResetPasswordPage /> },
       { path: "/accept-invitation", element: <AcceptInvitationPage /> },
+      { path: "/accept-invite", element: <AcceptInvitationPage /> },
     ],
   },
   {

@@ -136,3 +136,25 @@ body {
 .fade-in {
   animation-name: toast-slide-fade-in;
 }
+
+/* Center native <dialog> modals */
+dialog.dialog-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 1rem !important;
+  border: none !important;
+  background: transparent !important;
+  overflow: auto !important;
+}
+
+dialog.dialog-overlay::backdrop {
+  background-color: rgb(0 0 0 / 0.5);
+  position: fixed;
+  inset: 0;
+}
