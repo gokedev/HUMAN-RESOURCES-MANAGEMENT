@@ -43,7 +43,7 @@ export function MyPayslipsPage() {
           <TableSkeleton rows={5} />
         ) : isError ? (
           <EmptyState icon={FileText} title="Failed to load payslips" description="Please try again later." />
-        ) : !payslips || payslips.length === 0 ? (
+        ) : !Array.isArray(payslips) || payslips.length === 0 ? (
           <EmptyState
             icon={Wallet}
             title="No payslips yet"
