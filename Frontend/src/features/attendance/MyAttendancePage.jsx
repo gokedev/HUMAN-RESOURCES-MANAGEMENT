@@ -37,15 +37,16 @@ export function MyAttendancePage() {
     queryFn: () => attendanceService.listMine({ page: currentPage, size: PAGE_SIZE, sort: "workDate,desc" }),
   });
 
-  const { data: leaveRequests = [] } = useQuery({
+  const { data: leaveRequests, isLoading, isError } = useQuery({
     queryKey: queryKeys.leave.mine({ page: 0, size: 100, sort: "createdAt,desc" }),
     queryFn: () => leaveService.listMine({ page: 0, size: 100, sort: "createdAt,desc" }),
   });
+  const safeLeaveRequests = leaveRequests ?? [];
 
   // Process attendance data to show "On Leave" for dates within approved leave periods
   const processAttendanceData = (attendanceRecords) => {
     // Get approved leave requests
-    const approvedLeaves = leaveRequests.filter(
+    const approvedLeaves = safeLeaveRequests.filter(
       leave => leave.status === "APPROVED"
     );
 
