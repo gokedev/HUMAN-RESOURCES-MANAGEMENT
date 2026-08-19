@@ -41,7 +41,7 @@ export function MyAttendancePage() {
     queryKey: queryKeys.leave.mine({ page: 0, size: 100, sort: "createdAt,desc" }),
     queryFn: () => leaveService.listMine({ page: 0, size: 100, sort: "createdAt,desc" }),
   });
-  const safeLeaveRequests = leaveRequests ?? [];
+  const safeLeaveRequests = Array.isArray(leaveRequests) ? leaveRequests : [];
 
   // Process attendance data to show "On Leave" for dates within approved leave periods
   const processAttendanceData = (attendanceRecords) => {
