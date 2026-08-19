@@ -198,6 +198,9 @@ export const profileService = {
   me() {
     return apiClient.get("/api/employee/me").then((response) => response.data);
   },
+  update(payload) {
+    return apiClient.put("/api/employee/me", payload).then((response) => response.data);
+  },
 };
 
 // Refreshes the access token using the README-documented /api/auth/refresh endpoint.
