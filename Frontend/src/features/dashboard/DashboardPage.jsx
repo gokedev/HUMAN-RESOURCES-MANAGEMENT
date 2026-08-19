@@ -21,7 +21,7 @@ import { Button } from "../../components/ui/button.jsx";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card.jsx";
 import { usePageTitle, useTodayAttendance } from "../../hooks.js";
 import { useAuth } from "../../contexts.jsx";
-import { attendanceService, departmentService, employeeService, leaveService } from "../../api.js";
+import { attendanceService, departmentService, employeeService, leaveService } from "../../api/index.js";
 import { queryKeys } from "../../constants.js";
 import { BarChart } from "../../components/common/charts.jsx";
 import { DashboardSkeleton, MetricSkeleton } from "../../components/ui/skeletons.jsx";
