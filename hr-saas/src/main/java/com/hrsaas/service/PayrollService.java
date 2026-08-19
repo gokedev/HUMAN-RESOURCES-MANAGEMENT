@@ -232,8 +232,9 @@ public class PayrollService {
 
     /**
      * Count approved UNPAID leave days overlapping the given pay period.
-     * An overlap exists if the leave start <= periodEnd AND leave end >= periodStart.
-     * Only days within the pay period are counted (clamped).
+     * Counts WEEKDAYS only (Mon-Fri) since salary is only earned on working days.
+     * This intentionally differs from leave balance, which counts calendar days
+     * (standard HR entitlement practice).
      */
     private int countUnpaidLeaveDays(UUID tenantId, UUID employeeId, YearMonth yearMonth) {
         LocalDate periodStart = yearMonth.atDay(1);
