@@ -179,16 +179,6 @@ export const leaveService = {
       .get("/api/employee/leave-balance")
       .then((response) => response.data);
   },
-  getMyBalanceByType(leaveType) {
-    return apiClient
-      .get(`/api/employee/leave-balance/${leaveType}`)
-      .then((response) => response.data);
-  },
-  getEmployeeBalance(employeeId) {
-    return apiClient
-      .get(`/api/admin/employees/${employeeId}/leave-balance`)
-      .then((response) => response.data);
-  },
   getEmployeeBalanceByType(employeeId, leaveType) {
     return apiClient
       .get(`/api/admin/employees/${employeeId}/leave-balance/${leaveType}`)
@@ -220,19 +210,9 @@ export const payrollService = {
       .get("/api/admin/payroll/payslips", { params })
       .then((response) => response.data);
   },
-  get(id) {
-    return apiClient
-      .get(`/api/admin/payroll/payslips/${id}`)
-      .then((response) => response.data);
-  },
   listMine() {
     return apiClient
       .get("/api/employee/payroll/payslips")
-      .then((response) => response.data);
-  },
-  getMine(id) {
-    return apiClient
-      .get(`/api/employee/payroll/payslips/${id}`)
       .then((response) => response.data);
   },
 };
