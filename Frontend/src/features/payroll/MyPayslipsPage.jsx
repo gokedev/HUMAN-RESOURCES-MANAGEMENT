@@ -5,7 +5,7 @@ import { PageHeader } from "../../components/common/ui.jsx";
 import { DataTableShell, TableSkeleton, EmptyState } from "../../components/feedback.jsx";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { usePageTitle } from "../../hooks.js";
-import { payrollService } from "../../api.js";
+import { payrollService } from "../../api/index.js";
 import { queryKeys } from "../../constants.js";
 import { PayslipViewModal } from "./PayslipView.jsx";
 
