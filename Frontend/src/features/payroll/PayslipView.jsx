@@ -32,19 +32,19 @@ export function PayslipViewModal({ payslip, onClose }) {
           </div>
 
           {/* Employee Info */}
-          <div className="grid grid-cols-2 gap-y-2 text-sm">
+          <div className="grid grid-cols-1 gap-y-2 text-sm sm:grid-cols-2">
             <div>
               <span className="text-muted-foreground">Employee:</span>
             </div>
-            <div className="font-medium text-right">{payslip.employeeName}</div>
+            <div className="break-words font-medium text-left sm:text-right">{payslip.employeeName}</div>
             <div>
               <span className="text-muted-foreground">Email:</span>
             </div>
-            <div className="text-right">{payslip.employeeEmail}</div>
+            <div className="break-words text-left sm:text-right">{payslip.employeeEmail}</div>
             <div>
               <span className="text-muted-foreground">Pay Period:</span>
             </div>
-            <div className="text-right">{MONTH_NAMES[payslip.payPeriodMonth]} {payslip.payPeriodYear}</div>
+            <div className="text-left sm:text-right">{MONTH_NAMES[payslip.payPeriodMonth]} {payslip.payPeriodYear}</div>
           </div>
 
           {/* Earnings */}
