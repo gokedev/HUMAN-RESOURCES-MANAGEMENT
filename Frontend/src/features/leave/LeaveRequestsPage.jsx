@@ -107,7 +107,7 @@ export function LeaveRequestsPage() {
       </div>
       <DataTableShell
         title="Company requests"
-        description="Paginated leave requests."
+        description={`${pagination?.totalElements ?? requests.length} request${(pagination?.totalElements ?? requests.length) === 1 ? "" : "s"}`}
       >
         {isLoading ? (
           <TableSkeleton rows={8} />
@@ -130,8 +130,8 @@ export function LeaveRequestsPage() {
                 <TableRow>
                   <TableHead>Employee</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Dates</TableHead>
-                  <TableHead>Reason</TableHead>
+                  <TableHead className="hidden sm:table-cell">Dates</TableHead>
+                  <TableHead className="hidden md:table-cell">Reason</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -139,17 +139,17 @@ export function LeaveRequestsPage() {
               <TableBody>
                 {requests.map((request) => (
                   <TableRow key={request.id}>
-                    <TableCell>
+                    <TableCell className="font-medium">
                       {request.employeeFirstName
                         ? `${request.employeeFirstName} ${request.employeeLastName}`
                         : nameMap[request.employeeId] ?? "Unknown employee"}
                     </TableCell>
                     <TableCell>{request.leaveType.replace(/_/g, " ")}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       {new Date(request.startDate).toLocaleDateString()} →{" "}
                       {new Date(request.endDate).toLocaleDateString()}
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate" title={request.reason}>
+                    <TableCell className="hidden md:table-cell max-w-[200px] truncate" title={request.reason}>
                       {request.reason ?? "—"}
                     </TableCell>
                     <TableCell>
@@ -162,7 +162,7 @@ export function LeaveRequestsPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/50"
                               type="button"
                               title="Approve"
                               onClick={() => setReviewTarget({ request, approve: true })}
@@ -172,7 +172,7 @@ export function LeaveRequestsPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
                               type="button"
                               title="Reject"
                               onClick={() => setReviewTarget({ request, approve: false })}
