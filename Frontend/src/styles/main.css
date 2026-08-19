@@ -177,3 +177,22 @@ body {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
 }
+
+/* Print styles for payslip */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .payslip-print-area,
+  .payslip-print-area * {
+    visibility: visible;
+  }
+
+  .payslip-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
