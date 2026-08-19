@@ -7,7 +7,7 @@ import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feed
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { AttendanceCalendar } from "../../components/common/charts.jsx";
 import { usePageTitle, useTodayAttendance } from "../../hooks.js";
-import { attendanceService, leaveService } from "../../api.js";
+import { attendanceService, leaveService } from "../../api/index.js";
 import { queryKeys } from "../../constants.js";
 
 const PAGE_SIZE = 10;
