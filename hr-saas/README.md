@@ -107,7 +107,7 @@ Returns tokens immediately — no separate login required after this call.
 | adminFirstName | yes | |
 | adminLastName | yes | |
 | adminEmail | yes | must be valid email format |
-| adminPassword | yes | min 8 characters |
+| adminPassword | yes | min 8 chars, must contain uppercase, lowercase, digit, and special character (@$!%*?&#) |
 
 **Response `201 Created`:**
 ```json
@@ -580,6 +580,28 @@ for either an ADMIN or EMPLOYEE user, plus `Content-Type: application/json`
 where a body is sent. These act on the **logged-in user's own** data only
 — there's no `{id}` in the path, the identity comes from the token.
 
+## Get my leave balance
+
+```
+GET /api/employee/leave-balance
+```
+
+No body. Returns the logged-in employee's leave balance by type for the current year.
+
+**Response `200 OK`:**
+```json
+{
+  "leaveBalances": [
+    { "leaveType": "ANNUAL", "totalEntitlement": 20, "daysUsed": 5, "daysPending": 2, "daysAvailable": 13 },
+    { "leaveType": "SICK", "totalEntitlement": 10, "daysUsed": 1, "daysPending": 0, "daysAvailable": 9 }
+  ]
+}
+```
+
+`daysAvailable` = `totalEntitlement` - `daysUsed` - `daysPending`. Leave balance counts **calendar days** (standard HR practice).
+
+---
+
 ## Get my profile
 
 ```
@@ -588,8 +610,50 @@ GET /api/employee/me
 
 No body.
 
-**Response `200 OK`:** the logged-in user's own user object (same shape
-as the admin employee object above).
+**Response `200 OK`:** the logged-in user's own user object (same shape as the admin employee object above).
+
+---
+
+## Update my profile
+
+```
+PATCH /api/employee/me
+```
+
+**Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "phone": "+2348012345678"
+}
+```
+
+All fields optional. Only updates the fields provided.
+
+**Response `200 OK`:** updated user object.
+
+---
+
+## Change my password
+
+```
+PATCH /api/employee/me/password
+```
+
+**Body:**
+```json
+{
+  "currentPassword": "OldPass123!",
+  "newPassword": "NewPass456!"
+}
+```
+
+Both fields required. `newPassword` must be 8-128 characters with at least one uppercase, one lowercase, one digit, and one special character (@$!%*?&#).
+
+**Response `200 OK`:** empty body. All existing refresh tokens are revoked — the user must log in again on other devices.
+
+**Errors:** `400` if `currentPassword` is wrong or `newPassword` fails validation.
 
 ---
 
