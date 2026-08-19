@@ -10,6 +10,7 @@ import { Input } from "../../components/ui/input.jsx";
 import { Label } from "../../components/ui/label.jsx";
 import { Textarea } from "../../components/ui/textarea.jsx";
 import { Select } from "../../components/ui/select.jsx";
+import { AvatarGradient } from "../../components/ui/avatar.jsx";
 import { leaveService } from "../../api.js";
 
 export const leaveTypes = ["ANNUAL", "SICK", "UNPAID", "MATERNITY", "PATERNITY", "OTHER"];
@@ -49,18 +50,18 @@ export function CreateLeaveModal({ onCreate, isSubmitting = false, onClose }) {
                 <option key={t} value={t}>{t.replace(/_/g, " ")}</option>
               ))}
             </Select>
-            {errors.leaveType && <p className="text-xs text-destructive">{errors.leaveType.message}</p>}
+            {errors.leaveType && <p className="text-xs text-red-600 dark:text-red-400">{errors.leaveType.message}</p>}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Start date *</Label>
               <Input type="date" {...register("startDate")} className={errors.startDate ? "border-destructive" : ""} />
-              {errors.startDate && <p className="text-xs text-destructive">{errors.startDate.message}</p>}
+              {errors.startDate && <p className="text-xs text-red-600 dark:text-red-400">{errors.startDate.message}</p>}
             </div>
             <div className="space-y-2">
               <Label>End date *</Label>
               <Input type="date" {...register("endDate")} className={errors.endDate ? "border-destructive" : ""} />
-              {errors.endDate && <p className="text-xs text-destructive">{errors.endDate.message}</p>}
+              {errors.endDate && <p className="text-xs text-red-600 dark:text-red-400">{errors.endDate.message}</p>}
             </div>
           </div>
           <div className="space-y-2">
@@ -95,10 +96,10 @@ export function ReviewLeaveModal({ request, action, onReview, isSubmitting = fal
         <DialogHeader>
           <DialogTitle>{action === "approve" ? "Approve" : "Reject"} leave request</DialogTitle>
         </DialogHeader>
-        <div className="space-y-1 mb-4">
-          <p className="text-sm"><strong>Type:</strong> {request.leaveType.replace(/_/g, " ")}</p>
-          <p className="text-sm"><strong>Dates:</strong> {request.startDate} to {request.endDate}</p>
-          {request.reason && <p className="text-sm"><strong>Reason:</strong> {request.reason}</p>}
+        <div className="space-y-1.5 mb-4">
+          <p className="text-sm"><span className="font-semibold">Type:</span> {request.leaveType.replace(/_/g, " ")}</p>
+          <p className="text-sm"><span className="font-semibold">Dates:</span> {request.startDate} to {request.endDate}</p>
+          {request.reason && <p className="text-sm"><span className="font-semibold">Reason:</span> {request.reason}</p>}
         </div>
         <form id="review-leave-form" className="space-y-4" onSubmit={handleSubmit(onReview)} noValidate>
           <div className="space-y-2">
@@ -113,7 +114,6 @@ export function ReviewLeaveModal({ request, action, onReview, isSubmitting = fal
             type="submit"
             form="review-leave-form"
             disabled={isSubmitting}
-            className={action === "approve" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}
           >
             {isSubmitting && <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />}
             {action === "approve" ? "Approve" : "Reject"}
@@ -151,43 +151,26 @@ export function LeaveDetailsModal({ request, employeeName, employeeId, onClose }
           <DialogTitle>Leave request</DialogTitle>
         </DialogHeader>
         <div className="flex items-start gap-4 mb-4">
-          <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#ff7a59] to-[#ff4e6a] text-white text-xl font-bold shrink-0">
+          <AvatarGradient className="h-14 w-14 text-lg shrink-0" name={employeeName}>
             {employeeName.charAt(0).toUpperCase()}
-          </span>
+          </AvatarGradient>
           <div>
             <h3 className="font-semibold text-foreground">{employeeName}</h3>
             <p className="text-sm text-muted-foreground">{request.leaveType.replace(/_/g, " ")} leave</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="font-semibold text-foreground">Status</p>
-            <p><StatusBadge status={request.status} /></p>
-          </div>
-          <div>
-            <p className="font-semibold text-foreground">Type</p>
-            <p className="text-muted-foreground">{request.leaveType.replace(/_/g, " ")}</p>
-          </div>
-          <div>
-            <p className="font-semibold text-foreground">Start date</p>
-            <p className="text-muted-foreground">{new Date(request.startDate).toLocaleDateString()}</p>
-          </div>
-          <div>
-            <p className="font-semibold text-foreground">End date</p>
-            <p className="text-muted-foreground">{new Date(request.endDate).toLocaleDateString()}</p>
-          </div>
-          <div>
-            <p className="font-semibold text-foreground">Reason</p>
-            <p className="text-muted-foreground">{request.reason ?? "—"}</p>
-          </div>
-          <div>
-            <p className="font-semibold text-foreground">Submitted</p>
-            <p className="text-muted-foreground">{new Date(request.createdAt).toLocaleString()}</p>
-          </div>
+          <ModalField label="Status">
+            <StatusBadge status={request.status} />
+          </ModalField>
+          <ModalField label="Type">{request.leaveType.replace(/_/g, " ")}</ModalField>
+          <ModalField label="Start date">{new Date(request.startDate).toLocaleDateString()}</ModalField>
+          <ModalField label="End date">{new Date(request.endDate).toLocaleDateString()}</ModalField>
+          <ModalField label="Reason">{request.reason ?? "—"}</ModalField>
+          <ModalField label="Submitted">{new Date(request.createdAt).toLocaleString()}</ModalField>
           {request.reviewNote && (
             <div className="col-span-2">
-              <p className="font-semibold text-foreground">Review note</p>
-              <p className="text-muted-foreground">{request.reviewNote}</p>
+              <ModalField label="Review note">{request.reviewNote}</ModalField>
             </div>
           )}
         </div>
@@ -204,7 +187,7 @@ export function LeaveDetailsModal({ request, employeeName, employeeId, onClose }
                 <p className="text-xs text-muted-foreground">Used</p>
               </div>
               <div>
-                <p className={`text-2xl font-bold ${balance.remaining < 0 ? "text-destructive" : "text-foreground"}`}>
+                <p className={`text-2xl font-bold ${balance.remaining < 0 ? "text-red-600" : "text-foreground"}`}>
                   {balance.remaining}
                 </p>
                 <p className="text-xs text-muted-foreground">Remaining</p>
@@ -219,12 +202,12 @@ export function LeaveDetailsModal({ request, employeeName, employeeId, onClose }
               <div className="border-t border-border pt-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Projected remaining if approved:</span>
-                  <span className={`font-semibold ${wouldBeNegative ? "text-destructive" : "text-foreground"}`}>
+                  <span className={`font-semibold ${wouldBeNegative ? "text-red-600" : "text-foreground"}`}>
                     {projectedRemaining} day{projectedRemaining !== 1 ? "s" : ""}
                   </span>
                 </div>
                 {wouldBeNegative && (
-                  <div className="flex items-center gap-2 mt-2 p-2 rounded-md bg-destructive/10 text-destructive text-xs">
+                  <div className="flex items-center gap-2 mt-2 p-2 rounded-md bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-xs">
                     <AlertTriangle size={14} />
                     <span>This approval would result in a negative balance of {Math.abs(projectedRemaining)} day{Math.abs(projectedRemaining) !== 1 ? "s" : ""}.</span>
                   </div>
@@ -233,7 +216,7 @@ export function LeaveDetailsModal({ request, employeeName, employeeId, onClose }
             )}
             {!isPending && isNegative && (
               <div className="border-t border-border pt-3">
-                <div className="flex items-center gap-2 p-2 rounded-md bg-destructive/10 text-destructive text-xs">
+                <div className="flex items-center gap-2 p-2 rounded-md bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-xs">
                   <AlertTriangle size={14} />
                   <span>Current balance is negative by {Math.abs(balance.remaining)} day{Math.abs(balance.remaining) !== 1 ? "s" : ""}.</span>
                 </div>
@@ -243,5 +226,14 @@ export function LeaveDetailsModal({ request, employeeName, employeeId, onClose }
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ModalField({ label, children }) {
+  return (
+    <div>
+      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
+      <div className="mt-1 text-sm text-foreground">{children}</div>
+    </div>
   );
 }
