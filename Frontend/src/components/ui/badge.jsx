@@ -33,6 +33,7 @@ const statusVariantMap = {
   APPROVED: "success",
   REJECTED: "destructive",
   CANCELLED: "info",
+  GENERATED: "success",
 };
 
 function Badge({ className, variant, ...props }) {
