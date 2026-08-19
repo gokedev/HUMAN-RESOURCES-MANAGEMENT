@@ -10,7 +10,7 @@
   --color-card-foreground: #182230;
   --color-popover: #ffffff;
   --color-popover-foreground: #182230;
-  --color-primary: #2563eb;
+  --color-primary: #e94a3f;
   --color-primary-foreground: #ffffff;
   --color-secondary: #eef3f8;
   --color-secondary-foreground: #182230;
@@ -22,7 +22,7 @@
   --color-destructive-foreground: #ffffff;
   --color-border: #d9e2ec;
   --color-input: #d9e2ec;
-  --color-ring: #2563eb;
+  --color-ring: #e94a3f;
   --color-success: #11845b;
   --color-success-foreground: #ffffff;
   --color-warning: #b54708;
@@ -45,21 +45,23 @@
 
 /* Dark mode */
 .theme-dark {
-  --color-background: #101828;
-  --color-foreground: #f2f4f7;
-  --color-card: #182230;
-  --color-card-foreground: #f2f4f7;
-  --color-popover: #182230;
-  --color-popover-foreground: #f2f4f7;
-  --color-secondary: #202b3c;
-  --color-secondary-foreground: #f2f4f7;
-  --color-muted: #202b3c;
-  --color-muted-foreground: #98a2b3;
-  --color-accent: #202b3c;
-  --color-accent-foreground: #f2f4f7;
-  --color-border: #344054;
-  --color-input: #344054;
-  --shadow-xl: 0 18px 40px rgb(0 0 0 / 0.28);
+  --color-background: #0f172a;
+  --color-foreground: #f1f5f9;
+  --color-card: #1e293b;
+  --color-card-foreground: #f1f5f9;
+  --color-popover: #1e293b;
+  --color-popover-foreground: #f1f5f9;
+  --color-secondary: #1e293b;
+  --color-secondary-foreground: #f1f5f9;
+  --color-muted: #1e293b;
+  --color-muted-foreground: #94a3b8;
+  --color-accent: #1e293b;
+  --color-accent-foreground: #f1f5f9;
+  --color-border: #334155;
+  --color-input: #334155;
+  --color-primary: #f87171;
+  --color-primary-foreground: #0f172a;
+  --shadow-xl: 0 18px 40px rgb(0 0 0 / 0.35);
 }
 
 * {
@@ -79,6 +81,7 @@ body {
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -86,6 +89,9 @@ body {
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
   border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-foreground);
 }
 
 /* Skeleton shimmer animation */
@@ -101,14 +107,9 @@ body {
 }
 
 /* Toast animations */
-@keyframes toast-slide-in {
+@keyframes toast-slide-fade-in {
   from { transform: translateX(calc(100% + 1rem)); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes toast-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 @keyframes toast-slide-out {
@@ -116,14 +117,8 @@ body {
   to { transform: translateX(calc(100% + 1rem)); opacity: 0; }
 }
 
-/* Combined slide-in and fade-in animation */
-@keyframes toast-slide-fade-in {
-  from { transform: translateX(calc(100% + 1rem)); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
 .animate-in {
-  animation-duration: 300ms;
+  animation-duration: 200ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   animation-fill-mode: forwards;
 }
@@ -132,29 +127,53 @@ body {
   animation-name: toast-slide-fade-in;
 }
 
-/* Keep fade-in for backward compatibility but make it use the combined animation */
 .fade-in {
   animation-name: toast-slide-fade-in;
 }
 
-/* Center native <dialog> modals */
-dialog.dialog-overlay {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 0 !important;
-  padding: 1rem !important;
-  border: none !important;
-  background: transparent !important;
-  overflow: auto !important;
+/* Dialog animation helpers */
+@keyframes dialog-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-dialog.dialog-overlay::backdrop {
-  background-color: rgb(0 0 0 / 0.5);
-  position: fixed;
-  inset: 0;
+@keyframes dialog-zoom-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-in.fade-in {
+  animation-name: dialog-fade-in;
+}
+
+.animate-in.zoom-in-95 {
+  animation-name: dialog-zoom-in;
+}
+
+.animate-in.fade-in.zoom-in-95 {
+  animation-name: dialog-fade-in, dialog-zoom-in;
+}
+
+/* Zebra striping for tables */
+.table-zebra tbody tr:nth-child(even) {
+  background-color: var(--color-muted);
+}
+
+.table-zebra tbody tr:nth-child(even):hover {
+  background-color: var(--color-accent);
+}
+
+/* Sticky table header */
+.table-sticky thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--color-card);
+}
+
+/* Transition utilities */
+.transition-default {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
 }
