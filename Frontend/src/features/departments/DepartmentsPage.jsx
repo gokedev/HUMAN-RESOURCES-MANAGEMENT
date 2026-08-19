@@ -7,7 +7,7 @@ import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feed
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useToast } from "../../contexts.jsx";
-import { departmentService, employeeService } from "../../api.js";
+import { departmentService, employeeService } from "../../api/index.js";
 import { queryKeys } from "../../constants.js";
 import { getErrorMessage, queryInvalidation } from "../../utils.js";
 import { CreateDepartmentModal } from "./DepartmentModals.jsx";
