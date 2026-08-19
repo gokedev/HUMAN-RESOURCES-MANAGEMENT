@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +30,10 @@ import com.hrsaas.dto.EmployeeCounts;
 import com.hrsaas.dto.HeadcountTrendData;
 import com.hrsaas.dto.TrendDataPoint;
 
+/**
+ * Employee lifecycle: create, invite, update, activate/deactivate, delete.
+ * All queries are scoped to the current tenant via TenantContext.
+ */
 @Service
 public class EmployeeService {
 
@@ -61,10 +64,16 @@ public class EmployeeService {
         this.mailService = mailService;
     }
 
+    // ── Create employee ───────────────────────────
+
+    /**
+     * Creates a PENDING user + invitation token, sends invite email.
+     * Employee must accept the invite to set password and become ACTIVE.
+     */
     @Transactional
     public User createEmployee(CreateEmployeeRequest request) {
         UUID tenantId = TenantContext.getTenantId();
-        log.info("Creating employee with email={} for company={}", request.getEmail(), tenantId);
+        log.info("Creating employee: email={}, company={}", request.getEmail(), tenantId);
 
         if (userRepository.existsByCompanyIdAndEmailIgnoreCase(tenantId, request.getEmail())) {
             throw ApiException.conflict("An employee with this email already exists in your company");
@@ -89,6 +98,7 @@ public class EmployeeService {
                 .build();
         employee = userRepository.save(employee);
 
+        // Create invitation token (valid for configured hours, default 72h)
         String token = generateSecureToken();
         Invitation invitation = Invitation.builder()
                 .companyId(tenantId)
@@ -101,16 +111,20 @@ public class EmployeeService {
         String inviteLink = frontendBaseUrl + "/accept-invitation?token=" + token;
         mailService.sendEmployeeInvitation(employee.getEmail(), employee.getFirstName(), company.getName(), inviteLink);
 
-        log.info("Employee created successfully: id={}, email={}", employee.getId(), employee.getEmail());
+        log.info("Employee created: id={}, email={}", employee.getId(), employee.getEmail());
         return employee;
     }
 
+    // ── CRUD ──────────────────────────────────────
+
+    /** Lists all employees in the current company (paginated). */
     public Page<User> listEmployees(Pageable pageable) {
         UUID tenantId = TenantContext.getTenantId();
-        log.debug("Listing employees for company={}", tenantId);
+        log.debug("Listing employees: company={}", tenantId);
         return userRepository.findByCompanyId(tenantId, pageable);
     }
 
+    /** Fetches a single employee by ID, scoped to the current company. */
     public User getEmployee(UUID employeeId) {
         UUID tenantId = TenantContext.getTenantId();
         log.debug("Fetching employee={} for company={}", employeeId, tenantId);
@@ -118,6 +132,7 @@ public class EmployeeService {
                 .orElseThrow(() -> ApiException.notFound("Employee not found"));
     }
 
+    /** Updates profile fields (name, phone, job title, department, salary, etc.). */
     @Transactional
     public User updateEmployee(UUID employeeId, CreateEmployeeRequest request) {
         UUID tenantId = TenantContext.getTenantId();
@@ -132,10 +147,13 @@ public class EmployeeService {
         employee.setDateOfHire(request.getDateOfHire());
         employee.setBaseSalary(request.getBaseSalary());
         User saved = userRepository.save(employee);
-        log.info("Employee updated successfully: id={}", saved.getId());
+        log.info("Employee updated: id={}", saved.getId());
         return saved;
     }
 
+    // ── Status changes ────────────────────────────
+
+    /** Sets status to SUSPENDED — employee can no longer log in. */
     @Transactional
     public void deactivateEmployee(UUID employeeId) {
         UUID tenantId = TenantContext.getTenantId();
@@ -146,6 +164,7 @@ public class EmployeeService {
         log.info("Employee deactivated: id={}", employeeId);
     }
 
+    /** Sets status back to ACTIVE. */
     @Transactional
     public void reactivateEmployee(UUID employeeId) {
         UUID tenantId = TenantContext.getTenantId();
@@ -156,6 +175,7 @@ public class EmployeeService {
         log.info("Employee reactivated: id={}", employeeId);
     }
 
+    /** Hard-deletes the employee and any unaccepted invitation. */
     @Transactional
     public void deleteEmployee(UUID employeeId) {
         UUID tenantId = TenantContext.getTenantId();
@@ -167,40 +187,9 @@ public class EmployeeService {
         log.info("Employee deleted: id={}", employeeId);
     }
 
-    // Analytical methods for dashboard
-    public HeadcountTrendData getHeadcountTrend(int months) {
-        UUID tenantId = TenantContext.getTenantId();
-        java.time.LocalDate endDate = java.time.LocalDate.now();
-        java.time.LocalDate startDate = endDate.minusMonths(months);
+    // ── Invitation management ─────────────────────
 
-        // Get total hires in the period — dateOfHire is LocalDate
-        Long hiresCount = userRepository.countEmployeesByHireDateRange(
-                tenantId, startDate, endDate);
-
-        // Get total separations (deactivated/suspended employees) in the period
-        Long separationsCount = userRepository.countEmployeesByStatusChangeDateRange(
-                tenantId, UserStatus.SUSPENDED, startDate.atStartOfDay(), endDate.atTime(23, 59, 59));
-
-        // Build trend data - for MVP, return single data points representing totals
-        List<TrendDataPoint> hiresData = new java.util.ArrayList<>();
-        hiresData.add(new TrendDataPoint("Hires", hiresCount.intValue()));
-
-        List<TrendDataPoint> separationsData = new java.util.ArrayList<>();
-        separationsData.add(new TrendDataPoint("Separations", separationsCount.intValue()));
-
-        return new HeadcountTrendData(hiresData, separationsData);
-    }
-
-    public EmployeeCounts getActiveVsPendingCounts() {
-        UUID tenantId = TenantContext.getTenantId();
-        long activeCount = userRepository.countByCompanyIdAndStatus(tenantId, UserStatus.ACTIVE);
-        long pendingCount = userRepository.countByCompanyIdAndStatus(tenantId, UserStatus.PENDING);
-        long suspendedCount = userRepository.countByCompanyIdAndStatus(tenantId, UserStatus.SUSPENDED);
-
-        return new EmployeeCounts(activeCount, pendingCount, suspendedCount);
-    }
-
-
+    /** Regenerates the token and resends the invite email (PENDING employees only). */
     @Transactional
     public void resendInvitation(UUID employeeId) {
         UUID tenantId = TenantContext.getTenantId();
@@ -208,27 +197,61 @@ public class EmployeeService {
         if (employee.getStatus() != UserStatus.PENDING) {
             throw ApiException.badRequest("Employee is not pending invitation");
         }
+
         Invitation invitation = invitationRepository.findByUserIdAndAcceptedAtIsNull(employee.getId())
                 .orElseThrow(() -> ApiException.notFound("No pending invitation found for employee"));
+
         String token = generateSecureToken();
         invitation.setToken(token);
         invitation.setExpiresAt(LocalDateTime.now().plusHours(inviteExpirationHours));
         invitationRepository.save(invitation);
+
         String inviteLink = frontendBaseUrl + "/accept-invitation?token=" + token;
         mailService.sendEmployeeInvitation(employee.getEmail(), employee.getFirstName(),
                 companyRepository.findById(tenantId).orElseThrow().getName(), inviteLink);
     }
 
+    /** Deletes the pending invitation record (if any). */
     @Transactional
     public void revokeInvitation(UUID employeeId) {
         User employee = getEmployee(employeeId);
         Optional<Invitation> invitationOpt = invitationRepository.findByUserIdAndAcceptedAtIsNull(employee.getId());
-        if (invitationOpt.isPresent()) {
-            invitationRepository.delete(invitationOpt.get());
-        }
-        // If no pending invitation, do nothing (or could throw)
+        invitationOpt.ifPresent(invitationRepository::delete);
     }
 
+    // ── Analytics (admin dashboard) ───────────────
+
+    /** Returns hire/separation counts for the past N months. */
+    public HeadcountTrendData getHeadcountTrend(int months) {
+        UUID tenantId = TenantContext.getTenantId();
+        java.time.LocalDate endDate = java.time.LocalDate.now();
+        java.time.LocalDate startDate = endDate.minusMonths(months);
+
+        Long hiresCount = userRepository.countEmployeesByHireDateRange(tenantId, startDate, endDate);
+        Long separationsCount = userRepository.countEmployeesByStatusChangeDateRange(
+                tenantId, UserStatus.SUSPENDED, startDate.atStartOfDay(), endDate.atTime(23, 59, 59));
+
+        var hiresData = new java.util.ArrayList<TrendDataPoint>();
+        hiresData.add(new TrendDataPoint("Hires", hiresCount.intValue()));
+
+        var separationsData = new java.util.ArrayList<TrendDataPoint>();
+        separationsData.add(new TrendDataPoint("Separations", separationsCount.intValue()));
+
+        return new HeadcountTrendData(hiresData, separationsData);
+    }
+
+    /** Returns active, pending, and suspended employee counts. */
+    public EmployeeCounts getActiveVsPendingCounts() {
+        UUID tenantId = TenantContext.getTenantId();
+        long activeCount = userRepository.countByCompanyIdAndStatus(tenantId, UserStatus.ACTIVE);
+        long pendingCount = userRepository.countByCompanyIdAndStatus(tenantId, UserStatus.PENDING);
+        long suspendedCount = userRepository.countByCompanyIdAndStatus(tenantId, UserStatus.SUSPENDED);
+        return new EmployeeCounts(activeCount, pendingCount, suspendedCount);
+    }
+
+    // ── Helpers ───────────────────────────────────
+
+    /** Generates a cryptographically secure random token (48 bytes, base64url). */
     private String generateSecureToken() {
         byte[] bytes = new byte[48];
         SECURE_RANDOM.nextBytes(bytes);
