@@ -27,30 +27,52 @@ React single-page application for the CoralHR multi-tenant HR management platfor
 
 ```
 Frontend/src/
-├── main.jsx                  # App entry point
-├── App.jsx                   # Root component with providers
-├── router.jsx                # Route definitions with role-based guards
-├── api.js                    # Axios client + service layer (auth, employee, department, leave, attendance, payroll)
-├── constants.js              # Query keys, storage keys, leave types
-├── utils.js                  # Error handling, formatters (formatTime, formatMoney, formatDate, MONTH_NAMES), token storage, cache invalidation
-├── hooks/                    # Custom hooks (useTodayAttendance, usePageTitle, useTheme)
-├── contexts/                 # Auth, Theme, Toast context providers
-├── layouts/                  # AppLayout (sidebar + header) and AuthLayout (centered card)
+├── main.jsx                      # App entry point
+├── App.jsx                       # Root component with providers
+├── router.jsx                    # Route definitions with role-based guards
+├── constants.js                  # Query keys, storage keys, leave types
+├── utils.js                      # Error handling, formatters, token storage, cache invalidation
+│
+├── api/                          # API layer (one file per domain)
+│   ├── index.js                  # Barrel re-exports for all services
+│   ├── client.js                 # Axios instance, interceptors, token refresh logic
+│   ├── auth.js                   # Login, register, refresh, password reset
+│   ├── employees.js              # Employee CRUD, status changes, analytics
+│   ├── departments.js            # Department CRUD
+│   ├── attendance.js             # Check-in/out, list, analytics
+│   ├── leave.js                  # Leave requests, balance, review, analytics
+│   ├── profile.js                # Employee self-service profile
+│   └── payroll.js                # Payroll generation, payslip listing
+│
+├── hooks/                        # Custom hooks (useTodayAttendance, usePageTitle, useTheme)
+├── contexts/                     # Auth, Theme, Toast context providers
+├── layouts/                      # AppLayout (sidebar + header) and AuthLayout (centered card)
+│
 ├── components/
-│   ├── ui/                   # Reusable UI primitives (Button, Card, Dialog, Input, Label, Select, Table, Tabs, Separator, Checkbox)
-│   ├── common/               # Shared components (Brand, charts, barrel exports)
-│   └── feedback/             # ErrorBoundary, offline indicator
+│   ├── ui/                       # Reusable UI primitives (Button, Card, Dialog, Input, etc.)
+│   ├── common/                   # Shared components (Brand, charts, barrel exports)
+│   └── feedback/                 # ErrorBoundary, offline indicator
+│
 ├── features/
-│   ├── auth/                 # Login, Register, ForgotPassword, ResetPassword, AcceptInvitation
-│   ├── dashboard/            # AdminDashboard, EmployeeDashboard (with custom Recharts-based charts)
-│   ├── employees/            # EmployeesList, CreateEmployee, EmployeeDetails, EditEmployee
-│   ├── departments/          # DepartmentsPage
-│   ├── attendance/           # AttendancePage (admin), MyAttendancePage (employee check-in/out)
-│   ├── leave/                # LeaveRequestsPage (admin), MyLeaveRequestsPage, CreateLeaveRequest
-│   ├── payroll/              # PayrollPage (admin), MyPayslipsPage (employee), PayslipViewModal
-│   ├── profile/              # ProfilePage, EditProfilePage, ChangePasswordPage, ThemeToggle
-│   └── settings/             # SettingsPage
-└── styles/                   # Global CSS (Tailwind imports)
+│   ├── auth/                     # Login, Register, ForgotPassword, ResetPassword, AcceptInvitation
+│   ├── dashboard/                # DashboardPage (thin wrapper)
+│   │   ├── AdminDashboard.jsx    # Admin metrics, charts, quick actions
+│   │   ├── EmployeeDashboard.jsx # Employee attendance, leave, quick actions
+│   │   └── shared.jsx           # MetricCard, QuickAction, getGreeting
+│   ├── employees/                # EmployeesPage, CreateEmployee, EmployeeDetails, EditEmployee
+│   ├── departments/              # DepartmentsPage
+│   ├── attendance/               # AttendancePage (admin), MyAttendancePage (employee)
+│   ├── leave/                    # LeaveRequestsPage (admin), MyLeavePage, LeaveModals
+│   ├── payroll/                  # PayrollPage (admin), MyPayslipsPage, PayslipViewModal
+│   ├── profile/                  # ProfilePage (thin wrapper)
+│   │   ├── PersonalTab.jsx       # Profile view/edit form
+│   │   ├── PasswordTab.jsx       # Password change form
+│   │   ├── AppearanceTab.jsx     # Theme toggle
+│   │   ├── SecurityTab.jsx       # Session info
+│   │   └── ProfileField.jsx      # Reusable label+value component
+│   └── settings/                 # SettingsPage
+│
+└── styles/                       # Global CSS (Tailwind imports)
 ```
 
 ---
@@ -123,14 +145,18 @@ The app runs on `http://localhost:5173` by default.
 
 ### API Layer
 
-All API calls go through `api.js`, which exports service objects:
+Services are split by domain under `src/api/`, one file per resource:
 
-- `authService` — login, register, refresh, forgotPassword, resetPassword, acceptInvitation
-- `employeeService` — CRUD, activate/deactivate, my profile
-- `departmentService` — CRUD with Caffeine cache on the backend
-- `leaveRequestService` — submit, list, cancel, review, balance
-- `attendanceService` — check-in, check-out, list
-- `payrollService` — generate, list (admin), listMine (employee)
+| File | Domain | Key Methods |
+|---|---|---|
+| `client.js` | Infrastructure | Axios instance, interceptors, token refresh |
+| `auth.js` | Authentication | login, register, refresh, forgotPassword, resetPassword |
+| `employees.js` | Employee management | listAll, create, update, deactivate, reactivate, analytics |
+| `departments.js` | Departments | list, create, delete |
+| `attendance.js` | Attendance | checkIn, checkOut, listMine, listCompany, analytics |
+| `leave.js` | Leave requests | createMine, listMine, cancelMine, review, getMyBalance |
+| `profile.js` | Self-service | me, update |
+| `payroll.js` | Payroll | generate, listForPeriod, listMine |
 
 ### Multi-Tenancy
 
@@ -138,24 +164,9 @@ The `companySlug` is stored alongside tokens and sent with login. The backend us
 
 ---
 
-## Key Files
-
-| File | Purpose |
-|---|---|
-| `src/api.js` | Axios client, token interceptors, all service definitions |
-| `src/utils.js` | Token storage, error extraction, cache invalidation helpers, formatters |
-| `src/constants.js` | Query keys, localStorage keys, leave type enums |
-| `src/router.jsx` | All route definitions with role guards |
-| `src/contexts.jsx` | Auth, Theme, Toast context providers |
-| `src/components/ui/*.jsx` | Reusable UI primitives (Button, Card, Dialog, Input, Label, Select, Table) |
-| `src/features/dashboard/` | Admin + Employee dashboards with custom Recharts-based charts |
-
----
-
 ## Known Limitations
 
 - **No frontend tests** — No test framework is configured. Adding Vitest + React Testing Library would be the natural next step.
-- **Unused dependencies** — `cmdk` and `recharts` are installed but not actively imported. `recharts` was replaced by a custom chart component; `cmdk` was never used.
 - **No i18n** — All strings are hardcoded in English. No internationalization support.
-- **No offline support** — The app requires a network connection. A basic service worker for caching static assets would improve perceived performance.
-- **Bundle size** — The main chunk is ~658 KB (195 KB gzipped) due to Recharts and other large dependencies. Code splitting with dynamic imports would reduce initial load time.
+- **No offline support** — The app requires a network connection.
+- **Bundle size** — The main chunk is ~657 KB (195 KB gzipped). Code splitting with dynamic imports would reduce initial load time.
