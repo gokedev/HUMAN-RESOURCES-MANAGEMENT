@@ -99,7 +99,7 @@ export function DepartmentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Array.isArray(departments) ? departments.map((dept) => ( : null)}
+              {Array.isArray(departments) ? departments.map((dept) => (
                 <TableRow key={dept.id}>
                   <TableCell className="font-medium">{dept.name}</TableCell>
                   <TableCell>
