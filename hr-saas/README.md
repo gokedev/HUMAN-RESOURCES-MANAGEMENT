@@ -753,6 +753,151 @@ No body. Only returns the logged-in user's own attendance history.
 
 **Response `200 OK`:** paginated list (same shape as admin's attendance endpoint).
 
+## Get employee leave balance (admin)
+
+```
+GET /api/admin/employees/{id}/leave-balance?leaveType=ANNUAL
+```
+
+**Query params:**
+- `leaveType` (required): one of `ANNUAL`, `SICK`, `UNPAID`, `MATERNITY`, `PATERNITY`, `OTHER`
+
+**Response `200 OK`:**
+```json
+{
+  "employeeId": "uuid",
+  "employeeName": "John Smith",
+  "leaveType": "ANNUAL",
+  "totalEntitlement": 20,
+  "daysUsed": 5,
+  "daysPending": 2,
+  "daysAvailable": 13
+}
+```
+
+**Errors:** `404` if employee not found in this company.
+
+---
+
+# Dashboard Analytics Endpoints
+
+## Get dashboard analytics (admin)
+
+```
+GET /api/admin/dashboard/analytics
+```
+
+Returns headcount trends, employee counts, leave statistics, and attendance compliance.
+
+**Response `200 OK`:**
+```json
+{
+  "totalEmployees": 25,
+  "activeEmployees": 23,
+  "pendingInvitations": 2,
+  "headcountTrend": [
+    { "month": "2026-01", "count": 20 },
+    { "month": "2026-02", "count": 22 }
+  ],
+  "leaveStats": {
+    "pendingRequests": 3,
+    "approvedThisMonth": 5,
+    "rejectedThisMonth": 1,
+    "leaveByType": [
+      { "type": "ANNUAL", "count": 12 },
+      { "type": "SICK", "count": 4 }
+    ]
+  },
+  "attendanceStats": {
+    "presentToday": 18,
+    "absentToday": 5,
+    "attendanceRate": 0.78
+  }
+}
+```
+
+---
+
+# Payroll Endpoints
+
+## Generate payroll
+
+```
+POST /api/admin/payroll/generate
+```
+
+Generates payslips for all active employees for the specified month.
+
+**Body:**
+```json
+{
+  "year": 2026,
+  "month": 8
+}
+```
+
+**Response `200 OK`:**
+```json
+{
+  "message": "Payroll generated successfully",
+  "payslipsGenerated": 23
+}
+```
+
+Payroll logic: base salary / working days in month * worked days, minus unpaid leave deductions, minus flat 10% tax.
+
+**Errors:** `400` if payroll already exists for that month.
+
+---
+
+## List payslips (admin)
+
+```
+GET /api/admin/payroll/payslips?year=2026&month=8&page=0&size=20
+```
+
+**Query params:**
+- `year` (required): e.g. `2026`
+- `month` (required): 1-12
+- `page`, `size`: pagination (default 0, 20)
+
+**Response `200 OK`:** paginated list of payslip objects:
+```json
+{
+  "content": [
+    {
+      "id": "uuid",
+      "companyId": "uuid",
+      "employeeId": "uuid",
+      "employeeName": "John Smith",
+      "year": 2026,
+      "month": 8,
+      "baseSalary": 5000.00,
+      "workingDays": 22,
+      "workedDays": 20,
+      "unpaidLeaveDays": 2,
+      "grossPay": 4545.45,
+      "tax": 454.55,
+      "netPay": 4090.91,
+      "generatedAt": "2026-08-31T23:00:00"
+    }
+  ],
+  "page": { "size": 20, "number": 0, "totalElements": 1, "totalPages": 1 }
+}
+```
+
+---
+
+## List my payslips (employee)
+
+```
+GET /api/employee/payroll/payslips?page=0&size=20
+```
+
+No body. Returns the logged-in employee's own payslips.
+
+**Response `200 OK`:** paginated list (same shape as admin's payslips endpoint, minus `employeeName`).
+
 ---
 
 # Quick Testing Walkthrough
