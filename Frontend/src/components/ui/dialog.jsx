@@ -35,7 +35,7 @@ function Dialog({ open, onOpenChange, children }) {
     <dialog
       ref={dialogRef}
       onClick={handleDialogClick}
-      className="fixed inset-0 z-50 flex items-center justify-center border-none bg-transparent p-4 backdrop:bg-black/50 open:flex"
+      className="fixed inset-0 z-[1050] m-0 h-[100dvh] w-[100dvw] max-h-none max-w-none items-center justify-center overflow-hidden border-0 bg-transparent p-4 backdrop:bg-black/50 open:flex"
     >
       {children}
     </dialog>
@@ -46,7 +46,7 @@ const DialogContent = React.forwardRef(({ className, children, onClose, ...props
   <div
     ref={ref}
     className={cn(
-      "relative z-50 w-full max-w-lg rounded-xl border bg-card p-6 text-card-foreground shadow-xl animate-in fade-in zoom-in-95 duration-200",
+      "relative z-50 w-full min-w-0 max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-xl border bg-card p-4 pr-12 text-card-foreground shadow-xl animate-in fade-in zoom-in-95 duration-200 sm:p-6 sm:pr-12",
       className
     )}
     onClick={(e) => e.stopPropagation()}
@@ -71,15 +71,15 @@ function DialogHeader({ className, ...props }) {
 }
 
 function DialogTitle({ className, ...props }) {
-  return <h2 className={cn("text-lg font-semibold leading-none tracking-tight", className)} {...props} />;
+  return <h2 className={cn("break-words text-lg font-semibold leading-none tracking-tight", className)} {...props} />;
 }
 
 function DialogDescription({ className, ...props }) {
-  return <p className={cn("text-sm text-muted-foreground", className)} {...props} />;
+  return <p className={cn("break-words text-sm text-muted-foreground", className)} {...props} />;
 }
 
 function DialogFooter({ className, ...props }) {
-  return <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4", className)} {...props} />;
+  return <div className={cn("flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end", className)} {...props} />;
 }
 
 function ConfirmDialog({ title, message, confirmLabel = "Confirm", variant = "destructive", onConfirm, onClose, isProcessing = false }) {
