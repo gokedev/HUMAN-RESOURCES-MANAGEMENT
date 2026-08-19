@@ -40,7 +40,7 @@ export function CreateDepartmentModal({ onCreate, isSubmitting = false, onClose 
               className={errors.name ? "border-destructive" : ""}
             />
             {errors.name ? (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
+              <p className="text-xs text-red-600 dark:text-red-400">{errors.name.message}</p>
             ) : null}
           </div>
         </form>
