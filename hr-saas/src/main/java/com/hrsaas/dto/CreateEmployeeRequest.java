@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -37,4 +38,6 @@ public class CreateEmployeeRequest {
     private UUID managerId;
 
     private LocalDate dateOfHire;
+
+    private BigDecimal baseSalary;
 }
