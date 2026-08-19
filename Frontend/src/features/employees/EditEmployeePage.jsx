@@ -49,7 +49,7 @@ export function EditEmployeePage() {
 
   return (
     <>
-      <Link to={`/employees/${id}`} className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3">
+      <Link to={`/employees/${id}`} className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3 transition-colors duration-150">
         <ArrowLeft size={15} /> Back to employee
       </Link>
       <PageHeader
@@ -59,7 +59,7 @@ export function EditEmployeePage() {
       <section className="rounded-xl border bg-card shadow-sm overflow-hidden">
         <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2 className="font-semibold text-foreground">Employee details</h2>
+            <h2 className="text-base font-semibold text-foreground">Employee details</h2>
             <p className="text-sm text-muted-foreground mt-0.5">Save changes to update this person's record.</p>
           </div>
         </div>
