@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { appQueryClient } from "../queryClient.js";
-import { setUnauthorizedHandler, authService } from "../api.js";
+import { setUnauthorizedHandler, authService } from "../api/index.js";
 import { tokenStorage } from "../utils.js";
 
 const AuthContext = createContext(undefined);
