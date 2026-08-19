@@ -37,7 +37,7 @@ export function MyAttendancePage() {
     queryFn: () => attendanceService.listMine({ page: currentPage, size: PAGE_SIZE, sort: "workDate,desc" }),
   });
 
-  const { data: leaveRequests, isLoading, isError } = useQuery({
+  const { data: leaveRequests } = useQuery({
     queryKey: queryKeys.leave.mine({ page: 0, size: 100, sort: "createdAt,desc" }),
     queryFn: () => leaveService.listMine({ page: 0, size: 100, sort: "createdAt,desc" }),
   });
