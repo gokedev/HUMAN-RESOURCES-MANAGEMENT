@@ -23,6 +23,7 @@ export function MyLeavePage() {
   const [showCreate, setShowCreate] = useState(false);
   const [cancelTarget, setCancelTarget] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [previousRequests, setPreviousRequests] = useState([]);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.leave.mine({ page: currentPage, size: PAGE_SIZE, sort: "createdAt,desc" }),
@@ -36,6 +37,42 @@ export function MyLeavePage() {
 
   const requests = data?.content ?? [];
   const pagination = data?.page;
+
+  // Show notifications when leave status changes from pending to approved/rejected
+  useEffect(() => {
+    if (previousRequests.length > 0 && requests.length > 0) {
+      // Create maps for easy lookup by ID
+      const previousMap = new Map(previousRequests.map(req => [req.id, req]));
+      const currentMap = new Map(requests.map(req => [req.id, req]));
+
+      // Check each request for status changes
+      requests.forEach(currentRequest => {
+        const previousRequest = previousMap.get(currentRequest.id);
+        if (previousRequest &&
+            previousRequest.status === "PENDING" &&
+            currentRequest.status !== "PENDING") {
+
+          // Status changed from pending to something else
+          const statusMessage = currentRequest.status === "APPROVED"
+            ? "approved"
+            : currentRequest.status === "REJECTED"
+              ? "rejected"
+              : currentRequest.status === "CANCELLED"
+                ? "cancelled"
+                : currentRequest.status.toLowerCase();
+
+          notify({
+            title: `Leave request ${statusMessage}`,
+            message: `Your ${currentRequest.leaveType.replace(/_/g, " ").toLowerCase()} leave from ${new Date(currentRequest.startDate).toLocaleDateString()} to ${new Date(currentRequest.endDate).toLocaleDateString()} has been ${statusMessage}.${currentRequest.reviewNote ? ` Note: ${currentRequest.reviewNote}` : ""}`,
+            variant: currentRequest.status === "APPROVED" ? "success" : "danger"
+          });
+        }
+      });
+    }
+
+    // Update previous requests for next comparison
+    setPreviousRequests(requests);
+  }, [requests, previousRequests, notify]);
 
   const createMutation = useMutation({
     mutationFn: (payload) => leaveService.createMine(payload),
