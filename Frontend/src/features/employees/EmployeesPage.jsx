@@ -39,10 +39,13 @@ export function EmployeesPage() {
     queryKey: queryKeys.departments.all,
     queryFn: () => departmentService.list(),
   });
-  const departmentNameMap = useMemo(
-    () => Object.fromEntries(departments.map((dept) => [dept.id, dept.name])),
-    [departments]
-  );
+  const departmentNameMap = useMemo(() => {
+    if (!Array.isArray(departments)) {
+      console.error('Departments is not an array:', departments);
+      return {};
+    }
+    return Object.fromEntries(departments.map((dept) => [dept.id, dept.name]));
+  }, [departments]);
 
   const statusMutation = useMutation({
     mutationFn: ({ id, deactivate }) =>
@@ -158,7 +161,7 @@ export function EmployeesPage() {
             }}
           >
             <option value="">All departments</option>
-            {departments.map((dept) => (
+            {!Array.isArray(departments) ? null : departments.map((dept) => (
               <option key={dept.id} value={dept.id}>
                 {dept.name}
               </option>
