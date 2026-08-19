@@ -19,7 +19,7 @@ export function DepartmentsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const { data: departments } = useQuery({
+  const { data: departments, isLoading, isError } = useQuery({
     queryKey: queryKeys.departments.all,
     queryFn: () => departmentService.list(),
   });
@@ -99,7 +99,7 @@ export function DepartmentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Array.isArray(departments) ? departments.map((dept) => (
+              {departments.map((dept) => (
                 <TableRow key={dept.id}>
                   <TableCell className="font-medium">{dept.name}</TableCell>
                   <TableCell>
