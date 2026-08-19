@@ -36,6 +36,10 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+/**
+ * Handles all authentication: registration, login, token refresh,
+ * invitations, password reset, and password change.
+ */
 @Service
 public class AuthService {
 
@@ -76,6 +80,9 @@ public class AuthService {
         this.mailService = mailService;
     }
 
+    // ── Company registration ──────────────────────
+
+    /** Creates a new company + admin user, sends welcome email, returns tokens. */
     @Transactional
     public AuthResponse registerCompany(RegisterCompanyRequest request) {
         log.info("Registering new company: name={}", request.getCompanyName());
@@ -104,10 +111,16 @@ public class AuthService {
 
         mailService.sendCompanyWelcomeEmail(admin.getEmail(), company.getName(), company.getSlug());
 
-        log.info("Company registered successfully: id={}, slug={}", company.getId(), slug);
+        log.info("Company registered: id={}, slug={}", company.getId(), slug);
         return buildAuthResponse(admin, company.getSlug());
     }
 
+    // ── Login ─────────────────────────────────────
+
+    /**
+     * Authenticates user within a company workspace.
+     * Resolves company by slug, verifies email + password, returns tokens.
+     */
     @Transactional
     public AuthResponse login(LoginRequest request) {
         String email = request.getEmail();
@@ -115,29 +128,21 @@ public class AuthService {
         log.info("Login attempt: email={}, companySlug={}", email, companySlug);
 
         Company company = companyRepository.findBySlug(companySlug)
-                .orElseThrow(() -> {
-                    log.warn("Login failed: company not found for slug={}", companySlug);
-                    return ApiException.unauthorized("Invalid company, email or password");
-                });
+                .orElseThrow(() -> ApiException.unauthorized("Invalid company, email or password"));
 
         if (!company.isActive()) {
-            log.warn("Login failed: company={} is deactivated", companySlug);
             throw ApiException.forbidden("This company workspace is deactivated");
         }
 
         User user = userRepository.findByCompanyIdAndEmailIgnoreCase(company.getId(), email)
-                .orElseThrow(() -> {
-                    log.warn("Login failed: user not found for email={} in company={}", email, companySlug);
-                    return ApiException.unauthorized("Invalid company, email or password");
-                });
+                .orElseThrow(() -> ApiException.unauthorized("Invalid company, email or password"));
 
+        // PENDING users haven't accepted their invite yet — no password set
         if (user.getStatus() != UserStatus.ACTIVE || user.getPasswordHash() == null) {
-            log.warn("Login failed: user={} is not active", user.getId());
             throw ApiException.unauthorized("Account is not active. Check your invitation email.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            log.warn("Login failed: invalid password for user={}", user.getId());
             throw ApiException.unauthorized("Invalid company, email or password");
         }
 
@@ -145,6 +150,12 @@ public class AuthService {
         return buildAuthResponse(user, company.getSlug());
     }
 
+    // ── Invitation acceptance ─────────────────────
+
+    /**
+     * Employee sets their password via the invite link.
+     * Validates token (exists, unused, not expired), activates the account.
+     */
     @Transactional
     public void acceptInvitation(AcceptInvitationRequest request) {
         log.info("Accepting invitation with token");
@@ -154,7 +165,6 @@ public class AuthService {
         if (invitation.getAcceptedAt() != null) {
             throw ApiException.badRequest("This invitation has already been used");
         }
-
         if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw ApiException.badRequest("This invitation has expired");
         }
@@ -172,6 +182,9 @@ public class AuthService {
         log.info("Invitation accepted: userId={}", user.getId());
     }
 
+    // ── Refresh token rotation ────────────────────
+
+    /** Exchanges a valid refresh token for a new access+refresh pair. Old token is revoked. */
     @Transactional
     public AuthResponse refreshToken(RefreshTokenRequest request) {
         log.info("Token refresh attempt");
@@ -179,7 +192,6 @@ public class AuthService {
                 .orElseThrow(() -> ApiException.unauthorized("Invalid refresh token"));
 
         if (existing.isRevoked() || existing.getExpiresAt().isBefore(LocalDateTime.now())) {
-            log.warn("Refresh token expired or revoked: token={}", existing.getId());
             throw ApiException.unauthorized("Refresh token is expired or revoked");
         }
 
@@ -196,28 +208,26 @@ public class AuthService {
         existing.setRevoked(true);
         refreshTokenRepository.save(existing);
 
-        log.info("Token refreshed successfully: userId={}", user.getId());
+        log.info("Token refreshed: userId={}", user.getId());
         return buildAuthResponse(user, company.getSlug());
     }
 
+    // ── Forgot password ───────────────────────────
+
+    /**
+     * Generates a reset token and emails a reset link.
+     * Always returns 200 OK (prevents email enumeration).
+     */
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
         String companySlug = request.getCompanySlug().toLowerCase(Locale.ROOT);
         log.info("Password reset requested for email={} in company={}", request.getEmail(), companySlug);
 
-        Company company = companyRepository.findBySlug(companySlug)
-                .orElse(null);
+        Company company = companyRepository.findBySlug(companySlug).orElse(null);
+        if (company == null) return;
 
-        if (company == null) {
-            return;
-        }
-
-        User user = userRepository.findByCompanyIdAndEmailIgnoreCase(company.getId(), request.getEmail())
-                .orElse(null);
-
-        if (user == null || user.getStatus() != UserStatus.ACTIVE) {
-            return;
-        }
+        User user = userRepository.findByCompanyIdAndEmailIgnoreCase(company.getId(), request.getEmail()).orElse(null);
+        if (user == null || user.getStatus() != UserStatus.ACTIVE) return;
 
         String token = generateSecureToken();
         PasswordResetToken resetToken = PasswordResetToken.builder()
@@ -233,6 +243,9 @@ public class AuthService {
         log.info("Password reset token created: userId={}", user.getId());
     }
 
+    // ── Reset password ────────────────────────────
+
+    /** Validates reset token, updates password, revokes all refresh tokens. */
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
         log.info("Password reset attempt with token");
@@ -242,7 +255,6 @@ public class AuthService {
         if (resetToken.getUsedAt() != null) {
             throw ApiException.badRequest("This reset link has already been used");
         }
-
         if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw ApiException.badRequest("This reset link has expired");
         }
@@ -256,11 +268,38 @@ public class AuthService {
         resetToken.setUsedAt(LocalDateTime.now());
         passwordResetTokenRepository.save(resetToken);
 
+        // Force re-login on all devices
         refreshTokenRepository.deleteByUserId(user.getId());
 
         log.info("Password reset completed: userId={}", user.getId());
     }
 
+    // ── Password change (self-service) ────────────
+
+    /** Verifies current password, sets new one, revokes all refresh tokens. */
+    @Transactional
+    public void updatePassword(UUID userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("User not found"));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw ApiException.badRequest("Current password is incorrect");
+        }
+
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw ApiException.badRequest("New password cannot be empty");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        refreshTokenRepository.deleteByUserId(userId);
+        log.info("Password updated: userId={}", userId);
+    }
+
+    // ── Helpers ───────────────────────────────────
+
+    /** Builds JWT access token + refresh token, packages with user metadata. */
     private AuthResponse buildAuthResponse(User user, String companySlug) {
         String accessToken = jwtService.generateAccessToken(
                 user.getId(), user.getCompanyId(), user.getRole().name(), user.getEmail()
@@ -284,11 +323,13 @@ public class AuthService {
                 .build();
     }
 
+    /** Converts company name to a URL-friendly slug (lowercase, hyphens). */
     private String generateSlug(String companyName) {
         String normalized = companyName.toLowerCase(Locale.ROOT).trim().replaceAll("\\s+", "-");
         return SLUG_SANITIZE.matcher(normalized).replaceAll("");
     }
 
+    /** Appends -1, -2, etc. until the slug is unique. */
     private String ensureUniqueSlug(String baseSlug) {
         String slug = baseSlug;
         int suffix = 1;
@@ -299,33 +340,10 @@ public class AuthService {
         return slug;
     }
 
-    @Transactional
-    public void updatePassword(UUID userId, String currentPassword, String newPassword) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> ApiException.notFound("User not found"));
-
-        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-            throw ApiException.badRequest("Current password is incorrect");
-        }
-
-        if (newPassword == null || newPassword.trim().isEmpty()) {
-            throw ApiException.badRequest("New password cannot be empty");
-        }
-
-        // Optional: Add password strength validation here
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
-
-        // Invalidate all existing refresh tokens for security
-        refreshTokenRepository.deleteByUserId(userId);
-
-        log.info("Password updated for userId={}", userId);
-    }
-
+    /** Generates a cryptographically secure random token (48 bytes, base64url). */
     private String generateSecureToken() {
         byte[] bytes = new byte[48];
         SECURE_RANDOM.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 }
-
