@@ -48,7 +48,7 @@ export function NewEmployeePage() {
 
   return (
     <>
-      <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3">
+      <Link to="/employees" className="inline-flex items-center gap-1 text-muted-foreground text-sm font-medium no-underline hover:text-primary mb-3 transition-colors duration-150">
         <ArrowLeft size={15} /> Back to employees
       </Link>
       <PageHeader
@@ -58,7 +58,7 @@ export function NewEmployeePage() {
       <section className="rounded-xl border bg-card shadow-sm overflow-hidden">
         <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border">
           <div>
-            <h2 className="font-semibold text-foreground">Employee details</h2>
+            <h2 className="text-base font-semibold text-foreground">Employee details</h2>
             <p className="text-sm text-muted-foreground mt-0.5">Basic profile fields. Email cannot be changed later.</p>
           </div>
         </div>
