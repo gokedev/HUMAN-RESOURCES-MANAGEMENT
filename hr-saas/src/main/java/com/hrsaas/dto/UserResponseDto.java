@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -30,6 +31,7 @@ public class UserResponseDto {
     private UUID departmentId;
     private UUID managerId;
     private LocalDate dateOfHire;
+    private BigDecimal baseSalary;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -46,6 +48,7 @@ public class UserResponseDto {
                 .departmentId(user.getDepartmentId())
                 .managerId(user.getManagerId())
                 .dateOfHire(user.getDateOfHire())
+                .baseSalary(user.getBaseSalary())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
