@@ -133,7 +133,7 @@ public class EmployeeController {
     }
 
     @PatchMapping("/me/password")
-    public ResponseEntity<Void> updatePassword(@RequestBody UpdatePasswordRequest request) {
+    public ResponseEntity<Void> updatePassword(@Valid @RequestBody UpdatePasswordRequest request) {
         UUID userId = TenantContext.getUserId();
         log.info("PATCH /api/employee/me/password - Updating password for userId={}", userId);
         authService.updatePassword(userId, request.getCurrentPassword(), request.getNewPassword());
