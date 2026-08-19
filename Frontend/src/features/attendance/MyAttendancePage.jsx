@@ -7,7 +7,7 @@ import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feed
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { AttendanceCalendar } from "../../components/common/charts.jsx";
 import { usePageTitle, useTodayAttendance } from "../../hooks.js";
-import { attendanceService } from "../../api.js";
+import { attendanceService, leaveService } from "../../api.js";
 import { queryKeys } from "../../constants.js";
 
 const PAGE_SIZE = 10;
@@ -15,6 +15,7 @@ const PAGE_SIZE = 10;
 export function MyAttendancePage() {
   usePageTitle("My Attendance");
   const [currentPage, setCurrentPage] = useState(0);
+
   const {
     isLoading: todayLoading,
     todayRecord,
@@ -25,16 +26,54 @@ export function MyAttendancePage() {
     checkIn,
     checkOut,
   } = useTodayAttendance();
-  const { data: monthData } = useQuery({
+
+  const { data: monthDataRaw } = useQuery({
     queryKey: queryKeys.attendance.mine({ page: 0, size: 100, sort: "workDate,desc" }),
     queryFn: () => attendanceService.listMine({ page: 0, size: 100, sort: "workDate,desc" }),
   });
-  const { data, isLoading, isError } = useQuery({
+
+  const { data: historyRaw = [], isLoading, isError } = useQuery({
     queryKey: queryKeys.attendance.mine({ page: currentPage, size: PAGE_SIZE, sort: "workDate,desc" }),
     queryFn: () => attendanceService.listMine({ page: currentPage, size: PAGE_SIZE, sort: "workDate,desc" }),
   });
-  const history = data?.content ?? [];
-  const pagination = data?.page;
+
+  const { data: leaveRequests = [] } = useQuery({
+    queryKey: queryKeys.leave.mine({ page: 0, size: 100, sort: "createdAt,desc" }),
+    queryFn: () => leaveService.listMine({ page: 0, size: 100, sort: "createdAt,desc" }),
+  });
+
+  // Process attendance data to show "On Leave" for dates within approved leave periods
+  const processAttendanceData = (attendanceRecords) => {
+    // Get approved leave requests
+    const approvedLeaves = leaveRequests.filter(
+      leave => leave.status === "APPROVED"
+    );
+
+    // For each attendance record, check if it falls within any approved leave period
+    return attendanceRecords.map(record => {
+      // Check if this date falls within any approved leave period
+      const recordDate = new Date(record.workDate);
+      const isInApprovedLeave = approvedLeaves.some(leave =>
+        recordDate >= new Date(leave.startDate) &&
+        recordDate <= new Date(leave.endDate)
+      );
+
+      // If in approved leave, override the status to ON_LEAVE
+      // Keep original check-in/check-out times if they exist
+      if (isInApprovedLeave) {
+        return {
+          ...record,
+          status: "ON_LEAVE",
+        };
+      }
+
+      return record;
+    });
+  };
+
+  const monthData = processAttendanceData(monthDataRaw?.content ?? []);
+  const history = processAttendanceData(historyRaw);
+  const pagination = historyRaw.page ?? null;
 
   return (
     <>
