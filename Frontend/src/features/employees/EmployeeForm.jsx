@@ -14,6 +14,7 @@ const baseSchema = {
   jobTitle: z.string().optional(),
   departmentId: z.string().optional(),
   dateOfHire: z.string().optional(),
+  baseSalary: z.coerce.number().min(0, "Salary must be a positive number.").optional(),
 };
 
 export const createEmployeeSchema = z.object({
@@ -40,6 +41,7 @@ export function EmployeeForm({ departments = [], initialValues, submitLabel, isS
       jobTitle: "",
       departmentId: "",
       dateOfHire: "",
+      baseSalary: "",
       ...initialValues,
     },
   });
@@ -54,6 +56,7 @@ export function EmployeeForm({ departments = [], initialValues, submitLabel, isS
         jobTitle: initialValues.jobTitle ?? "",
         departmentId: initialValues.departmentId ?? "",
         dateOfHire: initialValues.dateOfHire ?? "",
+        baseSalary: initialValues.baseSalary ?? "",
       });
     }
   }, [initialValues, reset]);
@@ -122,6 +125,17 @@ export function EmployeeForm({ departments = [], initialValues, submitLabel, isS
       <div className="space-y-1.5">
         <Label>Date of hire</Label>
         <Input type="date" {...register("dateOfHire")} />
+      </div>
+      <div className="space-y-1.5">
+        <Label>Base salary (monthly)</Label>
+        <Input
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="e.g. 50000"
+          {...register("baseSalary")}
+        />
+        <p className="text-xs text-muted-foreground">Used for payroll calculations. Leave blank or 0 if not applicable.</p>
       </div>
       <div className="flex justify-end gap-2 pt-2">
         <Button type="submit" disabled={isSubmitting}>
