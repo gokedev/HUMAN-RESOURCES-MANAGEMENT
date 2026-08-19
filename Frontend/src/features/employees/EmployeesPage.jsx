@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, Pencil, Plus, Trash2, UserCheck, UserX, Users } from "lucide-react";
+import { Eye, Pencil, Plus, Trash2, UserCheck, UserX, Users, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import {
   ConfirmDialog,
@@ -66,6 +66,24 @@ export function EmployeesPage() {
       setDeleteTarget(null);
     },
     onError: (error) => notify({ title: "Delete failed", message: getErrorMessage(error), variant: "danger" }),
+  });
+
+  const resendInvitationMutation = useMutation({
+    mutationFn: (id) => employeeService.resendInvitation(id),
+    onSuccess: async () => {
+      await queryInvalidation.afterEmployeeChange(queryClient);
+      notify({ title: "Invitation resent", variant: "success" });
+    },
+    onError: (error) => notify({ title: "Failed to resend invitation", message: getErrorMessage(error), variant: "danger" }),
+  });
+
+  const revokeInvitationMutation = useMutation({
+    mutationFn: (id) => employeeService.revokeInvitation(id),
+    onSuccess: async () => {
+      await queryInvalidation.afterEmployeeChange(queryClient);
+      notify({ title: "Invitation revoked", variant: "success" });
+    },
+    onError: (error) => notify({ title: "Failed to revoke invitation", message: getErrorMessage(error), variant: "danger" }),
   });
 
   const filtered = useMemo(() => {
@@ -221,7 +239,28 @@ export function EmployeesPage() {
                             <Pencil size={16} />
                           </Link>
                         </Button>
-                        {emp.status === "ACTIVE" ? (
+                        {emp.status === "PENDING" ? (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              title="Resend invitation"
+                              onClick={() => resendInvitationMutation.mutate(emp.id)}
+                            >
+                              <RefreshCw size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+                              title="Revoke invitation"
+                              onClick={() => revokeInvitationMutation.mutate(emp.id)}
+                            >
+                              <UserX size={16} />
+                            </Button>
+                          </>
+                        ) : emp.status === "ACTIVE" ? (
                           <Button
                             variant="ghost"
                             size="icon"
