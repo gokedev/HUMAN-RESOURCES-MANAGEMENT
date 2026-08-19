@@ -98,7 +98,7 @@ export function MyLeavePage() {
     queryFn: () => leaveService.getMyBalance(),
   });
 
-  const annualBalance = balances?.find((b) => b.leaveType === "ANNUAL");
+  const annualBalance = Array.isArray(balances) ? balances.find((b) => b.leaveType === "ANNUAL") : undefined;
 
   return (
     <>
@@ -117,10 +117,10 @@ export function MyLeavePage() {
         <div className="rounded-xl border bg-card p-5">
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Leave Balances</span>
           <div className="mt-4 space-y-3">
-            {balances ? (
+            {Array.isArray(balances) ? (
               <>
                 {LEAVE_TYPES.map((leaveType) => {
-                  const balance = balances?.find((b) => b.leaveType === leaveType) || {
+                  const balance = balances.find((b) => b.leaveType === leaveType) || {
                     leaveType,
                     remaining: 0,
                     used: 0,
