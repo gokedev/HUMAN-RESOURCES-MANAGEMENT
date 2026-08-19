@@ -31,6 +31,7 @@ export const queryKeys = {
     all: ["leave"],
     company: (params) => ["leave", "company", params],
     mine: (params) => ["leave", "mine", params],
+    balance: (employeeId) => ["leave-balance", employeeId],
   },
   analytics: {
     headcountTrend: ["analytics", "headcount-trend"],

@@ -48,4 +48,24 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
                                                          @Param("status") String status,
                                                          @Param("startDate") LocalDate startDate,
                                                          @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COALESCE(SUM(lr.endDate - lr.startDate + 1), 0) FROM LeaveRequest lr " +
+            "WHERE lr.companyId = :companyId AND lr.employeeId = :employeeId " +
+            "AND lr.leaveType = :leaveType AND lr.status = 'APPROVED' " +
+            "AND lr.startDate >= :yearStart AND lr.startDate <= :yearEnd")
+    Long sumApprovedDaysByEmployeeAndType(@Param("companyId") UUID companyId,
+                                          @Param("employeeId") UUID employeeId,
+                                          @Param("leaveType") String leaveType,
+                                          @Param("yearStart") LocalDate yearStart,
+                                          @Param("yearEnd") LocalDate yearEnd);
+
+    @Query("SELECT COALESCE(SUM(lr.endDate - lr.startDate + 1), 0) FROM LeaveRequest lr " +
+            "WHERE lr.companyId = :companyId AND lr.employeeId = :employeeId " +
+            "AND lr.leaveType = :leaveType AND lr.status = 'PENDING' " +
+            "AND lr.startDate >= :yearStart AND lr.startDate <= :yearEnd")
+    Long sumPendingDaysByEmployeeAndType(@Param("companyId") UUID companyId,
+                                         @Param("employeeId") UUID employeeId,
+                                         @Param("leaveType") String leaveType,
+                                         @Param("yearStart") LocalDate yearStart,
+                                         @Param("yearEnd") LocalDate yearEnd);
 }

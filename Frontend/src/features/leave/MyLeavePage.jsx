@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Inbox, Plus, X } from "lucide-react";
+import { CalendarDays, Eye, Inbox, Plus, X } from "lucide-react";
 import { ConfirmDialog, PageHeader, Pagination, StatusBadge } from "../../components/common/ui.jsx";
 import { Button } from "../../components/ui/button.jsx";
 import { DataTableShell, EmptyState, TableSkeleton } from "../../components/feedback.jsx";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/table.jsx";
 import { usePageTitle } from "../../hooks.js";
 import { useAuth, useToast } from "../../contexts.jsx";
-import { leaveService } from "../../api.js";
+import { leaveService, profileService } from "../../api.js";
 import { queryKeys } from "../../constants.js";
 import { getErrorMessage, queryInvalidation } from "../../utils.js";
-import { CreateLeaveModal } from "./LeaveModals.jsx";
+import { CreateLeaveModal, LeaveDetailsModal } from "./LeaveModals.jsx";
 
 const PAGE_SIZE = 10;
 
@@ -22,11 +22,18 @@ export function MyLeavePage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
   const [cancelTarget, setCancelTarget] = useState(null);
+  const [selected, setSelected] = useState(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.leave.mine({ page: currentPage, size: PAGE_SIZE, sort: "createdAt,desc" }),
     queryFn: () => leaveService.listMine({ page: currentPage, size: PAGE_SIZE, sort: "createdAt,desc" }),
   });
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => profileService.me(),
+  });
+
   const requests = data?.content ?? [];
   const pagination = data?.page;
 
@@ -48,6 +55,13 @@ export function MyLeavePage() {
     },
     onError: (error) => notify({ title: "Cancellation failed", message: getErrorMessage(error), variant: "danger" }),
   });
+
+  const { data: balances } = useQuery({
+    queryKey: ["leave-balance"],
+    queryFn: () => leaveService.getMyBalance(),
+  });
+
+  const annualBalance = balances?.find((b) => b.leaveType === "ANNUAL");
 
   return (
     <>
@@ -71,16 +85,24 @@ export function MyLeavePage() {
             <h3 className="text-lg font-semibold text-foreground">Annual leave balance</h3>
             <CalendarDays size={18} className="text-primary shrink-0" />
           </div>
-          <p className="text-2xl font-bold text-foreground">—</p>
-          <p className="text-sm text-muted-foreground mt-1 font-medium">Balance endpoint not available yet</p>
+          <p className="text-2xl font-bold text-foreground">
+            {annualBalance ? annualBalance.remaining : "—"}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1 font-medium">
+            {annualBalance
+              ? `${annualBalance.used} used · ${annualBalance.pending} pending`
+              : "No balance data"}
+          </p>
         </div>
         <div className="rounded-xl border bg-card p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-lg font-semibold text-foreground">Days approved</h3>
             <CalendarDays size={18} className="text-primary shrink-0" />
           </div>
-          <p className="text-2xl font-bold text-foreground">—</p>
-          <p className="text-sm text-muted-foreground mt-1 font-medium">Computed once balance is available</p>
+          <p className="text-2xl font-bold text-foreground">
+            {annualBalance ? annualBalance.used : "—"}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1 font-medium">This year</p>
         </div>
         <div className="rounded-xl border bg-card p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
@@ -132,9 +154,24 @@ export function MyLeavePage() {
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={request.status} />
+                      {request.reviewNote && (request.status === "REJECTED" || request.status === "APPROVED") && (
+                        <p className="text-xs text-muted-foreground mt-1 max-w-[200px] truncate" title={request.reviewNote}>
+                          {request.reviewNote}
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="inline-flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          type="button"
+                          title="View details"
+                          onClick={() => setSelected(request)}
+                        >
+                          <Eye size={16} />
+                        </Button>
                         {request.status === "PENDING" && (
                           <Button
                             variant="ghost"
@@ -183,6 +220,14 @@ export function MyLeavePage() {
           isProcessing={cancelMutation.isPending}
           onConfirm={() => cancelMutation.mutate(cancelTarget.id)}
           onClose={() => setCancelTarget(null)}
+        />
+      )}
+      {selected && (
+        <LeaveDetailsModal
+          request={selected}
+          employeeName="You"
+          employeeId={profile?.id}
+          onClose={() => setSelected(null)}
         />
       )}
     </>

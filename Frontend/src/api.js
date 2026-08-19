@@ -168,6 +168,26 @@ export const leaveService = {
       .patch(`/api/employee/leave-requests/${id}/cancel`)
       .then((response) => response.data);
   },
+  getMyBalance() {
+    return apiClient
+      .get("/api/employee/leave-balance")
+      .then((response) => response.data);
+  },
+  getMyBalanceByType(leaveType) {
+    return apiClient
+      .get(`/api/employee/leave-balance/${leaveType}`)
+      .then((response) => response.data);
+  },
+  getEmployeeBalance(employeeId) {
+    return apiClient
+      .get(`/api/admin/employees/${employeeId}/leave-balance`)
+      .then((response) => response.data);
+  },
+  getEmployeeBalanceByType(employeeId, leaveType) {
+    return apiClient
+      .get(`/api/admin/employees/${employeeId}/leave-balance/${leaveType}`)
+      .then((response) => response.data);
+  },
   // Analytical methods for dashboard
   async getLeaveStats() {
     return apiClient.get("/api/admin/analytics/leave-stats").then((response) => response.data);

@@ -1,4 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
+import { AlertTriangle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { StatusBadge } from "../../components/common/ui.jsx";
@@ -8,6 +10,7 @@ import { Input } from "../../components/ui/input.jsx";
 import { Label } from "../../components/ui/label.jsx";
 import { Textarea } from "../../components/ui/textarea.jsx";
 import { Select } from "../../components/ui/select.jsx";
+import { leaveService } from "../../api.js";
 
 export const leaveTypes = ["ANNUAL", "SICK", "UNPAID", "MATERNITY", "PATERNITY", "OTHER"];
 
@@ -121,7 +124,26 @@ export function ReviewLeaveModal({ request, action, onReview, isSubmitting = fal
   );
 }
 
-export function LeaveDetailsModal({ request, employeeName, onClose }) {
+function calculateDays(start, end) {
+  const s = new Date(start);
+  const e = new Date(end);
+  const diff = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
+  return Math.max(diff, 0);
+}
+
+export function LeaveDetailsModal({ request, employeeName, employeeId, onClose }) {
+  const { data: balance } = useQuery({
+    queryKey: ["leave-balance", employeeId, request.leaveType],
+    queryFn: () => leaveService.getEmployeeBalanceByType(employeeId, request.leaveType),
+    enabled: !!employeeId,
+  });
+
+  const daysRequested = calculateDays(request.startDate, request.endDate);
+  const isPending = request.status === "PENDING";
+  const projectedRemaining = balance ? balance.remaining - (isPending ? daysRequested : 0) : null;
+  const wouldBeNegative = projectedRemaining !== null && projectedRemaining < 0;
+  const isNegative = balance && balance.remaining < 0;
+
   return (
     <Dialog open onOpenChange={(open) => !open && onClose?.()}>
       <DialogContent onClose={onClose}>
@@ -169,6 +191,56 @@ export function LeaveDetailsModal({ request, employeeName, onClose }) {
             </div>
           )}
         </div>
+        {balance && (
+          <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+            <p className="text-sm font-semibold text-foreground">Leave Balance ({request.leaveType.replace(/_/g, " ")})</p>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-2xl font-bold text-foreground">{balance.entitlement}</p>
+                <p className="text-xs text-muted-foreground">Entitlement</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">{balance.used}</p>
+                <p className="text-xs text-muted-foreground">Used</p>
+              </div>
+              <div>
+                <p className={`text-2xl font-bold ${balance.remaining < 0 ? "text-destructive" : "text-foreground"}`}>
+                  {balance.remaining}
+                </p>
+                <p className="text-xs text-muted-foreground">Remaining</p>
+              </div>
+            </div>
+            {balance.pending > 0 && (
+              <p className="text-xs text-muted-foreground text-center">
+                {balance.pending} day{balance.pending !== 1 ? "s" : ""} pending in other requests
+              </p>
+            )}
+            {isPending && daysRequested > 0 && (
+              <div className="border-t border-border pt-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Projected remaining if approved:</span>
+                  <span className={`font-semibold ${wouldBeNegative ? "text-destructive" : "text-foreground"}`}>
+                    {projectedRemaining} day{projectedRemaining !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                {wouldBeNegative && (
+                  <div className="flex items-center gap-2 mt-2 p-2 rounded-md bg-destructive/10 text-destructive text-xs">
+                    <AlertTriangle size={14} />
+                    <span>This approval would result in a negative balance of {Math.abs(projectedRemaining)} day{Math.abs(projectedRemaining) !== 1 ? "s" : ""}.</span>
+                  </div>
+                )}
+              </div>
+            )}
+            {!isPending && isNegative && (
+              <div className="border-t border-border pt-3">
+                <div className="flex items-center gap-2 p-2 rounded-md bg-destructive/10 text-destructive text-xs">
+                  <AlertTriangle size={14} />
+                  <span>Current balance is negative by {Math.abs(balance.remaining)} day{Math.abs(balance.remaining) !== 1 ? "s" : ""}.</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

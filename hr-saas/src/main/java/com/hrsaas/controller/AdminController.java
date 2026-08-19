@@ -7,10 +7,12 @@ import com.hrsaas.dto.DepartmentCreateDto;
 import com.hrsaas.dto.DepartmentResponseDto;
 import com.hrsaas.dto.EmployeeCounts;
 import com.hrsaas.dto.HeadcountTrendData;
+import com.hrsaas.dto.LeaveBalanceDto;
 import com.hrsaas.dto.LeaveRequestResponseDto;
 import com.hrsaas.dto.LeaveReviewDto;
 import com.hrsaas.dto.LeaveStatsData;
 import com.hrsaas.dto.UserResponseDto;
+import com.hrsaas.enums.LeaveType;
 import com.hrsaas.service.AttendanceService;
 import com.hrsaas.service.DepartmentService;
 import com.hrsaas.service.EmployeeService;
@@ -93,6 +95,19 @@ public class AdminController {
         log.info("DELETE /api/admin/employees/{} - Deleting employee", id);
         employeeService.deleteEmployee(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/employees/{id}/leave-balance")
+    public ResponseEntity<List<LeaveBalanceDto>> getEmployeeLeaveBalance(@PathVariable UUID id) {
+        log.debug("GET /api/admin/employees/{}/leave-balance - Fetching leave balance", id);
+        return ResponseEntity.ok(leaveService.getAllLeaveBalances(id));
+    }
+
+    @GetMapping("/employees/{id}/leave-balance/{leaveType}")
+    public ResponseEntity<LeaveBalanceDto> getEmployeeLeaveBalanceByType(
+            @PathVariable UUID id, @PathVariable LeaveType leaveType) {
+        log.debug("GET /api/admin/employees/{}/leave-balance/{} - Fetching leave balance", id, leaveType);
+        return ResponseEntity.ok(leaveService.getLeaveBalance(id, leaveType));
     }
 
     @PostMapping("/departments")

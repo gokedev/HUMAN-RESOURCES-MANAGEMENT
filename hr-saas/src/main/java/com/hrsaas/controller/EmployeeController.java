@@ -1,9 +1,11 @@
 package com.hrsaas.controller;
 
 import com.hrsaas.dto.AttendanceRecordResponseDto;
+import com.hrsaas.dto.LeaveBalanceDto;
 import com.hrsaas.dto.LeaveRequestCreateDto;
 import com.hrsaas.dto.LeaveRequestResponseDto;
 import com.hrsaas.dto.UserResponseDto;
+import com.hrsaas.enums.LeaveType;
 import com.hrsaas.service.AttendanceService;
 import com.hrsaas.service.EmployeeService;
 import com.hrsaas.service.LeaveService;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -87,5 +90,19 @@ public class EmployeeController {
         UUID userId = TenantContext.getUserId();
         log.debug("GET /api/employee/attendance - Listing attendance for userId={}", userId);
         return ResponseEntity.ok(attendanceService.listOwnAttendance(pageable).map(AttendanceRecordResponseDto::fromEntity));
+    }
+
+    @GetMapping("/leave-balance")
+    public ResponseEntity<List<LeaveBalanceDto>> getOwnLeaveBalance() {
+        UUID userId = TenantContext.getUserId();
+        log.debug("GET /api/employee/leave-balance - Fetching leave balance for userId={}", userId);
+        return ResponseEntity.ok(leaveService.getAllLeaveBalances(userId));
+    }
+
+    @GetMapping("/leave-balance/{leaveType}")
+    public ResponseEntity<LeaveBalanceDto> getOwnLeaveBalanceByType(@PathVariable LeaveType leaveType) {
+        UUID userId = TenantContext.getUserId();
+        log.debug("GET /api/employee/leave-balance/{} - Fetching leave balance for userId={}", leaveType, userId);
+        return ResponseEntity.ok(leaveService.getLeaveBalance(userId, leaveType));
     }
 }

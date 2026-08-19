@@ -69,6 +69,7 @@ export const queryInvalidation = {
     return Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.leave.all }),
       queryClient.invalidateQueries({ queryKey: queryKeys.profile.me }),
+      queryClient.invalidateQueries({ queryKey: ["leave-balance"] }),
     ]);
   },
 };

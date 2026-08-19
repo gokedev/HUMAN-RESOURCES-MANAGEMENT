@@ -217,6 +217,7 @@ export function LeaveRequestsPage() {
               ? `${selected.employeeFirstName} ${selected.employeeLastName}`
               : nameMap[selected.employeeId] ?? "Unknown employee"
           }
+          employeeId={selected.employeeId}
           onClose={() => setSelected(null)}
         />
       )}

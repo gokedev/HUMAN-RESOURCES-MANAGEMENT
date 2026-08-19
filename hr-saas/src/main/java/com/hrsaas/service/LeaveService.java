@@ -1,5 +1,6 @@
 package com.hrsaas.service;
 
+import com.hrsaas.dto.LeaveBalanceDto;
 import com.hrsaas.dto.LeaveRequestCreateDto;
 import com.hrsaas.dto.LeaveReviewDto;
 import com.hrsaas.dto.LeaveStatsData;
@@ -9,6 +10,7 @@ import com.hrsaas.dto.LeaveRequestResponseDto;
 import com.hrsaas.entity.LeaveRequest;
 import com.hrsaas.entity.User;
 import com.hrsaas.enums.LeaveStatus;
+import com.hrsaas.enums.LeaveType;
 import com.hrsaas.enums.Role;
 import com.hrsaas.exception.ApiException;
 import com.hrsaas.repository.LeaveRequestRepository;
@@ -161,6 +163,49 @@ public class LeaveService {
         leaveRequest.setStatus(LeaveStatus.CANCELLED);
         leaveRequestRepository.save(leaveRequest);
         log.info("Leave request={} cancelled", leaveRequestId);
+    }
+
+    public LeaveBalanceDto getLeaveBalance(UUID employeeId, LeaveType leaveType) {
+        UUID tenantId = TenantContext.getTenantId();
+        LocalDate yearStart = LocalDate.now().withDayOfYear(1);
+        LocalDate yearEnd = LocalDate.now().withDayOfYear(LocalDate.now().lengthOfYear());
+
+        int entitlement = getDefaultEntitlement(leaveType);
+        Long approvedDays = leaveRequestRepository.sumApprovedDaysByEmployeeAndType(
+                tenantId, employeeId, leaveType.name(), yearStart, yearEnd);
+        Long pendingDays = leaveRequestRepository.sumPendingDaysByEmployeeAndType(
+                tenantId, employeeId, leaveType.name(), yearStart, yearEnd);
+
+        int used = approvedDays != null ? approvedDays.intValue() : 0;
+        int pending = pendingDays != null ? pendingDays.intValue() : 0;
+        int remaining = entitlement - used - pending;
+
+        return LeaveBalanceDto.builder()
+                .leaveType(leaveType)
+                .entitlement(entitlement)
+                .used(used)
+                .pending(pending)
+                .remaining(remaining)
+                .build();
+    }
+
+    public List<LeaveBalanceDto> getAllLeaveBalances(UUID employeeId) {
+        List<LeaveBalanceDto> balances = new java.util.ArrayList<>();
+        for (LeaveType type : LeaveType.values()) {
+            balances.add(getLeaveBalance(employeeId, type));
+        }
+        return balances;
+    }
+
+    private int getDefaultEntitlement(LeaveType leaveType) {
+        return switch (leaveType) {
+            case ANNUAL -> 20;
+            case SICK -> 10;
+            case UNPAID -> 0;
+            case MATERNITY -> 90;
+            case PATERNITY -> 14;
+            case OTHER -> 0;
+        };
     }
 
     // Analytical method for dashboard
