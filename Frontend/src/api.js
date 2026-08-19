@@ -91,6 +91,12 @@ export const employeeService = {
       .delete(`/api/admin/employees/${id}`)
       .then((response) => response.data);
   },
+  resendInvitation(id) {
+    return apiClient.post(`/api/admin/employees/${id}/resend-invite`);
+  },
+  revokeInvitation(id) {
+    return apiClient.post(`/api/admin/employees/${id}/revoke-invite`);
+  },
   // Analytical methods for dashboard
   async getHeadcountTrend() {
     return apiClient.get("/api/admin/analytics/headcount-trend").then((response) => response.data);
@@ -200,6 +206,34 @@ export const profileService = {
   },
   update(payload) {
     return apiClient.put("/api/employee/me", payload).then((response) => response.data);
+  },
+};
+
+export const payrollService = {
+  generate(payload) {
+    return apiClient
+      .post("/api/admin/payroll/generate", payload)
+      .then((response) => response.data);
+  },
+  listForPeriod(params) {
+    return apiClient
+      .get("/api/admin/payroll/payslips", { params })
+      .then((response) => response.data);
+  },
+  get(id) {
+    return apiClient
+      .get(`/api/admin/payroll/payslips/${id}`)
+      .then((response) => response.data);
+  },
+  listMine() {
+    return apiClient
+      .get("/api/employee/payroll/payslips")
+      .then((response) => response.data);
+  },
+  getMine(id) {
+    return apiClient
+      .get(`/api/employee/payroll/payslips/${id}`)
+      .then((response) => response.data);
   },
 };
 
