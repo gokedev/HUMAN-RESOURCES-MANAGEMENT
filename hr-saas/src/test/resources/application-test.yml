@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:hrsaas_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  flyway:
+    enabled: false
+
+app:
+  jwt:
+    secret: test-secret-key-not-for-production-use-only-testing-1234567890
+    access-token-expiration-ms: 3600000
+    refresh-token-expiration-ms: 604800000
+  frontend:
+    base-url: http://localhost:5173
+  cors:
+    allowed-origins: http://localhost:5173
+  mail:
+    from: no-reply@hrsaas.com
+  brevo:
+    api-key: test-api-key
+  invite:
+    expiration-hours: 72
