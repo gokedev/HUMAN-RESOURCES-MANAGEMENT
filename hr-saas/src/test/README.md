@@ -1,0 +1,1134 @@
+<div align="center">
+
+# HR SaaS Backend
+
+**Multi-tenant HR platform API** — employees, leave, attendance, and payroll,
+all scoped per company, all behind a JWT.
+
+![Java](https://img.shields.io/badge/Java-20-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Maven](https://img.shields.io/badge/Build-Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
+![JWT](https://img.shields.io/badge/Auth-JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+
+![Flyway](https://img.shields.io/badge/Migrations-Flyway-CC0200?style=flat-square&logo=flyway&logoColor=white)
+![JUnit5](https://img.shields.io/badge/Tests-JUnit%205-25A162?style=flat-square&logo=junit5&logoColor=white)
+![H2](https://img.shields.io/badge/Test%20DB-H2-4285F4?style=flat-square)
+![Swagger](https://img.shields.io/badge/Docs-OpenAPI%203-85EA2D?style=flat-square&logo=swagger&logoColor=black)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Active%20Development-informational?style=flat-square)
+
+</div>
+
+---
+
+## Table of Contents
+
+- [What This Is](#what-this-is)
+- [Tech Stack](#tech-stack)
+- [Feature Map](#feature-map)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Running Tests](#running-tests)
+- [Project Structure](#project-structure)
+- [API Documentation](#api-documentation)
+- [License](#license)
+
+---
+
+## What This Is
+
+A Spring Boot backend for a small-to-mid-size HR system. Each company
+(tenant) gets its own isolated slice of data — employees, departments,
+leave requests, attendance, and payroll — enforced at the query level via
+a `TenantContext` set by the JWT filter on every request. Two roles:
+`ADMIN` (runs the company) and `EMPLOYEE` (self-service: check in/out,
+request leave, view payslips).
+
+---
+
+## Tech Stack
+
+| Layer | Choice |
+|---|---|
+| Language / Runtime | Java 20 |
+| Framework | Spring Boot 3.3.4 (Web, Data JPA, Security, Validation, Mail, Cache) |
+| Database | PostgreSQL (production), H2 (test) |
+| Migrations | Flyway |
+| Auth | JWT (`jjwt`), access + refresh token rotation |
+| Caching | Caffeine |
+| Docs | springdoc-openapi (Swagger UI) |
+| Build | Maven |
+| Testing | JUnit 5, Mockito, Spring Test (`@WebMvcTest`, `@DataJpaTest`) |
+
+---
+
+## Feature Map
+
+| Module | Highlights |
+|---|---|
+| Auth | Multi-tenant registration, login, invitations, refresh-token rotation, password reset |
+| Employees | CRUD, department/manager assignment, activate/deactivate |
+| Leave | Request/review/cancel workflow, calendar-day balance tracking per leave type |
+| Attendance | Check-in/check-out, per-employee and company-wide history |
+| Payroll | Monthly payslip generation (base salary, unpaid-leave deductions, flat tax) |
+| Analytics | Headcount trends, leave stats, attendance compliance dashboard |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Java 20+
+- Maven 3.9+
+- PostgreSQL 15+ running locally (or reachable via `DB_URL`)
+
+### Run locally
+
+```bash
+git clone <this-repo>
+cd hr-saas
+
+# create your .env or export the variables listed below, then:
+mvn spring-boot:run
+```
+
+The app starts on `http://localhost:8080` by default. Flyway runs
+migrations automatically on startup (`baseline-on-migrate: true`).
+
+---
+
+## Environment Variables
+
+| Variable | Default | Notes |
+|---|---|---|
+| `SERVER_PORT` | `8080` | |
+| `DB_URL` | `jdbc:postgresql://localhost:5432/hr_saas` | |
+| `DB_USERNAME` | `postgres` | |
+| `DB_PASSWORD` | `postgres` | |
+| `SHOW_SQL` | `false` | set `true` to log Hibernate SQL |
+| `JWT_SECRET` | *(required, no default)* | |
+| `JWT_ACCESS_EXPIRATION_MS` | `3600000` (1h) | |
+| `JWT_REFRESH_EXPIRATION_MS` | `604800000` (7d) | |
+| `FRONTEND_BASE_URL` | `http://localhost:5173` | used in email links |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | |
+| `MAIL_FROM_ADDRESS` | `no-reply@hrsaas.com` | |
+| `BREVO_API_KEY` | *(required, no default)* | transactional email provider |
+| `INVITE_EXPIRATION_HOURS` | `72` | |
+
+---
+
+## Running Tests
+
+```bash
+mvn test
+```
+
+> **Tip — saving test output to a file:** if you want the full Surefire
+> console output captured for later (e.g. to paste into an issue or diff
+> against a previous run), redirect both stdout and stderr:
+>
+> ```bash
+> mvn test > build.log 2>&1
+> ```
+
+Test suite runs against H2 in `MODE=PostgreSQL` for repository/web-layer
+tests — a couple of native, Postgres-specific queries are intentionally
+skipped under H2 (see the `@Disabled` notes in `LeaveRequestRepositoryTest`)
+since they need a real Postgres instance to exercise correctly.
+
+---
+
+## Project Structure
+
+```
+hr-saas/
+├── src/main/java/com/hrsaas/
+│   ├── controller/     # REST endpoints (Admin, Auth, Employee)
+│   ├── service/        # Business logic
+│   ├── repository/     # Spring Data JPA repositories
+│   ├── entity/         # JPA entities
+│   ├── dto/            # Request/response DTOs
+│   ├── enums/          # LeaveStatus, LeaveType, Role, UserStatus, ...
+│   ├── security/       # JWT filter, JwtService
+│   └── exception/      # GlobalExceptionHandler, ApiException
+├── src/main/resources/
+│   ├── application.yml
+│   └── db/migration/   # Flyway SQL migrations
+└── src/test/java/com/hrsaas/
+    ├── controller/      # @WebMvcTest slices
+    ├── repository/      # @DataJpaTest slices
+    └── service/         # Mockito unit tests
+```
+
+---
+
+## API Documentation
+
+The full endpoint-by-endpoint reference (auth, admin, employee, payroll,
+dashboard analytics — request/response shapes, cURL examples, error
+codes) is below in this same file. A live Swagger UI is also available
+at `/swagger-ui.html` once the app is running.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+---
+
+# HR SaaS Backend — API Documentation
+
+Base URL: **`https://hr-saas-cmra.onrender.com`**
+
+All requests/responses are JSON. All timestamps are ISO-8601. All IDs are UUIDs (v4).
+
+---
+
+## Authentication
+
+Every route except the ones under `/api/auth/**` requires an access token:
+
+```
+Authorization: Bearer <accessToken>
+```
+
+Access tokens are short-lived (default 1 hour). When one expires, call
+`POST /api/auth/refresh` with the refresh token to get a new pair — don't
+make the user log in again.
+
+Two roles exist: `ADMIN` and `EMPLOYEE`. Routes under `/api/admin/**`
+require `ADMIN`. Routes under `/api/employee/**` accept either role (an
+admin can also use employee self-service routes, e.g. to check in/out or
+file their own leave).
+
+---
+
+## Pagination
+
+Any endpoint that returns a list is paginated. Control it with query
+params:
+
+```
+?page=0&size=20&sort=lastName,asc
+```
+
+- `page` — zero-indexed page number (default `0`)
+- `size` — items per page (default `20`)
+- `sort` — optional, `field,asc` or `field,desc`
+
+Paginated responses look like this:
+
+```json
+{
+  "content": [ /* array of items */ ],
+  "page": {
+    "size": 20,
+    "number": 0,
+    "totalElements": 3,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+## Error Responses
+
+Every error, regardless of endpoint, has this shape:
+
+```json
+{
+  "status": 400,
+  "message": "Description of what went wrong",
+  "timestamp": "2026-07-20T10:15:30"
+}
+```
+
+Common status codes: `400` bad request / validation failure, `401`
+unauthorized (missing/invalid/expired token, or bad login credentials),
+`403` forbidden (wrong role, or acting on someone else's resource), `404`
+not found, `409` conflict (duplicate email, already checked in, etc.),
+`500` unexpected server error (check server logs if you see this).
+
+---
+
+# Auth Endpoints (public)
+
+## Register a company (tenant registration)
+
+```
+POST /api/auth/register-company
+Content-Type: application/json
+```
+
+Creates a new company workspace and its first Admin user in one step.
+Returns tokens immediately — no separate login required after this call.
+
+**Body:**
+```json
+{
+  "companyName": "Acme Inc",
+  "industry": "Technology",
+  "country": "Nigeria",
+  "adminFirstName": "Jane",
+  "adminLastName": "Doe",
+  "adminEmail": "jane@acme.com",
+  "adminPassword": "SecurePass123"
+}
+```
+
+| Field | Required | Notes |
+|---|---|---|
+| companyName | yes | |
+| industry | no | |
+| country | no | |
+| adminFirstName | yes | |
+| adminLastName | yes | |
+| adminEmail | yes | must be valid email format |
+| adminPassword | yes | min 8 chars, must contain uppercase, lowercase, digit, and special character (@$!%*?&#) |
+
+**Response `201 Created`:**
+```json
+{
+  "accessToken": "eyJhbGciOi...",
+  "refreshToken": "9f8a7b6c...",
+  "role": "ADMIN",
+  "email": "jane@acme.com",
+  "companySlug": "acme-inc"
+}
+```
+
+`companySlug` is auto-generated from `companyName` (lowercase, spaces →
+hyphens, deduplicated with `-1`, `-2` suffixes on collision). **Save this
+slug** — it's required on every future login for this company.
+
+**cURL:**
+```bash
+curl -X POST https://hr-saas-cmra.onrender.com/api/auth/register-company \
+  -H "Content-Type: application/json" \
+  -d '{
+    "companyName": "Acme Inc",
+    "adminFirstName": "Jane",
+    "adminLastName": "Doe",
+    "adminEmail": "jane@acme.com",
+    "adminPassword": "SecurePass123"
+  }'
+```
+
+---
+
+## Log in
+
+```
+POST /api/auth/login
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "email": "jane@acme.com",
+  "password": "SecurePass123",
+  "companySlug": "acme-inc"
+}
+```
+
+All three fields are required. `companySlug` is what disambiguates users
+across tenants — two different companies can each have a `jane@acme.com`
+if their slugs differ.
+
+**Response `200 OK`:** same shape as register-company response.
+
+**cURL:**
+```bash
+curl -X POST https://hr-saas-cmra.onrender.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "jane@acme.com",
+    "password": "SecurePass123",
+    "companySlug": "acme-inc"
+  }'
+```
+
+---
+
+## Accept an employee invitation
+
+```
+POST /api/auth/accept-invitation
+Content-Type: application/json
+```
+
+Called by an employee after an admin creates their account and they
+receive the invite email. Sets their password and activates the account.
+
+**Body:**
+```json
+{
+  "token": "the-token-from-the-invite-email-link",
+  "password": "NewPassword123"
+}
+```
+
+`password` min 8 characters.
+
+**Response `200 OK`:** empty body.
+
+**Errors:** `400` if the token is invalid, already used, or expired
+(invites expire after 72 hours by default).
+
+---
+
+## Refresh an access token
+
+```
+POST /api/auth/refresh
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "refreshToken": "9f8a7b6c..."
+}
+```
+
+Rotates the token: the old refresh token is revoked and a brand new
+access+refresh pair is returned. Use the new refresh token for the next
+refresh.
+
+**Response `200 OK`:** same shape as login response.
+
+**Errors:** `401` if the refresh token is invalid, expired, or already
+revoked (e.g. reused after already being rotated once).
+
+---
+
+## Forgot password
+
+```
+POST /api/auth/forgot-password
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "email": "jane@acme.com",
+  "companySlug": "acme-inc"
+}
+```
+
+**Response `200 OK`:** always returns 200 and an empty body, whether or
+not the account exists — this is intentional, to avoid revealing which
+emails are registered. If the account exists and is active, a reset link
+is emailed (valid 1 hour).
+
+---
+
+## Reset password
+
+```
+POST /api/auth/reset-password
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "token": "the-token-from-the-reset-email-link",
+  "newPassword": "AnotherNewPass123"
+}
+```
+
+`newPassword` min 8 characters.
+
+**Response `200 OK`:** empty body. All of that user's existing refresh
+tokens are revoked as a side effect — they'll need to log in again on any
+other device/session.
+
+**Errors:** `400` if the token is invalid, already used, or expired.
+
+---
+
+# Admin Endpoints
+
+All routes below require:
+```
+Authorization: Bearer <accessToken>
+```
+for an ADMIN-role user, plus `Content-Type: application/json` on any
+request with a body.
+
+## Create an employee
+
+```
+POST /api/admin/employees
+```
+
+Creates the employee record and emails them an invitation link. The
+employee is `PENDING` until they accept the invite and set a password
+(see `POST /api/auth/accept-invitation` above).
+
+**Body:**
+```json
+{
+  "email": "employee@acme.com",
+  "firstName": "John",
+  "lastName": "Smith",
+  "phone": "+2348012345678",
+  "jobTitle": "Software Engineer",
+  "departmentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "managerId": "3fa85f64-5717-4562-b3fc-2c963f66afa7",
+  "dateOfHire": "2026-01-15"
+}
+```
+
+| Field | Required | Notes |
+|---|---|---|
+| email | yes | must be unique within the company |
+| firstName | yes | |
+| lastName | yes | |
+| phone | no | |
+| jobTitle | no | |
+| departmentId | no | must be a real UUID if present — omit the field entirely rather than sending a placeholder string |
+| managerId | no | same as above; must be a real user UUID if present |
+| dateOfHire | no | format `YYYY-MM-DD` |
+
+**Response `201 Created`:** the created user object (password hash never
+included):
+```json
+{
+  "id": "uuid",
+  "companyId": "uuid",
+  "email": "employee@acme.com",
+  "role": "EMPLOYEE",
+  "status": "PENDING",
+  "firstName": "John",
+  "lastName": "Smith",
+  "phone": "+2348012345678",
+  "jobTitle": "Software Engineer",
+  "departmentId": "uuid",
+  "managerId": "uuid",
+  "dateOfHire": "2026-01-15",
+  "createdAt": "2026-07-20T10:00:00",
+  "updatedAt": "2026-07-20T10:00:00"
+}
+```
+
+**Errors:** `409` if the email already exists in this company.
+
+**cURL:**
+```bash
+curl -X POST https://hr-saas-cmra.onrender.com/api/admin/employees \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "employee@acme.com",
+    "firstName": "John",
+    "lastName": "Smith"
+  }'
+```
+
+---
+
+## List employees
+
+```
+GET /api/admin/employees?page=0&size=20
+```
+
+No body. Returns paginated employees (admins + employees) for the
+authenticated user's company.
+
+**Response `200 OK`:** paginated list of user objects (see shape above).
+
+---
+
+## Get a single employee
+
+```
+GET /api/admin/employees/{id}
+```
+
+`{id}` is the employee's UUID.
+
+**Response `200 OK`:** single user object.
+**Errors:** `404` if not found in this company.
+
+---
+
+## Update an employee
+
+```
+PUT /api/admin/employees/{id}
+```
+
+**Body:** same shape as create-employee. Note: `email` cannot currently
+be changed via this endpoint even if included in the body — only profile
+fields (name, phone, job title, department, manager, hire date) update.
+
+**Response `200 OK`:** updated user object.
+
+---
+
+## Deactivate an employee
+
+```
+PATCH /api/admin/employees/{id}/deactivate
+```
+
+No body. Sets status to `SUSPENDED` — they can no longer log in.
+
+**Response `204 No Content`.**
+
+---
+
+## Reactivate an employee
+
+```
+PATCH /api/admin/employees/{id}/reactivate
+```
+
+No body. Sets status back to `ACTIVE`.
+
+**Response `204 No Content`.**
+
+---
+
+## Create a department
+
+```
+POST /api/admin/departments
+```
+
+**Body:**
+```json
+{ "name": "Engineering" }
+```
+
+**Response `201 Created`:**
+```json
+{
+  "id": "uuid",
+  "companyId": "uuid",
+  "name": "Engineering",
+  "createdAt": "2026-07-20T10:00:00"
+}
+```
+
+**Errors:** `409` if a department with this name already exists in the
+company.
+
+---
+
+## List departments
+
+```
+GET /api/admin/departments
+```
+
+No body, no pagination — returns a plain array.
+
+**Response `200 OK`:**
+```json
+[
+  { "id": "uuid", "companyId": "uuid", "name": "Engineering", "createdAt": "..." },
+  { "id": "uuid", "companyId": "uuid", "name": "Sales", "createdAt": "..." }
+]
+```
+
+---
+
+## Delete a department
+
+```
+DELETE /api/admin/departments/{id}
+```
+
+No body.
+
+**Response `204 No Content`.**
+**Errors:** `404` if not found in this company.
+
+---
+
+## List all leave requests (company-wide)
+
+```
+GET /api/admin/leave-requests?page=0&size=20
+```
+
+No body. Returns every employee's leave requests, not just one person's.
+
+**Response `200 OK`:** paginated list of leave request objects:
+```json
+{
+  "content": [
+    {
+      "id": "uuid",
+      "companyId": "uuid",
+      "employeeId": "uuid",
+      "leaveType": "ANNUAL",
+      "startDate": "2026-08-01",
+      "endDate": "2026-08-05",
+      "reason": "Family vacation",
+      "status": "PENDING",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "reviewNote": null,
+      "createdAt": "2026-07-20T10:00:00",
+      "updatedAt": "2026-07-20T10:00:00"
+    }
+  ],
+  "page": { "size": 20, "number": 0, "totalElements": 1, "totalPages": 1 }
+}
+```
+
+`leaveType` is one of: `ANNUAL`, `SICK`, `UNPAID`, `MATERNITY`,
+`PATERNITY`, `OTHER`. `status` is one of: `PENDING`, `APPROVED`,
+`REJECTED`, `CANCELLED`.
+
+---
+
+## Approve or reject a leave request
+
+```
+PATCH /api/admin/leave-requests/{id}/review
+```
+
+**Body:**
+```json
+{
+  "approve": true,
+  "note": "Enjoy your time off"
+}
+```
+
+`approve`: `true` sets status to `APPROVED`, `false` sets it to
+`REJECTED`. `note` is optional. Triggers an email to the employee
+notifying them of the outcome.
+
+**Response `200 OK`:** updated leave request object.
+
+**Errors:** `400` if the request has already been reviewed (only
+`PENDING` requests can be reviewed).
+
+---
+
+## List attendance (company-wide)
+
+```
+GET /api/admin/attendance?page=0&size=20
+```
+
+No body. Note the correct path is `/api/admin/attendance`, **not**
+nested under `/employees/`.
+
+**Response `200 OK`:** paginated list of attendance records:
+```json
+{
+  "content": [
+    {
+      "id": "uuid",
+      "companyId": "uuid",
+      "employeeId": "uuid",
+      "workDate": "2026-07-20",
+      "checkIn": "2026-07-20T09:02:11",
+      "checkOut": "2026-07-20T17:30:00",
+      "status": "PRESENT",
+      "createdAt": "2026-07-20T09:02:11"
+    }
+  ],
+  "page": { "size": 20, "number": 0, "totalElements": 1, "totalPages": 1 }
+}
+```
+
+`status` is one of: `PRESENT`, `ABSENT`, `HALF_DAY`, `ON_LEAVE`.
+
+---
+
+# Employee Endpoints
+
+All routes below require:
+```
+Authorization: Bearer <accessToken>
+```
+for either an ADMIN or EMPLOYEE user, plus `Content-Type: application/json`
+where a body is sent. These act on the **logged-in user's own** data only
+— there's no `{id}` in the path, the identity comes from the token.
+
+## Get my leave balance
+
+```
+GET /api/employee/leave-balance
+```
+
+No body. Returns the logged-in employee's leave balance by type for the current year.
+
+**Response `200 OK`:**
+```json
+{
+  "leaveBalances": [
+    { "leaveType": "ANNUAL", "totalEntitlement": 20, "daysUsed": 5, "daysPending": 2, "daysAvailable": 13 },
+    { "leaveType": "SICK", "totalEntitlement": 10, "daysUsed": 1, "daysPending": 0, "daysAvailable": 9 }
+  ]
+}
+```
+
+`daysAvailable` = `totalEntitlement` - `daysUsed` - `daysPending`. Leave balance counts **calendar days** (standard HR practice).
+
+---
+
+## Get my profile
+
+```
+GET /api/employee/me
+```
+
+No body.
+
+**Response `200 OK`:** the logged-in user's own user object (same shape as the admin employee object above).
+
+---
+
+## Update my profile
+
+```
+PATCH /api/employee/me
+```
+
+**Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "phone": "+2348012345678"
+}
+```
+
+All fields optional. Only updates the fields provided.
+
+**Response `200 OK`:** updated user object.
+
+---
+
+## Change my password
+
+```
+PATCH /api/employee/me/password
+```
+
+**Body:**
+```json
+{
+  "currentPassword": "OldPass123!",
+  "newPassword": "NewPass456!"
+}
+```
+
+Both fields required. `newPassword` must be 8-128 characters with at least one uppercase, one lowercase, one digit, and one special character (@$!%*?&#).
+
+**Response `200 OK`:** empty body. All existing refresh tokens are revoked — the user must log in again on other devices.
+
+**Errors:** `400` if `currentPassword` is wrong or `newPassword` fails validation.
+
+---
+
+## Request leave
+
+```
+POST /api/employee/leave-requests
+```
+
+**Body:**
+```json
+{
+  "leaveType": "ANNUAL",
+  "startDate": "2026-08-01",
+  "endDate": "2026-08-05",
+  "reason": "Family vacation"
+}
+```
+
+| Field | Required | Notes |
+|---|---|---|
+| leaveType | yes | one of `ANNUAL`, `SICK`, `UNPAID`, `MATERNITY`, `PATERNITY`, `OTHER` |
+| startDate | yes | `YYYY-MM-DD`, must be today or in the future |
+| endDate | yes | `YYYY-MM-DD`, must be today or in the future, and not before `startDate` |
+| reason | no | free text |
+
+**Response `201 Created`:** created leave request object, `status: "PENDING"`.
+
+**Errors:** `400` if `endDate` is before `startDate`.
+
+---
+
+## List my leave requests
+
+```
+GET /api/employee/leave-requests?page=0&size=20
+```
+
+No body. Only returns the logged-in user's own leave requests.
+
+**Response `200 OK`:** paginated list (same shape as admin's leave-requests endpoint).
+
+---
+
+## Cancel my leave request
+
+```
+PATCH /api/employee/leave-requests/{id}/cancel
+```
+
+No body. Only works on your own request, and only while it's still
+`PENDING`.
+
+**Response `204 No Content`.**
+
+**Errors:** `403` if it's not your request. `400` if it's already been
+reviewed (approved/rejected) or already cancelled.
+
+---
+
+## Check in
+
+```
+POST /api/employee/attendance/check-in
+```
+
+No body. Records `checkIn` timestamp for today's date.
+
+**Response `201 Created`:** created attendance record.
+
+**Errors:** `409` if you've already checked in today.
+
+---
+
+## Check out
+
+```
+POST /api/employee/attendance/check-out
+```
+
+No body. Records `checkOut` timestamp on today's existing record.
+
+**Response `200 OK`:** updated attendance record.
+
+**Errors:** `400` if you haven't checked in today yet. `409` if you've
+already checked out today.
+
+---
+
+## List my attendance
+
+```
+GET /api/employee/attendance?page=0&size=20
+```
+
+No body. Only returns the logged-in user's own attendance history.
+
+**Response `200 OK`:** paginated list (same shape as admin's attendance endpoint).
+
+## Get employee leave balance (admin)
+
+```
+GET /api/admin/employees/{id}/leave-balance?leaveType=ANNUAL
+```
+
+**Query params:**
+- `leaveType` (required): one of `ANNUAL`, `SICK`, `UNPAID`, `MATERNITY`, `PATERNITY`, `OTHER`
+
+**Response `200 OK`:**
+```json
+{
+  "employeeId": "uuid",
+  "employeeName": "John Smith",
+  "leaveType": "ANNUAL",
+  "totalEntitlement": 20,
+  "daysUsed": 5,
+  "daysPending": 2,
+  "daysAvailable": 13
+}
+```
+
+**Errors:** `404` if employee not found in this company.
+
+---
+
+# Dashboard Analytics Endpoints
+
+## Get dashboard analytics (admin)
+
+```
+GET /api/admin/dashboard/analytics
+```
+
+Returns headcount trends, employee counts, leave statistics, and attendance compliance.
+
+**Response `200 OK`:**
+```json
+{
+  "totalEmployees": 25,
+  "activeEmployees": 23,
+  "pendingInvitations": 2,
+  "headcountTrend": [
+    { "month": "2026-01", "count": 20 },
+    { "month": "2026-02", "count": 22 }
+  ],
+  "leaveStats": {
+    "pendingRequests": 3,
+    "approvedThisMonth": 5,
+    "rejectedThisMonth": 1,
+    "leaveByType": [
+      { "type": "ANNUAL", "count": 12 },
+      { "type": "SICK", "count": 4 }
+    ]
+  },
+  "attendanceStats": {
+    "presentToday": 18,
+    "absentToday": 5,
+    "attendanceRate": 0.78
+  }
+}
+```
+
+---
+
+# Payroll Endpoints
+
+## Generate payroll
+
+```
+POST /api/admin/payroll/generate
+```
+
+Generates payslips for all active employees for the specified month.
+
+**Body:**
+```json
+{
+  "year": 2026,
+  "month": 8
+}
+```
+
+**Response `200 OK`:**
+```json
+{
+  "message": "Payroll generated successfully",
+  "payslipsGenerated": 23
+}
+```
+
+Payroll logic: base salary / working days in month * worked days, minus unpaid leave deductions, minus flat 10% tax.
+
+**Errors:** `400` if payroll already exists for that month.
+
+---
+
+## List payslips (admin)
+
+```
+GET /api/admin/payroll/payslips?year=2026&month=8&page=0&size=20
+```
+
+**Query params:**
+- `year` (required): e.g. `2026`
+- `month` (required): 1-12
+- `page`, `size`: pagination (default 0, 20)
+
+**Response `200 OK`:** paginated list of payslip objects:
+```json
+{
+  "content": [
+    {
+      "id": "uuid",
+      "companyId": "uuid",
+      "employeeId": "uuid",
+      "employeeName": "John Smith",
+      "year": 2026,
+      "month": 8,
+      "baseSalary": 5000.00,
+      "workingDays": 22,
+      "workedDays": 20,
+      "unpaidLeaveDays": 2,
+      "grossPay": 4545.45,
+      "tax": 454.55,
+      "netPay": 4090.91,
+      "generatedAt": "2026-08-31T23:00:00"
+    }
+  ],
+  "page": { "size": 20, "number": 0, "totalElements": 1, "totalPages": 1 }
+}
+```
+
+---
+
+## List my payslips (employee)
+
+```
+GET /api/employee/payroll/payslips?page=0&size=20
+```
+
+No body. Returns the logged-in employee's own payslips.
+
+**Response `200 OK`:** paginated list (same shape as admin's payslips endpoint, minus `employeeName`).
+
+---
+
+# Quick Testing Walkthrough
+
+1. Register a company → save `accessToken`, `refreshToken`, `companySlug`.
+2. As admin, create a department (optional) → save its `id`.
+3. As admin, create an employee → they receive an invite email.
+4. Employee accepts the invite with the token from their email → sets a password.
+5. Employee logs in with `email` + `password` + `companySlug` → gets their own tokens.
+6. Employee checks in, files a leave request.
+7. Admin reviews (approves/rejects) the leave request.
+8. Admin lists all leave requests / attendance to see the results.
+
+Every token pair expires in ~1 hour by default — use `/api/auth/refresh`
+rather than logging in again mid-session.
+
+---
+
+# Known Limitations
+
+- **No server-side token revocation on deactivation** — When an employee is deactivated, their access token remains valid until expiry (1h). Production systems should revoke all tokens on deactivation.
+- **No rate limiting** — Login, forgot-password, and token-refresh endpoints have no rate limiting.
+- **Swagger UI publicly accessible** — API documentation is accessible without authentication in all environments.
+- **Payroll employee cap** — Payroll generation uses `PageRequest.of(0, 1000)`, silently skipping employees beyond the 1000th.
+- **Leave balance counts calendar days; payroll counts weekdays** — This is intentional: leave entitlement is in calendar days (standard HR practice), while salary deductions only apply to working days.
+- **Minimal test coverage** — Only 6 unit tests covering employee creation and leave request creation.
+
+---
+
+# Architecture Notes
+
+## Email Templates
+
+All transactional emails (welcome, invitation, leave status, password reset) use
+styled HTML templates generated by `EmailTemplate.java`. Templates use inline CSS
+for maximum email-client compatibility (Gmail, Outlook, Apple Mail). The design
+uses an indigo/purple gradient header with a clean white card layout.
+
+## Service Layer
+
+| Service | Responsibility |
+|---|---|
+| `AuthService` | Registration, login, token refresh, invitations, password reset/change |
+| `EmployeeService` | Employee CRUD, status changes, invitation management, analytics |
+| `LeaveService` | Leave request lifecycle, balance calculation, analytics |
+| `MailService` | Async email sending via Brevo API |
+| `EmailTemplate` | HTML email template generation (static utility) |
+
+## Multi-tenancy
+
+Every service reads the current tenant from `TenantContext` (ThreadLocal set by
+`JwtAuthenticationFilter`). All database queries are scoped to that company —
+no employee data leaks across tenants.

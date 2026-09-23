@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import com.hrsaas.enums.LeaveStatus;
 
 import java.time.LocalDate;
 
@@ -24,7 +25,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
             + "ORDER BY lr.createdAt DESC")
     Page<LeaveRequest> findByCompanyIdWithFilters(
             @Param("companyId") UUID companyId,
-            @Param("status") String status,
+            @Param("status") LeaveStatus status,
             @Param("employeeId") UUID employeeId,
             Pageable pageable);
 

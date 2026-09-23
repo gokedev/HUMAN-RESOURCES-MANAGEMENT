@@ -96,7 +96,7 @@ public class LeaveService {
      * Batch-fetches employee names to avoid N+1 queries.
      */
     public Page<LeaveRequestResponseDto> listCompanyLeaveRequestsWithFilters(
-            String status, UUID employeeId, Pageable pageable) {
+            LeaveStatus status, UUID employeeId, Pageable pageable) {
         UUID tenantId = TenantContext.getTenantId();
         Page<LeaveRequest> page = leaveRequestRepository.findByCompanyIdWithFilters(
                 tenantId, status, employeeId, pageable);

@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.hrsaas.enums.LeaveStatus;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -138,7 +138,7 @@ public class AdminController {
     @GetMapping("/leave-requests")
     public ResponseEntity<Page<LeaveRequestResponseDto>> listLeaveRequests(
             Pageable pageable,
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) LeaveStatus status,
             @RequestParam(required = false) UUID employeeId
     ) {
         log.debug("GET /api/admin/leave-requests - Listing leave requests, status={}, employeeId={}", status, employeeId);
